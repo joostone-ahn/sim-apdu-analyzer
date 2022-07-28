@@ -13,15 +13,15 @@ Proactive_type['42'] = 'RECEIVE DATA'
 Proactive_type['43'] = 'SEND DATA'
 
 REFRESH_type = dict()
-# REFRESH_type['00'] = 'NAA Initialization and Full File Change Notification'
-# REFRESH_type['01'] = 'File Change Notification'
-# REFRESH_type['02'] = 'NAA Initialization and File Change Notification'
-# REFRESH_type['03'] = 'NAA Initialization'
+REFRESH_type['00'] = 'NAA Init and Full FCN'
+REFRESH_type['01'] = 'File Change Notification'
+REFRESH_type['02'] = 'NAA Init and FCN'
+REFRESH_type['03'] = 'NAA Initialization'
 REFRESH_type['04'] = 'UICC Reset'
 # REFRESH_type['05'] = 'NAA Application Reset, only applicable for a 3G platform'
 # REFRESH_type['06'] = 'NAA Session Reset, only applicable for a 3G platform'
-# REFRESH_type['07'] = 'Steering of Roaming'
-# REFRESH_type['09'] = 'eUICC Profile State Change'
+REFRESH_type['07'] = 'Steering of Roaming'
+REFRESH_type['09'] = 'eUICC Profile State Change'
 # REFRESH_type['0A'] = 'Application Update'
 
 

@@ -88,11 +88,11 @@ def parser(file_name, data, offset):
             parsing += byte_array.decode()
     elif file_name == 'ACC':
         parsing = '0x%s'%data[:2] + '%s '%data[2:]
-        print(parsing)
+        # print(parsing)
         parsing += '(BIN ' + format(int(data[:2], 16), 'b').zfill(8)
-        print(parsing)
+        # print(parsing)
         parsing += ' ' + format(int(data[2:], 16), 'b').zfill(8) +')'
-        print(parsing)
+        # print(parsing)
         # cnt = 0
         # for n in list(parsing.split('BIN ')[1].replace(' ','')[-10:]):
         #     cnt +=1
