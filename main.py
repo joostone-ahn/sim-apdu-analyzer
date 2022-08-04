@@ -153,7 +153,7 @@ class Basic_GUI(QWidget):
         vbox.addWidget(QLabel("Copyright 2022. JUSEOK AHN<ajs3013@lguplus.co.kr> all rights reserved."))
 
         self.setLayout(vbox)
-        self.setWindowTitle('Dual SIM APDU Analyzer v1.4')
+        self.setWindowTitle('Dual SIM APDU Analyzer v1.5')
         # self.showMaximized()
         self.setGeometry(110, 50, 0, 0)
         self.show()

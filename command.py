@@ -31,6 +31,7 @@ cmd_name['73'] = 'MANAGE SECURE CHANNEL'
 cmd_name['75'] = 'TRANSACT DATA'
 cmd_name['76'] = 'SUSPEND UICC'
 cmd_name['78'] = 'GET IDENTITY'
+cmd_name['C0'] = 'GET RESPONSE'
 
 # Global Platform v2.3.1
 cmd_name['E4'] = 'DELETE'
