@@ -73,15 +73,10 @@ class Basic_GUI(QWidget):
         hbox2.addWidget(self.exe_label)
         hbox2.addStretch()
 
-        # self.save_btn = QPushButton("Save")
-        # self.save_btn.setFixedWidth(100)
-        # self.save_btn.setCheckable(False)
-        # self.save_btn.setFont(CourierNewFont)
-        # self.save_btn.setDisabled(True)
-        #
-        # self.save_btn.clicked.connect(self.save_msg)
-        #
-        # self.saved_label = QLabel()
+        self.SEARCH_te = QPlainTextEdit()
+        self.SEARCH_te.setFont(CourierNewFont)
+        
+
 
         self.SUM_label = QLabel()
         self.SUM_label.setText("Summary")
@@ -153,7 +148,7 @@ class Basic_GUI(QWidget):
         vbox.addWidget(QLabel("Copyright 2022. JUSEOK AHN<ajs3013@lguplus.co.kr> all rights reserved."))
 
         self.setLayout(vbox)
-        self.setWindowTitle('Dual SIM APDU Analyzer v1.5')
+        self.setWindowTitle('Dual SIM APDU Analyzer v1.6')
         # self.showMaximized()
         self.setGeometry(110, 50, 0, 0)
         self.show()
@@ -307,17 +302,6 @@ class Basic_GUI(QWidget):
 
         sum_remote_show = ''
         for n in self.sum_remote:
-            # if '[' in n[0]:
-            #     if 'MSISDN' in n[0]: n[0] = n[0].split(' ')[0]
-            #     else: n[0] = n[0].split(' ')[1] + ' ' + n[0].split(' ')[0]
-            # if len(n)==2:
-            #     if n[0] in ['ICCID', 'IMSI', 'MSISDN', 'IMPI'] :
-            #         sum_remote_show += '-' * 80 + '\n'
-            #         sum_remote_show += '%10s' % n[0] + '   ' + n[1].replace('   ', ' ') + '\n'
-            # if len(n)>2:
-            #     sum_remote_show += '-' * 80 + '\n'
-            #     sum_remote_show += '%10s' % n[0] + '   ' + n[1].replace('   ', ' ') + '\n'
-            #     sum_remote_show += '%10s' % ">>>" + '   ' + n[2].replace('   ', ' ') + '\n'
             if len(n)==2:
                 sum_remote_show += '-' * 80 + '\n'
                 sum_remote_show += '%20s'%n[0] + '   '

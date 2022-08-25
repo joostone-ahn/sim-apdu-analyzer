@@ -89,7 +89,23 @@ def rst(input, load_type):
                     RAND = prot_data[m][2][2:2+RAND_len*2]
                     AUTN_len = int(prot_data[m][2][2+RAND_len*2:4+RAND_len*2],16)
                     AUTN = prot_data[m][2][4+RAND_len*2:4+RAND_len*2+AUTN_len*2]
-                    if debug_mode: print(RAND_len, RAND, AUTN_len, AUTN)
+                    SIM_resp_type = prot_data[m][5][2:4]
+                    if SIM_resp_type == 'DB':
+                        RES = prot_data[m][5][6:22]
+                        AUTS = ''
+                    elif SIM_resp_type == 'DC':
+                        RES = ''
+                        AUTS = prot_data[m][5][6:34]
+                        cmd += ' *Re-Sync'
+                    else:
+                        RES = ''
+                        AUTS = ''
+                    if debug_mode:
+                        print('%7s' % 'RAND :', RAND)
+                        print('%7s' % 'AUTN :', AUTN)
+                        print('%7s' % 'RES :', RES)
+                        print('%7s' % 'AUTS :', AUTS)
+
                 elif ins == '70': # MANAGE CHANNEL
                     if prot_data[m][0][4:6] == '80': cmd += ' (CLOSE: %d)'%int(prot_data[m][0][6:8],16)
                     elif prot_data[m][0][4:6] == '00':
@@ -146,11 +162,29 @@ def rst(input, load_type):
                         = READ.process(ins, file_name, prot_data[m], sum_read, sum_remote, sum_remote_list)
                 else:
                     sum_read.append(['',''])
+
             elif ins == '88' or ins == '89':
                 sum_read.append([list()])
-                sum_read[-1][0].append(' RAND (%s Bytes) : ' % str(RAND_len) + '%s' % RAND)
-                sum_read[-1][0].append(' AUTN (%s Bytes) : ' % str(AUTN_len) + '%s' % AUTN)
+                # sum_read[-1][0].append(' RAND (%s Bytes) : ' % str(RAND_len) + '%s' % RAND)
+                # sum_read[-1][0].append(' AUTN (%s Bytes) : ' % str(AUTN_len) + '%s' % AUTN)
+                sum_read[-1][0].append('%19s'%'RAND : '+ '%s' % RAND)
+                sum_read[-1][0].append('%19s'%'AUTN : '+ '%s' % AUTN)
+                if RES : sum_read[-1][0].append('%19s'%'RES : '+ '%s' % RES)
+                if AUTS : sum_read[-1][0].append('%19s'%'AUTS : '+ '%s' % AUTS)
                 # print(sum_read[-1])
+
+                if 'USIM' in sum_rst[-1]:
+                    print('='*60)
+                    print(sum_rst[-1])
+                    print('='*60)
+                    print('%10s' % 'RAND :', RAND)
+                    print('%10s' % 'AUTN :', AUTN)
+                    print('%10s' % 'RES :', RES)
+                    print('%10s' % 'AUTS :', AUTS)
+                    print('='*60)
+                    print('')
+
+
             else:
                 sum_read.append(['',''])
 
