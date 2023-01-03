@@ -93,7 +93,7 @@ def rst(input, item_num, load_type):
     if data[0]:
         for n in range(len(data)):
             if n ==0:
-                rst_ind = '[%s]' % str(item_num + 1)
+               rst_ind = '[%s]' % str(item_num + 1)
             else:
                 rst_ind = ' '*len(rst_ind)
 

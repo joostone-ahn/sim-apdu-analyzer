@@ -109,7 +109,6 @@ def rst(input, load_type):
                         print('%7s' % 'AUTN :', AUTN)
                         print('%7s' % 'RES :', RES)
                         print('%7s' % 'AUTS :', AUTS)
-
                 elif ins == '70': # MANAGE CHANNEL
                     if prot_data[m][0][4:6] == '80': cmd += ' (CLOSE: %d)'%int(prot_data[m][0][6:8],16)
                     elif prot_data[m][0][4:6] == '00':
@@ -205,7 +204,10 @@ def rst(input, load_type):
             sum_error.append(error)
             if debug_mode: print('error          :', sum_error[-1])
 
+            # if debug_mode == 2:
+            #     for n in log_ch:
+            #         print(n)
+
         if debug_mode: print()
 
     return sum_rst, sum_log_ch, sum_log_ch_id, sum_cmd, sum_read, sum_error, sum_remote
-
