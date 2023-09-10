@@ -8,12 +8,20 @@ def process(input):
     cmd_type = []
 
     cmd_cnt = 0
+    prev_exe_data = None
+
     for n in range(len(exe_start)):
         if debug_mode:
             print("exe_type   :", [exe_type[n]])
             print("cmd_cnt    :", cmd_cnt)
             print("exe_data   :", [exe_data[n]])
             print("")
+
+        # 230910 SIM 에서 APDU 응답이 두 번 올라오는 케이스가 있음
+        if exe_data[n] == prev_exe_data:
+            continue
+        prev_exe_data = exe_data[n]
+
         if exe_type[n] != 'TX' and exe_type[n] != 'RX':
             prot_start.append([exe_start[n]])
             prot_end.append([exe_end[n]])
