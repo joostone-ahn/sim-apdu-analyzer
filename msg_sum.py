@@ -176,16 +176,17 @@ def rst(input, load_type):
                 if AUTS : sum_read[-1][0].append('%19s'%'AUTS : '+ '%s' % AUTS)
                 # print(sum_read[-1])
 
-                if 'USIM' in sum_rst[-1]:
-                    print('='*60)
-                    print(sum_rst[-1])
-                    print('='*60)
-                    print('%10s' % 'RAND :', RAND)
-                    print('%10s' % 'AUTN :', AUTN)
-                    print('%10s' % 'RES :', RES)
-                    print('%10s' % 'AUTS :', AUTS)
-                    print('='*60)
-                    print('')
+                if debug_mode:
+                    if 'USIM' in sum_rst[-1]:
+                        print('='*60)
+                        print(sum_rst[-1])
+                        print('='*60)
+                        print('%10s' % 'RAND :', RAND)
+                        print('%10s' % 'AUTN :', AUTN)
+                        print('%10s' % 'RES :', RES)
+                        print('%10s' % 'AUTS :', AUTS)
+                        print('='*60)
+                        print('')
 
 
             else:
