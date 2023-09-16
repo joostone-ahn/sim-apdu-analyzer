@@ -2,6 +2,7 @@ import command
 import SELECT
 import READ
 import Proactive
+import Envelope
 import file_system
 import short_file_id
 debug_mode = 0
@@ -126,25 +127,38 @@ def rst(input, load_type):
                             if FETCH_type == 'REFRESH':
                                 if FETCH_data[2:] in Proactive.REFRESH_type:
                                     cmd = cmd[:-1] + ': %s)'% Proactive.REFRESH_type[FETCH_data[2:]]
+                            elif FETCH_type == 'POLL INTERVAL':
+                                dec_value = int(prot_data[m][1][-6:-4],16)
+                                cmd = cmd[:-1] + ': %s sec)' % str(dec_value)
+                            elif FETCH_type == 'SETUP EVENT LIST':
+                                if '818299' in prot_data[m][1]: # 81(UICC), 82(terminal), 99(event list tag)
+                                    if prot_data[m][1].split('818299')[1][:2] != '00':
+                                        event_len = int(prot_data[m][1].split('818299')[1][:2], 16) * 2 # Byte 개수라 2배
+                                        event_type = prot_data[m][1].split('818299')[1][2:2+event_len]
+                                        event_type_list = [event_type[i:i+2] for i in range(0, len(event_type), 2)]
+                                        cmd = cmd[:-1] + ': '
+                                        for event in event_type_list:
+                                            cmd += '%s, ' % Envelope.Event_list[event]
+                                        cmd = cmd[:-2] +')'
                 elif ins == '14': # TERMINAL RESPONSE
                     if debug_mode: print('T/R check      :', prot_data[m])
                     if '810301' in prot_data[m][2]:
                         TR_data = prot_data[m][2].split('810301')[1][:4]
                         if TR_data[:2] in Proactive.Proactive_type:
                             TR_type = Proactive.Proactive_type[TR_data[:2]]
-                            TR_rst = prot_data[m][2].split('8281')[1][4]
-                            cmd += ' (%s: '%TR_type
-                            cmd += '%sX)'%TR_rst
+                            cmd += ' (%s)'%TR_type
+                            if TR_type == 'REFRESH':
+                                TR_rst = prot_data[m][2].split('8281')[1][4]
+                                cmd = cmd[:-1] + ': %sX)'%TR_rst
                 elif ins == 'C2': # ENVELOPE
                     if debug_mode: print('ENVELOPE check :', prot_data[m])
-                    ENV_type = prot_data[m][2][:2]
-                    if ENV_type == 'D1': cmd += ' (SMS-PP DOWNLOAD)'
-                    elif ENV_type == 'D2': cmd += ' (CELL BROADCAST DOWNLOAD)'
-                    elif ENV_type == 'D3': cmd += ' (MENU SELECTION)'
-                    elif ENV_type == 'D4': cmd += ' (CALL CONTROL)'
-                    elif ENV_type == 'D5': cmd += ' (MO SHORT MESSAGE CONTROL)'
-                    elif ENV_type == 'D6': cmd += ' (EVENT DOWNLOAD)'
-                    elif ENV_type == 'D7': cmd += ' (TIMER EXPIRATION)'
+                    if prot_data[m][2][:2] in Envelope.Envelope_type:
+                        ENV_type = Envelope.Envelope_type[prot_data[m][2][:2]]
+                        cmd += ' (%s)' % ENV_type
+                        if ENV_type == 'Event Download':
+                            if prot_data[m][2][8:10] in Envelope.Event_list:
+                                event_type = Envelope.Event_list[prot_data[m][2][8:10]]
+                                cmd = cmd[:-1] + ': %s)' % event_type
 
             else:
                 cmd = "Unknown (INS:%s)"%ins
