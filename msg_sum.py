@@ -118,26 +118,33 @@ def rst(input, load_type):
                                 else: cmd += ' (OPEN: %d)'%int(prot_data[m][0][6:8],16)
                 elif ins == '12': # FETCH
                     if debug_mode: print('FETCH check    :',prot_data[m])
-                    FETCH_data = prot_data[m][1].split('810301')[1][:4]
-                    if FETCH_data[:2] in Proactive.Proactive_type:
-                        FETCH_type = Proactive.Proactive_type[FETCH_data[:2]]
-                        cmd += ' (%s)' % FETCH_type
-                        if FETCH_type == 'REFRESH':
-                            if FETCH_data[2:] in Proactive.REFRESH_type:
-                                cmd = cmd[:-1] + ': %s)'% Proactive.REFRESH_type[FETCH_data[2:]]
+                    if '810301' in prot_data[m][1]:
+                        FETCH_data = prot_data[m][1].split('810301')[1][:4]
+                        if FETCH_data[:2] in Proactive.Proactive_type:
+                            FETCH_type = Proactive.Proactive_type[FETCH_data[:2]]
+                            cmd += ' (%s)' % FETCH_type
+                            if FETCH_type == 'REFRESH':
+                                if FETCH_data[2:] in Proactive.REFRESH_type:
+                                    cmd = cmd[:-1] + ': %s)'% Proactive.REFRESH_type[FETCH_data[2:]]
                 elif ins == '14': # TERMINAL RESPONSE
                     if debug_mode: print('T/R check      :', prot_data[m])
-                    TR_data = prot_data[m][2].split('810301')[1][:4]
-                    if TR_data[:2] in Proactive.Proactive_type:
-                        TR_type = Proactive.Proactive_type[TR_data[:2]]
-                        TR_rst = prot_data[m][2].split('8281')[1][4]
-                        cmd += ' (%s: '%TR_type
-                        cmd += '%sX)'%TR_rst
+                    if '810301' in prot_data[m][2]:
+                        TR_data = prot_data[m][2].split('810301')[1][:4]
+                        if TR_data[:2] in Proactive.Proactive_type:
+                            TR_type = Proactive.Proactive_type[TR_data[:2]]
+                            TR_rst = prot_data[m][2].split('8281')[1][4]
+                            cmd += ' (%s: '%TR_type
+                            cmd += '%sX)'%TR_rst
                 elif ins == 'C2': # ENVELOPE
                     if debug_mode: print('ENVELOPE check :', prot_data[m])
                     ENV_type = prot_data[m][2][:2]
                     if ENV_type == 'D1': cmd += ' (SMS-PP DOWNLOAD)'
+                    elif ENV_type == 'D2': cmd += ' (CELL BROADCAST DOWNLOAD)'
+                    elif ENV_type == 'D3': cmd += ' (MENU SELECTION)'
+                    elif ENV_type == 'D4': cmd += ' (CALL CONTROL)'
+                    elif ENV_type == 'D5': cmd += ' (MO SHORT MESSAGE CONTROL)'
                     elif ENV_type == 'D6': cmd += ' (EVENT DOWNLOAD)'
+                    elif ENV_type == 'D7': cmd += ' (TIMER EXPIRATION)'
 
             else:
                 cmd = "Unknown (INS:%s)"%ins

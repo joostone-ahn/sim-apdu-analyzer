@@ -1,4 +1,4 @@
-debug_mode = 1
+debug_mode = 0
 def process(input, index):
     msg_all, msg_start, msg_end, msg_SN, msg_type, msg_data = input
     exe_start, exe_end, exe_type, exe_data = [],[],[],[]
