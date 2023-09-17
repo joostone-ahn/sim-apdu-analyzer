@@ -44,7 +44,10 @@ def process(log_ch, log_ch_id, SFI):
     error = ''
     current_DF = log_ch[log_ch_id][0]
 
-    if current_DF[:16] in SFI_file_id: current_DF = current_DF[:16]
+    if current_DF[:14] in SFI_file_id: current_DF = current_DF[:14]
+    # DF_name['A0000000871002'] = 'ADF USIM' 14자리만 인식
+    # DF_name['A0000000871004'] = 'ADF ISIM' 14자리만 인식
+
     if current_DF in SFI_file_id:
         if SFI in SFI_file_id[current_DF]:
             file_id = SFI_file_id[current_DF][SFI]
@@ -74,7 +77,7 @@ def process(log_ch, log_ch_id, SFI):
 
 
 SFI_file_id = {
-    'A0000000871002FF': {
+    'A0000000871002': {
         '01': '6FB7',
         '02': '6F05',
         '03': '6FAD',
@@ -174,7 +177,7 @@ SFI_file_id = {
         '0B': '4F0B',
         '0C': '4F0C'
     },
-    'A0000000871004FF': {
+    'A0000000871004': {
         '02': '6F02',
         '05': '6F03',
         '04': '6F04',

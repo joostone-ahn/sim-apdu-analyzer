@@ -11,7 +11,9 @@ def rst(input, read, error, item_num):
     if debug_mode: print(log_ch_id, log_ch)
     current_DF = log_ch[0]
     current_EF = log_ch[1]
-    if current_DF[:16] in file_system.DF_name: current_DF = current_DF[:16]
+    if current_DF[:14] in file_system.DF_name: current_DF = current_DF[:14]
+    # DF_name['A0000000871002'] = 'ADF USIM' 14자리만 인식
+    # DF_name['A0000000871004'] = 'ADF ISIM' 14자리만 인식
 
     app_rst = []
     if prot_type[item_num][0] == 'TX':

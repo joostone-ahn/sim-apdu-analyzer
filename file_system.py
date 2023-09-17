@@ -2,7 +2,9 @@ debug_mode = 0
 
 def process(current_DF, current_EF, file_id):
     error = ''
-    if current_DF[:16] in DF_name: current_DF = current_DF[:16]
+    if current_DF[:14] in DF_name: current_DF = current_DF[:14]
+    # DF_name['A0000000871002'] = 'ADF USIM' 14자리만 인식
+    # DF_name['A0000000871004'] = 'ADF ISIM' 14자리만 인식
 
     if current_EF:
         if current_DF:
@@ -21,7 +23,7 @@ def process(current_DF, current_EF, file_id):
                 error = '*Non-standard'
         else:
             file_name = file_id #'7FFFXXXX'
-            error = 'AID not decided'
+            error = '*AID not decided'
     else:
         if current_DF:
             if current_DF in DF_name:
@@ -62,7 +64,7 @@ DF_name['7F105F3A'] = 'DF PHONEBOOK'
 DF_name['7F105F3B'] = 'DF MULTIMEDIA'
 DF_name['7F105F3D'] = 'DF MCS'
 DF_name['7F105F3E'] = 'DF V2X'
-DF_name['A0000000871002FF'] = 'ADF USIM'
+DF_name['A0000000871002'] = 'ADF USIM'
 DF_name['7FFF5F3A'] = 'DF PHONEBOOK'
 DF_name['7FFF5F3B'] = 'DF GSM-ACCESS'
 DF_name['7FFF5F3C'] = 'DF MexE'
@@ -75,8 +77,8 @@ DF_name['7FFF5FB0'] = 'DF TV'
 DF_name['7FFF5FC0'] = 'DF 5GS'
 
 # 3GPP ts31.103 Release16
-DF_name['A0000000871004FF'] = 'ADF ISIM'
-DF_name['A0000003431002FF82FFFF89010000FF'] = 'ADF CSIM' #L
+DF_name['A0000000871004'] = 'ADF ISIM'
+# DF_name['A0000003431002FF82FFFF89010000FF'] = 'ADF CSIM' #L
 
 # 3GPP ts31.102 Release16
 EF_name ={
@@ -153,7 +155,7 @@ EF_name ={
         '4F01': 'VST',
         '4F02': 'V2X_CONFIG'
     },
-    'A0000000871002FF': {
+    'A0000000871002': {
         '6F05': 'LI',
         '6F06': 'ARR',
         '6F07': 'IMSI',
@@ -370,7 +372,7 @@ EF_name ={
         '4F0B': 'URSP',
         '4F0C': 'TN3GPPSNN'
     },
-    'A0000000871004FF': {
+    'A0000000871004': {
         '6F07': 'IST',
         '6F02': 'IMPI',
         '6F03': 'DOMAIN',
@@ -394,11 +396,11 @@ EF_name ={
 }
 
 USIM_EF_list = []
-for n in EF_name['A0000000871002FF'].keys():
+for n in EF_name['A0000000871002'].keys():
     USIM_EF_list.append(n)
 
 ISIM_EF_list = []
-for n in EF_name['A0000000871004FF'].keys():
+for n in EF_name['A0000000871004'].keys():
     ISIM_EF_list.append(n)
 
 # print(DF_name)

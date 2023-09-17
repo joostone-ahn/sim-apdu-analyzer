@@ -23,7 +23,7 @@ def process(data, log_ch, log_ch_id):
                         if 'A00000008710' in data[-1]:
                             log_ch[log_ch_id][0] = 'A00000008710' + data[-1].split('A00000008710')[1][:20]
                     else:
-                        log_ch[log_ch_id][0] = '' # Last selected AID not decided
+                        log_ch[log_ch_id][0] = '*selected AID not decided' # Last selected AID not decided
             else:
                 log_ch[log_ch_id][1] = file_id
         else: # len(file_id) > 4
@@ -50,22 +50,22 @@ def process(data, log_ch, log_ch_id):
                         log_ch[log_ch_id][0] = log_ch[log_ch_id][2]
                     else:
                         if log_ch[log_ch_id][0] == '3F00' or '7F10' in log_ch[log_ch_id][0] :
-                            log_ch[log_ch_id][0] = 'A0000000871002FF82FFFF89010000FF'
+                            log_ch[log_ch_id][0] = 'A0000000871002'
                             # MF and DF TELECOM use same logical channel with USIM ADF
                         elif '7FFF5F' in log_ch[log_ch_id][0]:
-                            log_ch[log_ch_id][0] = 'A0000000871002FF82FFFF89010000FF'
+                            log_ch[log_ch_id][0] = 'A0000000871002'
                             # child DF not defined in ISIM ADF, select USIM ADF by default
                         else:
                             if log_ch[log_ch_id][1] in file_system.USIM_EF_list:
                                 if log_ch[log_ch_id][1] in file_system.ISIM_EF_list:
-                                    log_ch[log_ch_id][0] = '' # Last selected AID not decided
+                                    log_ch[log_ch_id][0] = '*selected AID not decided' # Last selected AID not decided
                                 else: # USIM ADF decided
-                                    log_ch[log_ch_id][0] = 'A0000000871002FF82FFFF89010000FF'
+                                    log_ch[log_ch_id][0] = 'A0000000871002'
                             else:
                                 if log_ch[log_ch_id][1] in file_system.ISIM_EF_list: # ISIM ADF decided
-                                    log_ch[log_ch_id][0] = 'A0000000871004FF82FFFF89010000FF'
+                                    log_ch[log_ch_id][0] = 'A0000000871004'
                                 else:
-                                    log_ch[log_ch_id][0] = '' # Last selected AID not decided
+                                    log_ch[log_ch_id][0] = '*selected AID not decided' # Last selected AID not decided
 
     if log_ch[log_ch_id][0][0:2] == 'A0':
         if len(log_ch[log_ch_id]) < 3:
@@ -80,5 +80,6 @@ def process(data, log_ch, log_ch_id):
         print('EF_file_id   :', log_ch[log_ch_id][1])
         print('file_name    :', file_name)
         print('error        :', error)
+        print('')
 
     return log_ch, file_name, error
