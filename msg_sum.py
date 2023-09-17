@@ -73,6 +73,14 @@ def rst(input, load_type):
                     else:
                         file_name = '[N/A]'
                         error = 'Incomplete APDU'
+                elif ins == 'F2': #STATUS
+                    if sw != '':
+                        if 'A000000087100' in prot_data[m][1]: #USIM or ISIM
+                            AID_len = int(prot_data[m][1][4:6],16)*2
+                            AID = prot_data[m][1][6:6+AID_len]
+                            log_ch[log_ch_id][0] = AID
+                            if len(log_ch[log_ch_id]) < 3:
+                                log_ch[log_ch_id].append(log_ch[log_ch_id][0])
                 elif ins in short_file_id.cmd_SFI_list:
                     SFI_used, SFI = short_file_id.category(prot_data[m][0])
                     if SFI_used:

@@ -44,6 +44,11 @@ def process(log_ch, log_ch_id, SFI):
     error = ''
     current_DF = log_ch[log_ch_id][0]
 
+    # current DF = MF 상태에서 SFI 사용하는 경우 USIM Select
+    if current_DF == '3F00':
+        current_DF = 'A0000000871002'
+        log_ch[log_ch_id][0] = 'A0000000871002'
+
     if current_DF[:14] in SFI_file_id: current_DF = current_DF[:14]
     # DF_name['A0000000871002'] = 'ADF USIM' 14자리만 인식
     # DF_name['A0000000871004'] = 'ADF ISIM' 14자리만 인식
