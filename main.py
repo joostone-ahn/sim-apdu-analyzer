@@ -148,7 +148,7 @@ class Basic_GUI(QWidget):
         vbox.addWidget(QLabel("Copyright 2022. JUSEOK AHN<ajs3013@lguplus.co.kr> all rights reserved."))
 
         self.setLayout(vbox)
-        self.setWindowTitle('Dual SIM APDU Analyzer v1.8')
+        self.setWindowTitle('Dual SIM APDU Analyzer v1.9')
         # self.showMaximized()
         self.setGeometry(110, 50, 0, 0)
         self.show()
@@ -220,7 +220,6 @@ class Basic_GUI(QWidget):
         self.App_list.clear()
         self.Prot_list.clear()
         self.SIM_Info_list.clear()
-
         self.msg_all = clipboard.paste()
         self.msg_all = self.msg_all.split('\r')
         for n in range(len(self.msg_all)):

@@ -44,11 +44,6 @@ def process(log_ch, log_ch_id, SFI):
     error = ''
     current_DF = log_ch[log_ch_id][0]
 
-    # current DF = MF 상태에서 SFI 사용하는 경우 USIM Select
-    if current_DF == '3F00':
-        current_DF = 'A0000000871002'
-        log_ch[log_ch_id][0] = 'A0000000871002'
-
     if current_DF[:14] in SFI_file_id: current_DF = current_DF[:14]
     # DF_name['A0000000871002'] = 'ADF USIM' 14자리만 인식
     # DF_name['A0000000871004'] = 'ADF ISIM' 14자리만 인식
@@ -80,8 +75,17 @@ def process(log_ch, log_ch_id, SFI):
 
     return log_ch, file_name, error
 
-
 SFI_file_id = {
+    # ETSI ts102.221 v16.00.00 Annex.H
+    '3F00': {
+        '02': '2FE2',
+        '05': '2F05',
+        '06': '2F06',
+        '07': '2F07',
+        '08': '2F08',
+        '1E': '2F00'
+    },
+    # 3GPP ts31.102 v17(ha0) Annex.H
     'A0000000871002': {
         '01': '6FB7',
         '02': '6F05',
@@ -180,8 +184,16 @@ SFI_file_id = {
         '09': '4F09',
         '0A': '4F0A',
         '0B': '4F0B',
-        '0C': '4F0C'
+        '0C': '4F0C',
+        '0D': '4F0D',
+        '0E': '4F0E',
+        '0F': '4F0F',
+        '10': '4F10',
+        '11': '4F11',
+        '15': '4F15',
+        '16': '4F16'
     },
+    # 3GPP ts31.103 v17(h00) Annex.D
     'A0000000871004': {
         '02': '6F02',
         '05': '6F03',

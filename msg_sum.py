@@ -1,8 +1,7 @@
 import command
 import SELECT
 import READ
-import Proactive
-import Envelope
+import spec_ref
 import file_system
 import short_file_id
 debug_mode = 0
@@ -19,7 +18,8 @@ def rst(input, load_type):
 
         num_max = len(str(len(prot_start)))+1 # including '['
         num = ' '*(num_max-len(str(m+1))) + '[' + str(m+1) + ']'
-        type = prot_type[m][0]
+
+        # Time
         if load_type == 'File':
             time = msg_all[prot_start[m][0]].split('  ')[1].split('  [')[0]
             if ':' not in time: time = 'TIME ERROR'
@@ -28,6 +28,8 @@ def rst(input, load_type):
             time = msg_all[prot_start[m][0]].split('                 ')[1].split(' ')[0]
             time = '%-12s'%time
 
+        # Type
+        type = prot_type[m][0]
         if type != 'TX' and type != 'RX': # RESET, ATR
             sum_rst.append(num + '  ' + time + '  ' + type)
             sum_log_ch.append(['','']) # sum_log_ch[n] = [current DF, current EF]
@@ -35,7 +37,7 @@ def rst(input, load_type):
             sum_cmd.append('')
             sum_read.append(['','']) # sum_read[n] = [file_name, file_data]
             sum_error.append('')
-        else: # sum_type == 'TX'
+        else: # type == 'TX' or 'RX'
             if len(prot_data[m][-1]) >= 4:
                 sw = prot_data[m][-1][-4:]
             else:  # Incomplete APDU
@@ -129,12 +131,12 @@ def rst(input, load_type):
                     if debug_mode: print('FETCH check    :',prot_data[m])
                     if '810301' in prot_data[m][1]:
                         FETCH_data = prot_data[m][1].split('810301')[1][:4]
-                        if FETCH_data[:2] in Proactive.Proactive_type:
-                            FETCH_type = Proactive.Proactive_type[FETCH_data[:2]]
+                        if FETCH_data[:2] in spec_ref.Proactive_type:
+                            FETCH_type = spec_ref.Proactive_type[FETCH_data[:2]]
                             cmd += ' (%s)' % FETCH_type
                             if FETCH_type == 'REFRESH':
-                                if FETCH_data[2:] in Proactive.REFRESH_type:
-                                    cmd = cmd[:-1] + ': %s)'% Proactive.REFRESH_type[FETCH_data[2:]]
+                                if FETCH_data[2:] in spec_ref.REFRESH_type:
+                                    cmd = cmd[:-1] + ': %s)'% spec_ref.REFRESH_type[FETCH_data[2:]]
                             elif FETCH_type == 'POLL INTERVAL':
                                 dec_value = int(prot_data[m][1][-6:-4],16)
                                 cmd = cmd[:-1] + ': %s sec)' % str(dec_value)
@@ -146,26 +148,26 @@ def rst(input, load_type):
                                         event_type_list = [event_type[i:i+2] for i in range(0, len(event_type), 2)]
                                         cmd = cmd[:-1] + ': '
                                         for event in event_type_list:
-                                            cmd += '%s, ' % Envelope.Event_list[event]
+                                            cmd += '%s, ' % spec_ref.Event_list[event]
                                         cmd = cmd[:-2] +')'
                 elif ins == '14': # TERMINAL RESPONSE
                     if debug_mode: print('T/R check      :', prot_data[m])
                     if '810301' in prot_data[m][2]:
                         TR_data = prot_data[m][2].split('810301')[1][:4]
-                        if TR_data[:2] in Proactive.Proactive_type:
-                            TR_type = Proactive.Proactive_type[TR_data[:2]]
+                        if TR_data[:2] in spec_ref.Proactive_type:
+                            TR_type = spec_ref.Proactive_type[TR_data[:2]]
                             cmd += ' (%s)'%TR_type
                             if TR_type == 'REFRESH':
                                 TR_rst = prot_data[m][2].split('8281')[1][4]
                                 cmd = cmd[:-1] + ': %sX)'%TR_rst
                 elif ins == 'C2': # ENVELOPE
                     if debug_mode: print('ENVELOPE check :', prot_data[m])
-                    if prot_data[m][2][:2] in Envelope.Envelope_type:
-                        ENV_type = Envelope.Envelope_type[prot_data[m][2][:2]]
+                    if prot_data[m][2][:2] in spec_ref.Envelope_type:
+                        ENV_type = spec_ref.Envelope_type[prot_data[m][2][:2]]
                         cmd += ' (%s)' % ENV_type
                         if ENV_type == 'Event Download':
-                            if prot_data[m][2][8:10] in Envelope.Event_list:
-                                event_type = Envelope.Event_list[prot_data[m][2][8:10]]
+                            if prot_data[m][2][8:10] in spec_ref.Event_list:
+                                event_type = spec_ref.Event_list[prot_data[m][2][8:10]]
                                 cmd = cmd[:-1] + ': %s)' % event_type
 
             else:
@@ -188,10 +190,8 @@ def rst(input, load_type):
             # sum_read, sum_remote
             if ins == 'B0' or ins == 'B2':
                 if sw == '9000' or sw[:2] == '91':
-                    if SFI_used == False : file_name, error \
-                        = file_system.process(log_ch[log_ch_id][0], log_ch[log_ch_id][1], last_file_id)
-                    sum_read, sum_remote \
-                        = READ.process(ins, file_name, prot_data[m], sum_read, sum_remote, sum_remote_list)
+                    if SFI_used == False : file_name, error = file_system.process(log_ch[log_ch_id][0], log_ch[log_ch_id][1], last_file_id)
+                    sum_read, sum_remote = READ.process(ins, file_name, prot_data[m], sum_read, sum_remote, sum_remote_list)
                 else:
                     sum_read.append(['',''])
 
