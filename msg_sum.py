@@ -101,13 +101,13 @@ def rst(input, load_type):
                     AUTN_len = int(prot_data[m][2][2+RAND_len*2:4+RAND_len*2],16)
                     AUTN = prot_data[m][2][4+RAND_len*2:4+RAND_len*2+AUTN_len*2]
                     if len(prot_data[m]) > 4:
-                        SIM_resp_type = prot_data[m][5][2:4]
+                        SIM_resp_type = prot_data[m][-1][2:4]
                         if SIM_resp_type == 'DB':
-                            RES = prot_data[m][5][6:22]
+                            RES = prot_data[m][-1][6:22]
                             AUTS = ''
                         elif SIM_resp_type == 'DC':
                             RES = ''
-                            AUTS = prot_data[m][5][6:34]
+                            AUTS = prot_data[m][-1][6:34]
                             cmd += ' *Re-Sync'
                         else:
                             RES = ''
