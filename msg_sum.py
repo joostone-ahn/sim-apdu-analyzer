@@ -68,14 +68,21 @@ def rst(input, load_type):
             if debug_mode: print('INS byte       :', ins)
             if ins in command.cmd_name:
                 cmd = command.cmd_name[ins]
-                if ins == 'A4': # SELECT
+
+                # SELECT
+                if ins == 'A4':
                     if sw != '':
-                        log_ch, file_name, error = SELECT.process(prot_data[m], log_ch, log_ch_id)
-                        last_file_id = prot_data[m][2]
+                        if len(prot_data[m])>2:
+                            log_ch, file_name, error = SELECT.process(prot_data[m], log_ch, log_ch_id)
+                            last_file_id = prot_data[m][2]
+                        else:
+                            file_name = '[N/A]'
+                            error = 'Incomplete APDU'
                     else:
                         file_name = '[N/A]'
                         error = 'Incomplete APDU'
-                elif ins == 'F2': #STATUS
+                # STATUS
+                elif ins == 'F2':
                     if sw != '':
                         if 'A000000087100' in prot_data[m][1]: #USIM or ISIM
                             AID_len = int(prot_data[m][1][4:6],16)*2
@@ -83,6 +90,8 @@ def rst(input, load_type):
                             log_ch[log_ch_id][0] = AID
                             if len(log_ch[log_ch_id]) < 3:
                                 log_ch[log_ch_id].append(log_ch[log_ch_id][0])
+
+                # SFI (Short file id)
                 elif ins in short_file_id.cmd_SFI_list:
                     SFI_used, SFI = short_file_id.category(prot_data[m][0])
                     if SFI_used:
@@ -90,7 +99,9 @@ def rst(input, load_type):
                         log_ch, file_name, error = short_file_id.process(log_ch, log_ch_id, SFI)
                     # else:
                     #     file_name, error = file_system.process(log_ch[log_ch_id][0], log_ch[log_ch_id][1], last_file_id)
-                elif ins == '88' or ins == '89': # AUTHENTICATE
+
+                # AUTHENTICATE
+                elif ins == '88' or ins == '89':
                     if debug_mode: print('AUTH check     :',prot_data[m])
                     if debug_mode: print('log_ch DF name :',log_ch[log_ch_id][0])
                     file_name, error = file_system.process(log_ch[log_ch_id][0], '', last_file_id)
@@ -120,14 +131,18 @@ def rst(input, load_type):
                         print('%7s' % 'AUTN :', AUTN)
                         print('%7s' % 'RES :', RES)
                         print('%7s' % 'AUTS :', AUTS)
-                elif ins == '70': # MANAGE CHANNEL
+
+                # MANAGE CHANNEL
+                elif ins == '70':
                     if prot_data[m][0][4:6] == '80': cmd += ' (CLOSE: %d)'%int(prot_data[m][0][6:8],16)
                     elif prot_data[m][0][4:6] == '00':
                         if len(prot_data[m][1]) == 8:
                             if prot_data[m][1][-4:] == '9000' or prot_data[m][1][-4:-2] == '91':
                                 if prot_data[m][0][6:8] == '00': cmd += ' (OPEN: %d)'%int(prot_data[m][1][2:4],16)
                                 else: cmd += ' (OPEN: %d)'%int(prot_data[m][0][6:8],16)
-                elif ins == '12': # FETCH
+
+                # FETCH
+                elif ins == '12':
                     if debug_mode: print('FETCH check    :',prot_data[m])
                     if '810301' in prot_data[m][1]:
                         FETCH_data = prot_data[m][1].split('810301')[1][:4]
@@ -150,7 +165,9 @@ def rst(input, load_type):
                                         for event in event_type_list:
                                             cmd += '%s, ' % spec_ref.Event_list[event]
                                         cmd = cmd[:-2] +')'
-                elif ins == '14': # TERMINAL RESPONSE
+
+                # TERMINAL RESPONSE
+                elif ins == '14':
                     if debug_mode: print('T/R check      :', prot_data[m])
                     if '810301' in prot_data[m][2]:
                         TR_data = prot_data[m][2].split('810301')[1][:4]
@@ -160,7 +177,9 @@ def rst(input, load_type):
                             if TR_type == 'REFRESH':
                                 TR_rst = prot_data[m][2].split('8281')[1][4]
                                 cmd = cmd[:-1] + ': %sX)'%TR_rst
-                elif ins == 'C2': # ENVELOPE
+
+                # ENVELOPE
+                elif ins == 'C2':
                     if debug_mode: print('ENVELOPE check :', prot_data[m])
                     if prot_data[m][2][:2] in spec_ref.Envelope_type:
                         ENV_type = spec_ref.Envelope_type[prot_data[m][2][:2]]

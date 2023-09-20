@@ -17,11 +17,6 @@ def process(input):
             print("exe_data   :", [exe_data[n]])
             print("")
 
-        # # 230910 APDU 로그가 중간에 빠지는 경우 대비
-        # if exe_data[n] == prev_exe_data:
-        #     continue
-        # prev_exe_data = exe_data[n]
-
         if exe_type[n] != 'TX' and exe_type[n] != 'RX':
             prot_start.append([exe_start[n]])
             prot_end.append([exe_end[n]])
