@@ -16,7 +16,11 @@ def rst(input, read, error, item_num):
     # DF_name['A0000000871004'] = 'ADF ISIM' 14자리만 인식
 
     if debug_mode:
-        if log_ch: print(log_ch)
+        print("%10s"%"prot_type:", prot_type[item_num])
+        print("%10s"%"cmd:",cmd)
+        if log_ch: print("%10s"%"log_ch:",log_ch)
+        if log_ch_id: print("%10s"%"log_ch_id:",log_ch_id)
+        print("%10s"%"read:",read[item_num])
 
     app_rst = []
     if prot_type[item_num][0] == 'TX':
@@ -39,73 +43,99 @@ def rst(input, read, error, item_num):
 
         app_rst.append(void+' Current Command : %s' % cmd.replace('(X)',''))
 
-        if debug_mode: print(read[item_num])
-
-        if read[item_num][0]:
+        if 'AUTHENTICATE' in cmd:
             app_rst.append(void + ' ' + '-' *(80-len(void)-1))
-            if len(read[item_num]) == 3: # READ RECORD
-                app_rst.append(void+' Record Number   : 0x%s'%read[item_num][1])
-                app_rst.append(void+' Record Length   : 0x%s'%read[item_num][2])
-                app_rst[-1] +=' (%d Bytes)'%int(read[item_num][2],16)
-                app_rst.append(void+' Record Contents : ')
-                app_rst = split_contents(read[item_num][0][0], app_rst)
-                if len(read[item_num][0])>1:
-                    app_rst.append(void + ' Record Parsing  : ')
-                    app_rst = split_parsing(read[item_num][0][1], app_rst)
-            elif len(read[item_num]) == 2: # READ BINARY
-                app_rst.append(void+' Read Offset     : 0x%s'%read[item_num][1][0])
-                app_rst.append(void+' Read Length     : 0x%s'%read[item_num][1][1])
-                app_rst[-1] += ' (%d Bytes)'%int(read[item_num][1][1],16)
-                app_rst.append(void+' Read Contents   : ')
-                app_rst = split_contents(read[item_num][0][0], app_rst)
-                if len(read[item_num][0])>1:
-                    app_rst.append(void + ' Read Parsing    : ')
-                    app_rst = split_parsing(read[item_num][0][1], app_rst)
-            elif len(read[item_num]) == 1: # ETC (AUTHENTICATE, ...)
-                for n in read[item_num][0]:
-                    app_rst.append(void+n)
+            for n in read[item_num][0]:
+                app_rst.append(void + n)
 
-        if read[item_num][0]:
-            if current_EF == '6F38': # EF_UST (31.102)
+        if 'READ' in cmd and read[item_num][0] != '':
+            app_rst.append(void + ' ' + '-' *(80-len(void)-1))
+            # READ RECORD
+            if 'RECORD' in cmd and len(read[item_num]) == 3:
+                app_rst.append(void+'%-17s'%' Record Number'+': 0x%s'%read[item_num][1])
+                app_rst.append(void+'%-17s'%' Record Length'+': 0x%s'%read[item_num][2])
+                app_rst[-1] +=' (%d Bytes)'%int(read[item_num][2],16)
+                app_rst.append(void+'%-17s'%' Record Contents'+': ')
+                app_rst = split_contents(read[item_num][0][0], app_rst)
+                # Parsing data included
+                if len(read[item_num][0])>1:
+                    app_rst.append(void + ' ' + '-' * (80 - len(void) - 1))
+                    app_rst.append(void + ' ')
+                    app_rst = split_parsing(read[item_num][0][1], app_rst)
+
+            # READ BINARY
+            elif 'BINARY' in cmd and len(read[item_num]) == 2:
+                app_rst.append(void+'%-17s'%' Read Offset'+': 0x%s'%read[item_num][1][0])
+                app_rst.append(void+'%-17s'%' Read Length'+': 0x%s'%read[item_num][1][1])
+                app_rst[-1] += ' (%d Bytes)'%int(read[item_num][1][1],16)
+                app_rst.append(void+'%-17s'%' Read Contents'+': ')
+                app_rst = split_contents(read[item_num][0][0], app_rst)
+                # Parsing data included
+                if len(read[item_num][0])>1:
+                    app_rst.append(void + ' ' + '-' * (80 - len(void) - 1))
+                    app_rst.append(void + ' ')
+                    app_rst = split_parsing(read[item_num][0][1], app_rst)
+
+            # EF_UST (31.102)
+            if current_EF == '6F38':
+                app_rst.append(void + ' ' + '-' * (80 - len(void) - 1))
                 UST_binary = bin(int(read[item_num][0][0],16))[2:]
                 if debug_mode: print(UST_binary)
-
-                app_rst.append(void + ' Read Parsing    : ')
-                void = ' ' * len(app_rst[-1])
                 cnt = 0
                 for i in range(0, len(UST_binary), 8):
                     for bin_value in UST_binary[i:i+8][::-1]:
                         cnt += 1
                         if cnt > len(spec_ref.UST_type):
                             break
-                        if cnt > 1:
-                            app_rst.append(void)
+                        app_rst.append(void + ' ')
                         app_rst[-1] += "[O]" if bin_value == '1' else "[X]"
                         app_rst[-1] += ' Service n%-3d' % cnt
                         app_rst[-1] += " %s" % spec_ref.UST_type[cnt]
-            elif 'A0000000871004' in current_DF and current_EF == '6F07': # EF_IST (31.103)
+
+            # EF_IST (31.103)
+            elif 'A0000000871004' in current_DF and current_EF == '6F07':
+                app_rst.append(void + ' ' + '-' * (80 - len(void) - 1))
                 IST_binary = bin(int(read[item_num][0][0],16))[2:]
                 if debug_mode: print(IST_binary)
-
-                app_rst.append(void + ' Read Parsing    : ')
-                void = ' ' * len(app_rst[-1])
                 cnt = 0
                 for i in range(0, len(IST_binary), 8):
                     for bin_value in IST_binary[i:i+8][::-1]:
                         cnt += 1
                         if cnt > len(spec_ref.IST_type):
                             break
-                        if cnt > 1:
-                            app_rst.append(void)
+                        app_rst.append(void + ' ')
                         app_rst[-1] += "[O]" if bin_value == '1' else "[X]"
                         app_rst[-1] += ' Service n%-3d' % cnt
                         app_rst[-1] += " %s" % spec_ref.IST_type[cnt]
+
+        if 'UPDATE' in cmd and read[item_num][0] != '':
+            app_rst.append(void + ' ' + '-' *(80-len(void)-1))
+
+            # UPDATE BINARY
+            if 'BINARY' in cmd and len(read[item_num]) == 2:
+                app_rst.append(void+'%-17s'%' Update Offset'+': 0x%s'%read[item_num][1][0])
+                app_rst.append(void+'%-17s'%' Update Length'+': 0x%s'%read[item_num][1][1])
+                app_rst[-1] += ' (%d Bytes)'%int(read[item_num][1][1],16)
+                app_rst.append(void+'%-17s'%' Update Contents'+': ')
+                app_rst = split_contents(read[item_num][0][0], app_rst)
+
+        if 'UPDATE' in cmd or 'READ' in cmd:
+            # EF_EPSLOCI
+            if current_EF == '6FE3':
+                app_rst.append(void + ' ' + '-' * (80 - len(void) - 1))
+                app_rst.append(void + " [Bytes  1-12] GUTI : ")
+                app_rst[-1] += read[item_num][0][0][:24]
+                app_rst.append(void + " [Bytes 13-17] Last visited registered TAI : ")
+                app_rst[-1] += read[item_num][0][0][24:34]
+                app_rst.append(void + " [Bytes    18] EPS update status : ")
+                app_rst[-1] += read[item_num][0][0][34:36]
 
         if error[item_num]:
             app_rst.append(void + ' ' + '-' *(80-len(void)-1))
             app_rst.append(void+' Error Message   : %s'%error[item_num])
 
     if debug_mode:
+        print("="*50)
         for n in app_rst:
             print(n)
         print()

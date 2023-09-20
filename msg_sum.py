@@ -188,13 +188,33 @@ def rst(input, load_type):
             if debug_mode: print('sum_rst        :', sum_rst[-1])
 
             # sum_read, sum_remote
+
+            # READ BINARY or READ RECORD
             if ins == 'B0' or ins == 'B2':
                 if sw == '9000' or sw[:2] == '91':
                     if SFI_used == False : file_name, error = file_system.process(log_ch[log_ch_id][0], log_ch[log_ch_id][1], last_file_id)
                     sum_read, sum_remote = READ.process(ins, file_name, prot_data[m], sum_read, sum_remote, sum_remote_list)
+                    # print(sum_read[-1])
+                    # print(log_ch[log_ch_id])
+                    # print(SFI_used)
                 else:
                     sum_read.append(['',''])
 
+            # UPDATE BINARY
+            # 23.09.19 READ BINARY와 동일 포맷 (EPSLOCI, EPSNSC 타겟)
+            elif ins == 'D6':
+                if sw == '9000' or sw[:2] == '91':
+                    update_data = []
+                    update_data.append([prot_data[m][2]])
+                    update_data.append([prot_data[m][0][-4:-2], prot_data[m][0][-2:]])
+                    sum_read.append(update_data)
+                    # print(sum_read[-1])
+                    # print(log_ch[log_ch_id])
+                    # print(SFI_used)
+                else:
+                    sum_read.append(['',''])
+
+            # AUTHENTICATE
             elif ins == '88' or ins == '89':
                 sum_read.append([list()])
                 # sum_read[-1][0].append(' RAND (%s Bytes) : ' % str(RAND_len) + '%s' % RAND)
@@ -216,8 +236,6 @@ def rst(input, load_type):
                         print('%10s' % 'AUTS :', AUTS)
                         print('='*60)
                         print('')
-
-
             else:
                 sum_read.append(['',''])
 
