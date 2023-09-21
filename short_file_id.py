@@ -7,6 +7,7 @@ def category(prot_data):
     SFI = ''
     ins = prot_data[2:4]
 
+    # READ/UPDATE BINARY, INCREASE
     if ins == 'B0' or ins == 'D6' or ins == '32':
         P1 = format(int(prot_data[4:6], 16), 'b').zfill(8)
         if P1[0] == '0':
@@ -15,6 +16,7 @@ def category(prot_data):
             SFI_used = True
             SFI = format(int(P1[3:], 2), '02X')
 
+    # READ/UPDATE/SEARCH RECORD
     elif ins == 'B2' or ins == 'DC' or ins == 'A2':
         P2 = format(int(prot_data[6:8], 16), 'b').zfill(8)
         if P2[:5].zfill(5) == '00000':
@@ -23,6 +25,7 @@ def category(prot_data):
             SFI_used = True
             SFI = format(int(P2[:5], 2), '02X')
 
+    # RETRIEVE/SET DATA
     elif ins == 'CB' or ins == 'DB':
         P2 = format(int(prot_data[6:8], 16), 'b').zfill(8)
         if P2[3:].zfill(5) == '00000':
@@ -33,8 +36,9 @@ def category(prot_data):
 
     if debug_mode == 1:
         if SFI_used:
-            print('prot_data    :', prot_data)
-            print('cmd_SFI      :', SFI)
+            print('  prot_data    :', prot_data)
+            print('  cmd_SFI      :', SFI)
+            print('  SFI_used     :', SFI_used)
             print()
 
     return SFI_used, SFI
@@ -44,25 +48,31 @@ def process(log_ch, log_ch_id, SFI):
     error = ''
     current_DF = log_ch[log_ch_id][0]
 
-    if current_DF[:14] in SFI_file_id: current_DF = current_DF[:14]
-    # DF_name['A0000000871002'] = 'ADF USIM' 14자리만 인식
-    # DF_name['A0000000871004'] = 'ADF ISIM' 14자리만 인식
-
-    if current_DF in SFI_file_id:
-        if SFI in SFI_file_id[current_DF]:
-            file_id = SFI_file_id[current_DF][SFI]
-            file_name, error = file_system.process(log_ch[log_ch_id][0], file_id, file_id)
-            log_ch[log_ch_id][1] = file_id
-        else:
-            file_name = "[Unknown]"
-            file_id = "0x%s(SFI)" % SFI + ' [Unknown]'
-            log_ch[log_ch_id][1] = file_id
-            error = '*Non-standard'
-    else:
+    # current DF is NOT determined
+    if current_DF == '':
         file_name = "[Unknown]"
-        file_id = "0x%s(SFI)"%SFI + ' [Unknown]'
-        log_ch[log_ch_id][1] = file_id
-        error = '*Non-standard'
+        file_id = "0x%s(SFI)" % SFI + ' [Unknown]'
+        error = '*current DF is NOT determined'
+        # log_ch[log_ch_id][1] = file_id
+
+    # current DF is determined
+    else:
+        if current_DF[:14] in SFI_file_id: current_DF = current_DF[:14]
+        # DF_name['A0000000871002'] = 'ADF USIM' 14자리만 인식
+        # DF_name['A0000000871004'] = 'ADF ISIM' 14자리만 인식
+
+        if current_DF in SFI_file_id:
+            if SFI in SFI_file_id[current_DF]:
+                file_id = SFI_file_id[current_DF][SFI]
+                file_name, error = file_system.process(log_ch[log_ch_id][0], file_id, file_id)
+                log_ch[log_ch_id][1] = file_id
+
+            # Unknown SFI in current DF
+            else:
+                file_name = "[Unknown]"
+                file_id = "0x%s(SFI)" % SFI + ' [Unknown]'
+                log_ch[log_ch_id][1] = file_id
+                error = '*Unknown SFI in current DF'
 
     if debug_mode == 2:
         print('current DF  :', current_DF)

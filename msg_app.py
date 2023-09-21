@@ -132,7 +132,7 @@ def rst(input, read, error, item_num):
 
         if error[item_num]:
             app_rst.append(void + ' ' + '-' *(80-len(void)-1))
-            app_rst.append(void+' Error Message   : %s'%error[item_num])
+            app_rst.append(void + ' ' + error[item_num])
 
     if debug_mode:
         print("="*50)

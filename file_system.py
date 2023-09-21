@@ -2,38 +2,43 @@ debug_mode = 0
 
 def process(current_DF, current_EF, file_id):
     error = ''
-    if current_DF[:14] in DF_name: current_DF = current_DF[:14]
-    # DF_name['A0000000871002'] = 'ADF USIM' 14자리만 인식
-    # DF_name['A0000000871004'] = 'ADF ISIM' 14자리만 인식
 
-    if current_EF:
-        if current_DF:
-            if current_DF in DF_name:
+    # current DF is NOT determined
+    if current_DF == '':
+        file_name = "Unknown"
+        error = '*current DF is NOT determined'
+
+    # current DF is determined
+    else:
+        if current_DF[:14] in DF_name: current_DF = current_DF[:14]
+        # DF_name['A0000000871002'] = 'ADF USIM' 14자리만 인식
+        # DF_name['A0000000871004'] = 'ADF ISIM' 14자리만 인식
+
+        # Unknown DF
+        if current_DF not in DF_name:
+            file_name = file_id
+            error = '*Unknown DF'
+
+        # Known DF (if current_DF in DF_name:)
+        else:
+            # current EF is NOT determined, select current DF
+            if current_EF == '':
+                file_name = DF_name[current_DF]
+
+            # current EF is determined
+            else:
                 if current_DF in EF_name:
                     if current_EF in EF_name[current_DF]:
                         file_name = EF_name[current_DF][current_EF]
+                    # Unknown file id in current DF
                     else:
                         file_name = file_id
-                        error = '*Non-standard'
-                else: # CSIM EF file
+                        error = '*Unknown file id in current DF'
+                # current DF parsing N/A
+                else:
                     file_name = file_id
-                    error = '*CSIM parsing not supported'
-            else:
-                file_name = file_id
-                error = '*Non-standard'
-        else:
-            file_name = file_id #'7FFFXXXX'
-            error = '*AID not decided'
-    else:
-        if current_DF:
-            if current_DF in DF_name:
-                file_name = DF_name[current_DF]
-            else:
-                file_name = file_id
-                error = '*Non-standard'
-        else:
-            file_name = file_id #'7FFF'
-            error = 'AID not decided'
+                    error = '**EF parsing N/A in current DF'
+
     if debug_mode: print(current_DF, current_EF, file_name, error)
     if file_name: file_name = '[%s]'%file_name
 

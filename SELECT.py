@@ -23,7 +23,7 @@ def process(data, log_ch, log_ch_id):
                         if 'A00000008710' in data[-1]:
                             log_ch[log_ch_id][0] = 'A00000008710' + data[-1].split('A00000008710')[1][:20]
                     else:
-                        log_ch[log_ch_id][0] = '*selected AID not decided' # Last selected AID not decided
+                        log_ch[log_ch_id][0] = '' # 'current DF is NOT determined'
             else:
                 log_ch[log_ch_id][1] = file_id
         else: # len(file_id) > 4
@@ -58,14 +58,14 @@ def process(data, log_ch, log_ch_id):
                         else:
                             if log_ch[log_ch_id][1] in file_system.USIM_EF_list:
                                 if log_ch[log_ch_id][1] in file_system.ISIM_EF_list:
-                                    log_ch[log_ch_id][0] = '*selected AID not decided' # Last selected AID not decided
+                                    log_ch[log_ch_id][0] = '' # current DF is NOT determined
                                 else: # USIM ADF decided
                                     log_ch[log_ch_id][0] = 'A0000000871002'
                             else:
                                 if log_ch[log_ch_id][1] in file_system.ISIM_EF_list: # ISIM ADF decided
                                     log_ch[log_ch_id][0] = 'A0000000871004'
                                 else:
-                                    log_ch[log_ch_id][0] = '*selected AID not decided' # Last selected AID not decided
+                                    log_ch[log_ch_id][0] = '' # current DF is NOT determined
 
     if log_ch[log_ch_id][0][0:2] == 'A0':
         if len(log_ch[log_ch_id]) < 3:
@@ -74,12 +74,13 @@ def process(data, log_ch, log_ch_id):
     file_name, error = file_system.process(log_ch[log_ch_id][0], log_ch[log_ch_id][1], file_id)
 
     if debug_mode == 1:
-        print('prot_data    :', data[0][0:2], data[2])
-        print('log_ch       :', log_ch)
-        print('DF_file_id   :', log_ch[log_ch_id][0])
-        print('EF_file_id   :', log_ch[log_ch_id][1])
-        print('file_name    :', file_name)
-        print('error        :', error)
-        print('')
+        print('-'*200)
+        print('  prot_data    :', data[0][0:2], data[2])
+        print('  log_ch       :', log_ch)
+        print('  DF_file_id   :', log_ch[log_ch_id][0])
+        print('  EF_file_id   :', log_ch[log_ch_id][1])
+        print('  file_name    :', file_name)
+        print('  error        :', error)
+        print('-'*200)
 
     return log_ch, file_name, error
