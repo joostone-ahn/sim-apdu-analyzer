@@ -268,8 +268,6 @@ def rst(input, load_type):
                 # AUTHENTICATE
                 elif ins == '88' or ins == '89':
                     sum_read.append([list()])
-                    # sum_read[-1][0].append(' RAND (%s Bytes) : ' % str(RAND_len) + '%s' % RAND)
-                    # sum_read[-1][0].append(' AUTN (%s Bytes) : ' % str(AUTN_len) + '%s' % AUTN)
                     sum_read[-1][0].append('%19s'%'RAND : '+ '%s' % RAND)
                     sum_read[-1][0].append('%19s'%'AUTN : '+ '%s' % AUTN)
                     if RES : sum_read[-1][0].append('%19s'%'RES : '+ '%s' % RES)

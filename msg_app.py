@@ -119,16 +119,17 @@ def rst(input, read, error, item_num):
                 app_rst.append(void+'%-17s'%' Update Contents'+': ')
                 app_rst = split_contents(read[item_num][0][0], app_rst)
 
-        if 'UPDATE' in cmd or 'READ' in cmd:
-            # EF_EPSLOCI
-            if current_EF == '6FE3':
-                app_rst.append(void + ' ' + '-' * (80 - len(void) - 1))
-                app_rst.append(void + " [Bytes  1-12] GUTI : ")
-                app_rst[-1] += read[item_num][0][0][:24]
-                app_rst.append(void + " [Bytes 13-17] Last visited registered TAI : ")
-                app_rst[-1] += read[item_num][0][0][24:34]
-                app_rst.append(void + " [Bytes    18] EPS update status : ")
-                app_rst[-1] += read[item_num][0][0][34:36]
+        if read[item_num][0] != '':
+            if 'UPDATE' in cmd or 'READ' in cmd:
+                # EF_EPSLOCI
+                if current_EF == '6FE3':
+                    app_rst.append(void + ' ' + '-' * (80 - len(void) - 1))
+                    app_rst.append(void + " [Bytes  1-12] GUTI : ")
+                    app_rst[-1] += read[item_num][0][0][:24]
+                    app_rst.append(void + " [Bytes 13-17] Last visited registered TAI : ")
+                    app_rst[-1] += read[item_num][0][0][24:34]
+                    app_rst.append(void + " [Bytes    18] EPS update status : ")
+                    app_rst[-1] += read[item_num][0][0][34:36]
 
         if error[item_num]:
             app_rst.append(void + ' ' + '-' *(80-len(void)-1))
