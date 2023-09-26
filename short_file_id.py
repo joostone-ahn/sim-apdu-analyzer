@@ -73,6 +73,11 @@ def process(log_ch, log_ch_id, SFI):
                 file_id = "0x%s(SFI)" % SFI + ' [Unknown]'
                 log_ch[log_ch_id][1] = file_id
                 error = '*Unknown SFI in current DF'
+        else:
+            file_name = "[Unknown]"
+            file_id = "0x%s(SFI)" % SFI + ' [Unknown]'
+            log_ch[log_ch_id][1] = file_id
+            error = '*Unknown SFI in current DF'
 
     if debug_mode == 2:
         print('current DF  :', current_DF)

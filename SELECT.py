@@ -6,6 +6,8 @@ def process(data, log_ch, log_ch_id):
     if file_id[0:2] == 'A0':
         log_ch[log_ch_id][0] = file_id
         log_ch[log_ch_id][1] = ''
+        if len(log_ch[log_ch_id]) == 3:
+            log_ch[log_ch_id][2] = log_ch[log_ch_id][0]
     else:
         if len(file_id) <= 4:
             if file_id in file_system.DF_name: # MF or DF(7F10)
