@@ -188,9 +188,11 @@ class Basic_GUI(QWidget):
         if '[0x19B7]' not in self.msg_all[0]:
             self.msg_start, self.msg_end, self.msg_SN, self.msg_port, self.msg_type, self.msg_data \
                 = msg_item.process(self.msg_all)
+            self.load_type = 'File'
         else:
             self.msg_start, self.msg_end, self.msg_SN, self.msg_port, self.msg_type, self.msg_data \
                 = msg_item.process2(self.msg_all)
+            self.load_type = 'Paste'
 
         if debug_mode:
             print('[File Name]', opened_file)
@@ -209,7 +211,6 @@ class Basic_GUI(QWidget):
             self.exe_btn.setEnabled(True)
             self.exe_label.clear()
             self.comb_box.setEnabled(True)
-            self.load_type = 'File'
         else:
             self.opened_label.setText('APDU logs "NOT" included in <'+opened_file+'>')
             self.open_btn.setEnabled(True)
