@@ -1,5 +1,6 @@
 debug_mode = 0
 
+# Open file
 def process(msg):
     msg_start, msg_end, msg_SN, msg_port, msg_type = [],[],[],[],[]
     for n in range(len(msg)):
@@ -36,6 +37,7 @@ def process(msg):
                 break
     return msg_start, msg_end, msg_SN, msg_port, msg_type, msg_data
 
+# Load clipboard
 def process2(msg_all):
     msg_start, msg_end, msg_SN, msg_port, msg_type, msg_data = [], [], [], [], [], []
 

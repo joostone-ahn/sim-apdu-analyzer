@@ -148,7 +148,7 @@ class Basic_GUI(QWidget):
         vbox.addWidget(QLabel("Copyright 2022. JUSEOK AHN<ajs3013@lguplus.co.kr> all rights reserved."))
 
         self.setLayout(vbox)
-        self.setWindowTitle('Dual SIM APDU Analyzer v2.0')
+        self.setWindowTitle('Dual SIM APDU Analyzer v2.1')
         # self.showMaximized()
         self.setGeometry(110, 50, 0, 0)
         self.show()
@@ -185,8 +185,12 @@ class Basic_GUI(QWidget):
                 for n in range(len(self.msg_all)):
                     self.msg_all[n] = self.msg_all[n].replace('\n', '')
 
-        self.msg_start, self.msg_end, self.msg_SN, self.msg_port, self.msg_type, self.msg_data \
-            = msg_item.process(self.msg_all)
+        if '[0x19B7]' not in self.msg_all[0]:
+            self.msg_start, self.msg_end, self.msg_SN, self.msg_port, self.msg_type, self.msg_data \
+                = msg_item.process(self.msg_all)
+        else:
+            self.msg_start, self.msg_end, self.msg_SN, self.msg_port, self.msg_type, self.msg_data \
+                = msg_item.process2(self.msg_all)
 
         if debug_mode:
             print('[File Name]', opened_file)
@@ -220,6 +224,7 @@ class Basic_GUI(QWidget):
         self.App_list.clear()
         self.Prot_list.clear()
         self.SIM_Info_list.clear()
+
         self.msg_all = clipboard.paste()
         self.msg_all = self.msg_all.split('\r')
         for n in range(len(self.msg_all)):
