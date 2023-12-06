@@ -1,6 +1,8 @@
 debug_mode = 0
 # debug_mode = 1,2
 
+import re
+
 def debug_message(msg, prot_data, prot_start_item, prot_data_item, prot_type_item):
     if debug_mode == 2:
         print(msg)
@@ -145,7 +147,7 @@ def process(input):
 
     return prot_start, prot_end, prot_type, prot_data
 
-def rst(input, item_num, load_type):
+def rst(input, item_num):
     msg_all, prot_start, prot_type, prot_data = input
     start = prot_start[item_num]
     type = prot_type[item_num]
@@ -159,10 +161,13 @@ def rst(input, item_num, load_type):
             else:
                 rst_ind = ' '*len(rst_ind)
 
-            if load_type == 'File':
-                rst_time = msg_all[start[n]].split('  ')[1].split('  [')[0]
-            elif load_type == 'Paste':
-                rst_time = msg_all[start[n]].split('                 ')[1].split(' ')[0]
+            match = re.search(r'\d{2}:\d{2}:\d{2}.\d{3}', msg_all[start[n]])
+            if match:
+                rst_time = match.group()
+            else:
+                rst_time = 'TIME ERROR'
+                rst_time = '%-12s' % rst_time
+
             if 'RX' in type[n]: rst_type = '[RX]'
             elif 'TX' in type[n]: rst_type = '[TX]'
 

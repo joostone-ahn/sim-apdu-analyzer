@@ -4,9 +4,11 @@ import READ
 import spec_ref
 import file_system
 import short_file_id
+import re
+
 debug_mode = 0
 
-def rst(input, load_type):
+def rst(input):
     msg_all, prot_start, prot_type, prot_data = input
     sum_rst, sum_log_ch, sum_log_ch_id, sum_cmd, sum_read, sum_error = [], [], [], [], [], []
     sum_remote, sum_remote_list = READ.init()
@@ -22,12 +24,11 @@ def rst(input, load_type):
         num = ' '*(num_max-len(str(m+1))) + '[' + str(m+1) + ']'
 
         # Time
-        if load_type == 'File':
-            time = msg_all[prot_start[m][0]].split('  ')[1].split('  [')[0]
-            if ':' not in time: time = 'TIME ERROR'
-            time = '%-12s'%time
-        elif load_type == 'Paste':
-            time = msg_all[prot_start[m][0]].split(']')[1].split('UIM')[0].replace(' ','')
+        match = re.search(r'\d{2}:\d{2}:\d{2}.\d{3}', msg_all[prot_start[m][0]])
+        if match:
+            time = match.group()
+        else:
+            time = 'TIME ERROR'
             time = '%-12s'%time
 
         type = prot_type[m][0]

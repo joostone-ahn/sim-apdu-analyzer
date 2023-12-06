@@ -16,7 +16,6 @@ CourierNewFont = QtGui.QFont()
 CourierNewFont.setFamily("Courier New")
 # CourierNewFont.setFamily("Consolas")
 
-
 debug_mode = 0
 
 class Basic_GUI(QWidget):
@@ -150,7 +149,7 @@ class Basic_GUI(QWidget):
         vbox.addWidget(QLabel("Copyright 2022. JUSEOK AHN<ajs3013@lguplus.co.kr> all rights reserved."))
 
         self.setLayout(vbox)
-        self.setWindowTitle('Dual SIM APDU Analyzer v2.1')
+        self.setWindowTitle('Dual SIM APDU Analyzer v2.2')
         # self.showMaximized()
         self.setGeometry(110, 50, 0, 0)
         self.show()
@@ -187,14 +186,33 @@ class Basic_GUI(QWidget):
                 for n in range(len(self.msg_all)):
                     self.msg_all[n] = self.msg_all[n].replace('\n', '')
 
+        # QCAT logs
         if '[0x19B7]' not in self.msg_all[0]:
             self.msg_start, self.msg_end, self.msg_SN, self.msg_port, self.msg_type, self.msg_data \
                 = msg_item.process(self.msg_all)
-            self.load_type = 'File'
+
+        # Clipboard logs
         else:
+            msg_filter = []
+            line_end = True
+            for line in self.msg_all:
+                if line.split(' ')[0] == '[0x19B7]':
+                    msg_filter.append(line)
+                    if '{' in line:
+                        if '}' in line:
+                            line_end = True
+                        else:
+                            line_end = False
+                    else:
+                        line_end = True
+                else:
+                    if line_end is False:
+                        msg_filter.append(line)
+                        if '}' in line:
+                            line_end = True
+            self.msg_all = msg_filter
             self.msg_start, self.msg_end, self.msg_SN, self.msg_port, self.msg_type, self.msg_data \
                 = msg_item.process2(self.msg_all)
-            self.load_type = 'Paste'
 
         if debug_mode:
             print('[File Name]', opened_file)
@@ -230,9 +248,29 @@ class Basic_GUI(QWidget):
 
         self.msg_all = clipboard.paste()
         self.msg_all = self.msg_all.split('\r')
+
         for n in range(len(self.msg_all)):
             if '\n' in self.msg_all[n]:
                 self.msg_all[n] = self.msg_all[n].replace('\n','')
+
+        msg_filter = []
+        line_end = True
+        for line in self.msg_all:
+            if line.split(' ')[0] == '[0x19B7]':
+                msg_filter.append(line)
+                if '{' in line:
+                    if '}' in line:
+                        line_end = True
+                    else:
+                        line_end = False
+                else:
+                    line_end = True
+            else:
+                if line_end is False:
+                    msg_filter.append(line)
+                    if '}' in line:
+                        line_end = True
+        self.msg_all = msg_filter
 
         self.msg_start, self.msg_end, self.msg_SN, self.msg_port, self.msg_type, self.msg_data \
             = msg_item.process2(self.msg_all)
@@ -254,7 +292,6 @@ class Basic_GUI(QWidget):
             self.exe_btn.setEnabled(True)
             self.exe_label.clear()
             self.comb_box.setEnabled(True)
-            self.load_type = 'Paste'
         else:
             self.opened_label.setText('APDU logs "NOT" included in clipboard (%d lines)'%len(self.msg_all))
             self.open_btn.setEnabled(True)
@@ -304,7 +341,7 @@ class Basic_GUI(QWidget):
 
         sum_input = self.msg_all, self.prot_start, self.prot_type, self.prot_data
         self.sum_rst, self.sum_log_ch, self.sum_log_ch_id, self.sum_cmd, self.sum_read, self.sum_error, self.sum_remote \
-            = msg_sum.rst(sum_input, self.load_type)
+            = msg_sum.rst(sum_input)
         for n in self.sum_rst:
             self.SUM_list.addItem(n)
 
@@ -364,7 +401,7 @@ class Basic_GUI(QWidget):
             prot_rst_show = ''
             for item_num in selected_list:
                 prot_rst_input = self.msg_all, self.prot_start, self.prot_type, self.prot_data
-                prot_rst = msg_prot.rst(prot_rst_input, item_num, self.load_type)
+                prot_rst = msg_prot.rst(prot_rst_input, item_num)
                 if prot_rst: prot_rst_show += '=' * 80 + '\n'
                 for n in prot_rst:
                     prot_rst_show += n +'\n'
