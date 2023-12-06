@@ -54,17 +54,20 @@ def process2(msg_all):
             msg_end.append(n)
             msg_SN.append(cnt)
             msg_port.append(int(msg_all[n].split("SLOT_")[1].split(" ")[0]))
-            type = msg_all[n].split("Type =")[1]
-            if type == '':
+
+            type_str = msg_all[n].split("Type =")[1]
+            if type_str == '' or type_str == '  ':
                 msg_type.append("RESET")
                 msg_data.append('')
-            elif "DATA" in type:
-                msg_type.append(type.split(" DATA")[0][1:].replace(' ', '_'))
-                msg_data.append(type.split("=")[1].replace(' ', ''))
+
+            elif "DATA" in type_str:
+                msg_type.append(type_str.split(" DATA")[0][1:].replace(' ', '_'))
+                msg_data.append(type_str.split("=")[1].replace(' ', ''))
                 if '{' in msg_data[-1]: msg_data[-1] = msg_data[-1].replace('{', '').replace('}', '')
-            elif "Data" in type:
-                msg_type.append(type.split(" Data")[0][1:])
-                msg_data.append(type.split("=")[1].replace(' ', ''))
+
+            elif "Data" in type_str:
+                msg_type.append(type_str.split(" Data")[0][1:])
+                msg_data.append(type_str.split("=")[1].replace(' ', ''))
                 if '{' in msg_data[-1]:
                     msg_data[-1] = msg_data[-1].split('{')[1]
                     if msg_data[-1] == '':
@@ -72,6 +75,7 @@ def process2(msg_all):
                         CONTINUED = 1
                     else:
                         msg_data[-1] = msg_data[-1].replace('}', '')
+
         else:
             if '}' not in msg_all[n]:
                 msg_data[-1] += msg_all[n].replace(' ','')
@@ -80,9 +84,10 @@ def process2(msg_all):
                 cnt = cnt_prev
                 CONTINUED = 0
 
-        if n>0 and msg_data[-1] == msg_data[-2] and msg_port[-1] == msg_port[-2]:
-            cnt = msg_SN[-1]-1
-            del msg_start[-1], msg_end[-1], msg_SN[-1], msg_port[-1], msg_type[-1], msg_data[-1]
+        if n>0:
+            if msg_data[-1] == msg_data[-2] and msg_port[-1] == msg_port[-2]:
+                cnt = msg_SN[-1]-1
+                del msg_start[-1], msg_end[-1], msg_SN[-1], msg_port[-1], msg_type[-1], msg_data[-1]
 
     if debug_mode:
         for n in range(len(msg_data)):

@@ -14,6 +14,8 @@ BoldFont.setBold(True)
 
 CourierNewFont = QtGui.QFont()
 CourierNewFont.setFamily("Courier New")
+# CourierNewFont.setFamily("Consolas")
+
 
 debug_mode = 0
 
@@ -229,7 +231,8 @@ class Basic_GUI(QWidget):
         self.msg_all = clipboard.paste()
         self.msg_all = self.msg_all.split('\r')
         for n in range(len(self.msg_all)):
-            if '\n' in self.msg_all[n] : self.msg_all[n] = self.msg_all[n].replace('\n','')
+            if '\n' in self.msg_all[n]:
+                self.msg_all[n] = self.msg_all[n].replace('\n','')
 
         self.msg_start, self.msg_end, self.msg_SN, self.msg_port, self.msg_type, self.msg_data \
             = msg_item.process2(self.msg_all)

@@ -27,7 +27,7 @@ def rst(input, load_type):
             if ':' not in time: time = 'TIME ERROR'
             time = '%-12s'%time
         elif load_type == 'Paste':
-            time = msg_all[prot_start[m][0]].split('                 ')[1].split(' ')[0]
+            time = msg_all[prot_start[m][0]].split(']')[1].split('UIM')[0].replace(' ','')
             time = '%-12s'%time
 
         type = prot_type[m][0]
