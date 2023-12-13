@@ -150,7 +150,6 @@ class Basic_GUI(QWidget):
 
         self.setLayout(vbox)
         self.setWindowTitle('Dual SIM APDU Analyzer v2.2')
-
         # self.showMaximized()
         self.setGeometry(110, 50, 0, 0)
         self.show()
