@@ -5,7 +5,7 @@ def process(current_DF, current_EF, file_id):
 
     # current DF is NOT determined
     if current_DF == '':
-        file_name = "Unknown"
+        file_name = "*Unknown"
         error = '*current DF is NOT determined'
 
     # current DF is determined
@@ -37,10 +37,9 @@ def process(current_DF, current_EF, file_id):
                 # current DF parsing N/A
                 else:
                     file_name = file_id
-                    error = '**EF parsing N/A in current DF'
+                    error = '*EF parsing N/A in current DF'
 
     if debug_mode: print(current_DF, current_EF, file_name, error)
-    if file_name: file_name = '[%s]'%file_name
 
     return file_name, error
 

@@ -1,16 +1,9 @@
 debug_mode = 0
 
-def process(ins, file_name, data, sum_read, sum_remote, sum_remote_list):
+def process(ins, file_name, data, sum_read):
 
     file_name = file_name.replace('[', '').replace(']', '')
     sum_read.append([[data[1][2:-4]]])  # sum_read[n][0] = [file_data]
-    # file_data = ''
-    # file_data_lines = len(data[1][2:-4])//130+1
-    # for n in range(file_data_lines):
-    #     if n > 0: file_data += ' '*len(' Read Contents   : ')
-    #     file_data += data[1][2:-4][n*130:(n+1)*130]
-    #     if file_data_lines > 1 and n!= file_data_lines-1 : file_data += '\n'
-    # sum_read.append([[file_data]])  # sum_read[n][0] = [file_data]
 
     if ins == 'B0':
         P2 = data[0][6:8].zfill(2)
@@ -18,12 +11,6 @@ def process(ins, file_name, data, sum_read, sum_remote, sum_remote_list):
         sum_read[-1].append([P2,Le]) # sum_read[n][1] = [offset low, Number of bytes to be read]
         parsing = parser(file_name, data[1][2:-4], P2)
         if parsing: sum_read[-1][0].append(parsing) # sum_read[n][0] = [file_data, parsing]
-
-        if file_name in sum_remote_list:
-            ind = sum_remote_list.index(file_name)
-            if parsing != sum_remote[ind][-1]:
-                sum_remote[ind].append(parsing)
-                if debug_mode: print(sum_remote[ind])
 
     elif ins == 'B2':
         P1 = data[0][4:6].zfill(2)
@@ -39,34 +26,7 @@ def process(ins, file_name, data, sum_read, sum_remote, sum_remote_list):
         parsing = parser(file_name, data[1][2:-4], '00')
         if parsing: sum_read[-1][0].append(parsing) # sum_read[n][0] = [file_data, parsing]
 
-        file_name = file_name + ' [%s]'%P1
-        if file_name in sum_remote_list:
-            ind = sum_remote_list.index(file_name)
-            if parsing != sum_remote[ind][-1]:
-                sum_remote[ind].append(parsing)
-                if debug_mode: print(sum_remote[ind])
-
-    return sum_read, sum_remote
-
-def init():
-    sum_remote = []
-    sum_remote.append(['ICCID'])
-    sum_remote.append(['MSISDN [01]'])
-    sum_remote.append(['IMSI'])
-    sum_remote.append(['ACC'])
-    sum_remote.append(['IMPI'])
-    sum_remote.append(['IMPU [01]'])
-    sum_remote.append(['IMPU [02]'])
-    sum_remote.append(['IMPU [03]'])
-    sum_remote.append(['HPLMNwAcT'])
-    sum_remote.append(['SUCI_Calc_Info'])
-    sum_remote.append(['Routing_Indicator'])
-
-    sum_remote_list = []
-    for n in sum_remote:
-        sum_remote_list.append(n[0])
-
-    return sum_remote, sum_remote_list
+    return sum_read
 
 def parser(file_name, data, offset):
     parsing = ''

@@ -8,6 +8,7 @@ import msg_sum
 import msg_app
 import msg_prot
 import clipboard
+import pandas as pd
 
 BoldFont = QtGui.QFont()
 BoldFont.setBold(True)
@@ -15,6 +16,8 @@ BoldFont.setBold(True)
 CourierNewFont = QtGui.QFont()
 CourierNewFont.setFamily("Courier New")
 # CourierNewFont.setFamily("Consolas")
+
+style_sheet = "background-color: black; color: white;"
 
 debug_mode = 0
 
@@ -74,20 +77,15 @@ class Basic_GUI(QWidget):
         hbox2.addWidget(self.exe_label)
         hbox2.addStretch()
 
-        self.SEARCH_te = QPlainTextEdit()
-        self.SEARCH_te.setFont(CourierNewFont)
-        
-
-
         self.SUM_label = QLabel()
         self.SUM_label.setText("Summary")
         self.SUM_label.setFont(CourierNewFont)
         self.SUM_list = MyQListWidget()
         self.SUM_list.setAutoScroll(True)
-        self.SUM_list.setFixedWidth(610)
-        self.SUM_list.setFixedHeight(400)
+        self.SUM_list.setFixedWidth(700)
         self.SUM_list.setFont(CourierNewFont)
         self.SUM_list.setSelectionMode(QAbstractItemView.ExtendedSelection)
+        self.SUM_list.setStyleSheet(style_sheet)
         SUM_vbox = QVBoxLayout()
         SUM_vbox.addWidget(self.SUM_label)
         SUM_vbox.addWidget(self.SUM_list)
@@ -99,61 +97,70 @@ class Basic_GUI(QWidget):
         self.Prot_label.setFont(CourierNewFont)
         self.Prot_list = QTextBrowser()
         self.Prot_list.setFixedWidth(610)
-        self.Prot_list.setFixedHeight(400)
+        self.Prot_list.setFixedHeight(380)
         self.Prot_list.setFont(CourierNewFont)
+        self.Prot_list.setStyleSheet(style_sheet)
         Prot_vbox = QVBoxLayout()
         Prot_vbox.addWidget(self.Prot_label)
         Prot_vbox.addWidget(self.Prot_list)
-
-        hbox3 = QHBoxLayout()
-        hbox3.addLayout(SUM_vbox)
-        hbox3.addLayout(Prot_vbox)
-        hbox3.addStretch()
-
-        self.SIM_Info_label = QLabel()
-        self.SIM_Info_label.setText("SIM information and OTA updated")
-        self.SIM_Info_label.setFont(CourierNewFont)
-        self.SIM_Info_list = QTextBrowser()
-        self.SIM_Info_list.setFixedWidth(610)
-        self.SIM_Info_list.setFixedHeight(400)
-        self.SIM_Info_list.setFont(CourierNewFont)
-        SUM_File_vbox = QVBoxLayout()
-        SUM_File_vbox.addWidget(self.SIM_Info_label)
-        SUM_File_vbox.addWidget(self.SIM_Info_list)
 
         self.App_label = QLabel()
         self.App_label.setText("Application-Level Analysis")
         self.App_label.setFont(CourierNewFont)
         self.App_list = QTextBrowser()
         self.App_list.setFont(CourierNewFont)
+        self.App_list.setStyleSheet(style_sheet)
         self.App_list.setFixedWidth(610)
-        self.App_list.setFixedHeight(400)
+        self.App_list.setFixedHeight(380)
         App_vbox = QVBoxLayout()
         App_vbox.addWidget(self.App_label)
         App_vbox.addWidget(self.App_list)
 
-        hbox4 = QHBoxLayout()
-        hbox4.addLayout(SUM_File_vbox)
-        hbox4.addLayout(App_vbox)
-        hbox4.addStretch()
+        ProtApp_vbox = QVBoxLayout()
+        ProtApp_vbox.addLayout(Prot_vbox)
+        ProtApp_vbox.addWidget(QLabel())
+        ProtApp_vbox.addLayout(App_vbox)
+        ProtApp_vbox.addStretch()
+
+        hbox3 = QHBoxLayout()
+        hbox3.addLayout(SUM_vbox)
+        hbox3.addLayout(ProtApp_vbox)
+        hbox3.addStretch()
 
         vbox = QVBoxLayout()
         vbox.addLayout(hbox1)
         vbox.addLayout(hbox2)
         vbox.addWidget(QLabel())
-        vbox.addLayout(hbox3)
-        vbox.addWidget(QLabel())
-        vbox.addLayout(hbox4)
-        vbox.addStretch()
-        vbox.addWidget(QLabel())
-        vbox.addWidget(QLabel("Copyright 2022. JUSEOK AHN<ajs3013@lguplus.co.kr> all rights reserved."))
 
-        self.setLayout(vbox)
-        self.setWindowTitle('Dual SIM APDU Analyzer v2.2')
-        # self.showMaximized()
+        self.tabs = QTabWidget()
+
+        tab1 = QWidget()
+        tab1.setLayout(hbox3)
+        self.tabs.addTab(tab1, "APDU")
+
+        tab2 = QWidget()
+        self.File_system = QTextBrowser()
+        self.File_system.setStyleSheet(style_sheet)
+        File_vbox = QVBoxLayout()
+        File_vbox.addWidget(self.File_system)
+        tab2.setLayout(File_vbox)
+        self.tabs.addTab(tab2, "File System")
+        self.tabs.setFont(CourierNewFont)
+
+
+        vbox.addWidget(self.tabs)
+        vbox.addStretch()
+
+        main_layout = QVBoxLayout()
+        main_layout.addLayout(vbox)
+        main_layout.addWidget(QLabel())
+        copyright_label = QLabel("Copyright 2022. JUSEOK AHN<ajs3013@lguplus.co.kr> all rights reserved.")
+        main_layout.addWidget(copyright_label)
+
+        self.setLayout(main_layout)
+        self.setWindowTitle('SIM APDU Analyzer v3.0')
         self.setGeometry(110, 50, 0, 0)
         self.show()
-
 
     @pyqtSlot()
     def comb_changed(self):
@@ -161,7 +168,8 @@ class Basic_GUI(QWidget):
             self.SUM_list.clear()
             self.App_list.clear()
             self.Prot_list.clear()
-            self.SIM_Info_list.clear()
+            self.File_system.clear()
+
             self.exe_btn.setEnabled(True)
             self.clipboard_btn.setDisabled(True)
             self.open_btn.setDisabled(True)
@@ -172,7 +180,7 @@ class Basic_GUI(QWidget):
         self.SUM_list.clear()
         self.App_list.clear()
         self.Prot_list.clear()
-        self.SIM_Info_list.clear()
+        self.File_system.clear()
 
         fname = QFileDialog.getOpenFileName(self,'Load file','',"Text files(*.txt)")
         opened_file = fname[0]
@@ -244,7 +252,8 @@ class Basic_GUI(QWidget):
         self.SUM_list.clear()
         self.App_list.clear()
         self.Prot_list.clear()
-        self.SIM_Info_list.clear()
+        self.File_system.clear()
+
 
         self.msg_all = clipboard.paste()
         self.msg_all = self.msg_all.split('\r')
@@ -305,10 +314,13 @@ class Basic_GUI(QWidget):
         self.SUM_list.clear()
         self.App_list.clear()
         self.Prot_list.clear()
-        self.SIM_Info_list.clear()
+        self.File_system.clear()
+
         self.exe_btn.setDisabled(True)
         self.open_btn.setEnabled(True)
         self.clipboard_btn.setEnabled(True)
+
+        self.tabs.setCurrentIndex(0)
 
         port_num = self.comb_box.currentIndex()+1
 
@@ -340,43 +352,10 @@ class Basic_GUI(QWidget):
             print()
 
         sum_input = self.msg_all, self.prot_start, self.prot_type, self.prot_data
-        self.sum_rst, self.sum_log_ch, self.sum_log_ch_id, self.sum_cmd, self.sum_read, self.sum_error, self.sum_remote \
+        self.sum_rst, self.sum_log_ch, self.sum_log_ch_id, self.sum_cmd, self.sum_read, self.sum_error \
             = msg_sum.rst(sum_input)
         for n in self.sum_rst:
             self.SUM_list.addItem(n)
-
-        sum_remote_show = ''
-        for n in self.sum_remote:
-            if len(n)==2:
-                sum_remote_show += '-' * 80 + '\n'
-                sum_remote_show += '%20s'%n[0] + '   '
-                if '\n' in n[1]:
-                    item_list = n[1].split('\n')
-                    for m in range(len(item_list)):
-                        if m > 0: sum_remote_show += ' '*23
-                        sum_remote_show += item_list[m] + '\n'
-                else:
-                    sum_remote_show += n[1].replace('   ', ' ') + '\n'
-            if len(n)>2:
-                sum_remote_show += '-' * 80 + '\n'
-                sum_remote_show += '%20s'%n[0] + '   '
-                if '\n' in n[1] or '\n' in n[2]:
-                    if '\n' in n[1]:
-                        item_list = n[1].split('\n')
-                        for m in range(len(item_list)):
-                            if m > 0: sum_remote_show += ' '*23
-                            sum_remote_show += item_list[m] + '\n'
-                    if '\n' in n[2]:
-                        item_list = n[2].split('\n')
-                        for m in range(len(item_list)):
-                            if m > 0: sum_remote_show += '%20s'%'>>>' + '   '
-                            sum_remote_show += item_list[m] + '\n'
-                else:
-                    sum_remote_show += n[1].replace('   ', ' ') + '\n'
-                    sum_remote_show += '%20s'%'>>>' + '   ' + n[2].replace('   ', ' ') + '\n'
-        if sum_remote_show:
-            sum_remote_show += '-' * 80
-            self.SIM_Info_list.setText(sum_remote_show)
 
         if debug_mode :
             print('[ SUMMARY FILTER ]')
@@ -386,7 +365,6 @@ class Basic_GUI(QWidget):
             print('sum_cmd       :', len(self.sum_cmd), self.sum_cmd)
             print('sum_read      :', len(self.sum_read), self.sum_read)
             print('sum_error     :', len(self.sum_error), self.sum_error)
-            print('sum_remote    :', len(self.sum_remote), self.sum_remote)
             print()
 
         self.exe_label.setText("Complete")
@@ -417,28 +395,6 @@ class Basic_GUI(QWidget):
                     app_rst_show +=n +'\n'
             if app_rst and len(selected_list)>0: app_rst_show += '=' * 80
             self.App_list.setPlainText(app_rst_show)
-
-    # @pyqtSlot()
-    # def save_msg(self):
-    #     save_contents =''
-    #
-    #     for n in range(len(self.sum_rst)):
-    #         save_contents += '='*150 + '\n'
-    #         save_contents += self.sum_rst[n] + '\n'
-    #         save_contents += '='*150 + '\n'
-    #         prot_rst_input = self.msg_all, self.prot_start, self.prot_type, self.prot_data, n
-    #         prot_rst = msg_prot.rst(prot_rst_input)
-    #         for m in prot_rst[1:]:
-    #             save_contents += m +'\n'
-    #         save_contents += '\n'
-    #
-    #     save_path = QFileDialog.getSaveFileName(self,'Save file','',"Text files(*.txt)")
-    #     fp = open(save_path[0], "w")
-    #     fp.write(save_contents)
-    #     fp.close()
-    #
-    #     self.saved_label.setText(save_path[0])
-    #     self.save_btn.setDisabled(True)
 
 class MyQListWidget(QListWidget):
 

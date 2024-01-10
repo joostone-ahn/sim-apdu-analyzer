@@ -11,8 +11,9 @@ debug_mode = 0
 def rst(input):
     msg_all, prot_start, prot_type, prot_data = input
     sum_rst, sum_log_ch, sum_log_ch_id, sum_cmd, sum_read, sum_error = [], [], [], [], [], []
-    sum_remote, sum_remote_list = READ.init()
     log_ch = [['','']] # log_ch[n] = [current DF, current EF]
+
+    file_list = []
 
     last_file_id = ''
     for m in range(len(prot_start)):
@@ -35,7 +36,7 @@ def rst(input):
 
         # RESET, ATR
         if type != 'TX' and type != 'RX':
-            sum_rst.append(num + '  ' + time + '  ' + type)
+            sum_rst.append(num + '  ' + time + '  ' +'%-37s'%type + ' |  ')
             sum_log_ch.append(['','']) # sum_log_ch[n] = [current DF, current EF]
             sum_log_ch_id.append('')
             sum_cmd.append('')
@@ -72,13 +73,14 @@ def rst(input):
                     log_ch[log_ch_id][1] = ''
 
             # log_ch
-            file_name, error = '',''
+            file_name, info, error = '', '', ''
             ins = prot_data[m][0][2:4]
             if debug_mode: print('INS byte       :', ins)
 
             # Unknown INS
             if ins not in command.cmd_name:
-                cmd = "Unknown (INS:%s)"% ins
+                cmd = "Unknown"
+                info = f"*INS: 0x{ins}"
 
             # Known INS
             else:
@@ -86,7 +88,7 @@ def rst(input):
                 if sw is None:
                     error = 'Incomplete APDU'
                     if ins == 'A4':
-                        file_name = '[N/A]'
+                        info = '*N/A'
                 else:
                     # SELECT
                     if ins == 'A4':
@@ -94,7 +96,7 @@ def rst(input):
                             log_ch, file_name, error = SELECT.process(prot_data[m], log_ch, log_ch_id)
                             last_file_id = prot_data[m][2]
                         else:
-                            file_name = '[N/A]'
+                            info = '*N/A'
                             error = 'Incomplete APDU'
 
                     # SFI (Short file id)
@@ -115,6 +117,7 @@ def rst(input):
 
                     # AUTHENTICATE
                     elif ins == '88' or ins == '89':
+                        info = ''
                         if debug_mode: print('AUTH check     :',prot_data[m])
                         if debug_mode: print('log_ch DF name :',log_ch[log_ch_id][0])
                         file_name, error = file_system.process(log_ch[log_ch_id][0], '', last_file_id)
@@ -132,7 +135,7 @@ def rst(input):
                             elif SIM_resp_type == 'DC':
                                 RES = ''
                                 AUTS = prot_data[m][-1][6:34]
-                                cmd += ' *Re-Sync'
+                                info = '*Re-Sync'
                             else:
                                 RES = ''
                                 AUTS = ''
@@ -147,15 +150,23 @@ def rst(input):
 
                     # MANAGE CHANNEL
                     elif ins == '70':
-                        if prot_data[m][0][4:6] == '80': cmd += ' (CLOSE: %d)'%int(prot_data[m][0][6:8],16)
+                        info = ''
+                        if prot_data[m][0][4:6] == '80':
+                            cmd += ' (CLOSE)'
+                            info = f'Logical channel number: {int(prot_data[m][0][6:8],16)}'
                         elif prot_data[m][0][4:6] == '00':
                             if len(prot_data[m][1]) == 8:
                                 if prot_data[m][1][-4:] == '9000' or prot_data[m][1][-4:-2] == '91':
-                                    if prot_data[m][0][6:8] == '00': cmd += ' (OPEN: %d)'%int(prot_data[m][1][2:4],16)
-                                    else: cmd += ' (OPEN: %d)'%int(prot_data[m][0][6:8],16)
+                                    if prot_data[m][0][6:8] == '00':
+                                        cmd += ' (OPEN)'
+                                        info = f'Logical channel number: {int(prot_data[m][1][2:4],16)}'
+                                    else:
+                                        cmd += ' (OPEN)'
+                                        info = f'Logical channel number: {int(prot_data[m][0][6:8],16)}'
 
                     # FETCH
                     elif ins == '12':
+                        info = ''
                         if debug_mode: print('FETCH check    :',prot_data[m])
                         if '810301' in prot_data[m][1]:
                             FETCH_data = prot_data[m][1].split('810301')[1][:4]
@@ -164,46 +175,48 @@ def rst(input):
                                 cmd += ' (%s)' % FETCH_type
                                 if FETCH_type == 'REFRESH':
                                     if FETCH_data[2:] in spec_ref.REFRESH_type:
-                                        cmd = cmd[:-1] + ': %s)'% spec_ref.REFRESH_type[FETCH_data[2:]]
+                                        info = spec_ref.REFRESH_type[FETCH_data[2:]]
                                 elif FETCH_type == 'POLL INTERVAL':
                                     dec_value = int(prot_data[m][1][-6:-4],16)
-                                    cmd = cmd[:-1] + ': %s sec)' % str(dec_value)
+                                    info = str(dec_value) + 'sec'
                                 elif FETCH_type == 'SETUP EVENT LIST':
                                     if '818299' in prot_data[m][1]: # 81(UICC), 82(terminal), 99(event list tag)
                                         if prot_data[m][1].split('818299')[1][:2] != '00':
                                             event_len = int(prot_data[m][1].split('818299')[1][:2], 16) * 2 # Byte 개수라 2배
-                                            event_type = prot_data[m][1].split('818299')[1][2:2+event_len]
-                                            event_type_list = [event_type[i:i+2] for i in range(0, len(event_type), 2)]
-                                            cmd = cmd[:-1] + ': '
-                                            for event in event_type_list:
-                                                cmd += '%s, ' % spec_ref.Event_list[event]
-                                            cmd = cmd[:-2] +')'
+                                            event_list_byte = prot_data[m][1].split('818299')[1][2:2+event_len]
+                                            event_list = [event_list_byte[i:i+2] for i in range(0, len(event_list_byte), 2)]
+                                            for event in event_list:
+                                                info += spec_ref.Event_list[event] + ', '
+                                            info = info[:-2]
 
                     # TERMINAL RESPONSE
                     elif ins == '14':
+                        info = ''
                         if debug_mode: print('T/R check      :', prot_data[m])
                         if '810301' in prot_data[m][2]:
                             TR_data = prot_data[m][2].split('810301')[1][:4]
                             if TR_data[:2] in spec_ref.Proactive_type:
                                 TR_type = spec_ref.Proactive_type[TR_data[:2]]
                                 cmd += ' (%s)'%TR_type
-                                if TR_type == 'REFRESH':
-                                    TR_rst = prot_data[m][2].split('8281')[1][4]
-                                    cmd = cmd[:-1] + ': %sX)'%TR_rst
+                                TR_rst = prot_data[m][2].split('8281')[1][4:6]
+                                if TR_rst in spec_ref.TR_RST_list:
+                                    info = f'*0x{TR_rst}'
+                                    info += f'({spec_ref.TR_RST_list[TR_rst]})'
 
                     # ENVELOPE
                     elif ins == 'C2':
+                        info = ''
                         if debug_mode: print('ENVELOPE check :', prot_data[m])
                         if prot_data[m][2][:2] in spec_ref.Envelope_type:
                             ENV_type = spec_ref.Envelope_type[prot_data[m][2][:2]]
                             cmd += ' (%s)' % ENV_type
                             if ENV_type == 'Event Download':
                                 if prot_data[m][2][8:10] in spec_ref.Event_list:
-                                    event_type = spec_ref.Event_list[prot_data[m][2][8:10]]
-                                    cmd = cmd[:-1] + ': %s)' % event_type
+                                    info = spec_ref.Event_list[prot_data[m][2][8:10]]
 
             if debug_mode: print('command name   :', cmd)
             if debug_mode: print('file name      :', file_name)
+            if debug_mode: print('information    :', info)
             if debug_mode: print('log_ch         :', log_ch)
 
             # sum_log_ch
@@ -230,12 +243,13 @@ def rst(input):
                             error = '*Incomplete APDU'
 
             # sum_rst
-            sum_rst.append(num + '  ' + time + '  ' +'%-42s'%cmd)
+            sum_rst.append(num + '  ' + time + '  ' +'%-37s'%cmd + ' |  ')
             sum_cmd.append(cmd)
             if file_name: sum_rst[-1] += file_name
+            if info: sum_rst[-1] += info
             if debug_mode: print('sum_rst        :', sum_rst[-1])
 
-            # sum_read, sum_remote
+            # sum_read
             if sw is None:
                 sum_read.append(['', ''])
             else:
@@ -243,12 +257,26 @@ def rst(input):
                 if ins == 'B0' or ins == 'B2':
                     if sw == '9000' or sw[:2] == '91':
                         if SFI_used == False : file_name, error = file_system.process(log_ch[log_ch_id][0], log_ch[log_ch_id][1], last_file_id)
-                        sum_read, sum_remote = READ.process(ins, file_name, prot_data[m], sum_read, sum_remote, sum_remote_list)
-                        # print("[%s]"%(m+1))
+                        sum_read = READ.process(ins, file_name, prot_data[m], sum_read)
                         # print(sum_read[-1])
                         # print(log_ch[log_ch_id])
                         # print(SFI_used)
                         # print("="*200)
+
+                        # file_name, adf_id, file_id, SFI, type(LF or TF), Record_Num, Len, contents, parsing
+                        file_item = []
+                        file_item.append(file_name)
+                        file_item.append(sum_log_ch[0])
+                        file_item.append(sum_log_ch[1])
+                        if SFI_used:
+                            file_item.append(SFI)
+                        else:
+                            file_item.append('')
+                        if ins == 'B0':
+                            file_item.append('TF')
+                        elif ins == 'B2':
+                            file_item.append('LF')
+
                     else:
                         sum_read.append(['',''])
 
@@ -289,7 +317,6 @@ def rst(input):
                 else:
                     sum_read.append(['',''])
 
-            if debug_mode: print('sum_remote     :', sum_remote)
             if debug_mode: print('sum_read       :', sum_read[-1])
 
             # sum_error (R-APDU TBD)
@@ -308,4 +335,4 @@ def rst(input):
 
         if debug_mode: print("=" * 200)
 
-    return sum_rst, sum_log_ch, sum_log_ch_id, sum_cmd, sum_read, sum_error, sum_remote
+    return sum_rst, sum_log_ch, sum_log_ch_id, sum_cmd, sum_read, sum_error

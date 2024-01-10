@@ -216,8 +216,22 @@ Event_list['0F'] = 'Browsing status'
 Event_list['10'] = 'Frames Information Change'
 Event_list['11'] = 'Reserved for 3GPP (I-WLAN Access Status)'
 
-# ETSI TS 102.223
+# ETSI TS 102.223 8.12. Result
+TR_RST_list = dict()
+# only display error
+# TR_RST_list['00'] = "Command performed successfully"
+TR_RST_list['20'] = 'Terminal currently unable to process command'
+TR_RST_list['21'] = 'Network currently unable to process command'
+TR_RST_list['22'] = 'User did not accept the proactive command'
+TR_RST_list['30'] = "Command beyond terminal's capabilities"
+TR_RST_list['31'] = 'Command type not understood by terminal'
+TR_RST_list['32'] = 'Command data not understood by terminal'
+TR_RST_list['33'] = 'Command number not known by terminal'
 
+
+
+
+# ETSI TS 102.223
 Proactive_type = dict()
 Proactive_type['01'] = 'REFRESH'
 Proactive_type['02'] = 'MORE TIME'
