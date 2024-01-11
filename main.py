@@ -2,6 +2,7 @@ import sys
 from PyQt5.QtWidgets import *
 from PyQt5 import QtGui
 from PyQt5.QtCore import pyqtSignal, pyqtSlot
+from PyQt5.QtGui import QColor
 import msg_item
 import port
 import msg_sum
@@ -199,8 +200,8 @@ class Basic_GUI(QWidget):
             self.msg_start, self.msg_end, self.msg_SN, self.msg_port, self.msg_type, self.msg_data \
                 = msg_item.process(self.msg_all)
 
-        # Clipboard logs
-        else:
+        # Clipboard logs (QXDM)
+        elif '[0x19B7]' in self.msg_all[0]:
             msg_filter = []
             line_end = True
             for line in self.msg_all:
@@ -261,6 +262,7 @@ class Basic_GUI(QWidget):
         for n in range(len(self.msg_all)):
             if '\n' in self.msg_all[n]:
                 self.msg_all[n] = self.msg_all[n].replace('\n','')
+            self.msg_all[n] = ' '.join(self.msg_all[n].split())
 
         msg_filter = []
         line_end = True
@@ -291,7 +293,7 @@ class Basic_GUI(QWidget):
             print('msg_SN    :', len(self.msg_SN), self.msg_SN)
             print('msg_port  :', len(self.msg_port), self.msg_port)
             print('msg_type  :', len(self.msg_type), self.msg_type)
-            print('msg_data  :', len(self.msg_data), self.msg_data)
+            # print('msg_data  :', len(self.msg_data), self.msg_data)
             print()
 
         if self.msg_data:
@@ -354,8 +356,24 @@ class Basic_GUI(QWidget):
         sum_input = self.msg_all, self.prot_start, self.prot_type, self.prot_data
         self.sum_rst, self.sum_log_ch, self.sum_log_ch_id, self.sum_cmd, self.sum_read, self.sum_error \
             = msg_sum.rst(sum_input)
-        for n in self.sum_rst:
-            self.SUM_list.addItem(n)
+        for line in self.sum_rst:
+            item = QListWidgetItem(line)
+            self.SUM_list.addItem(item)
+
+            yellow_items = ['ENVELOPE','REFRESH']
+            red_items = ['*', 'ERROR', 'Re-Sync']
+            grey_items = ['(X)','Unknown']
+
+            if any(yellow_item in line for yellow_item in yellow_items):
+                item.setForeground(QColor("yellow"))
+
+            if any(red_item in line for red_item in red_items):
+                item.setFont(BoldFont)
+                item.setForeground(QColor("red"))
+
+            if any(grey_item in line for grey_item in grey_items):
+                item.setForeground(QColor("gray"))
+
 
         if debug_mode :
             print('[ SUMMARY FILTER ]')

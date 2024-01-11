@@ -80,7 +80,7 @@ def rst(input):
             # Unknown INS
             if ins not in command.cmd_name:
                 cmd = "Unknown"
-                info = f"*INS: 0x{ins}"
+                info = f"Unknown INS: 0x{ins}"
 
             # Known INS
             else:
@@ -88,7 +88,7 @@ def rst(input):
                 if sw is None:
                     error = 'Incomplete APDU'
                     if ins == 'A4':
-                        info = '*N/A'
+                        info = 'N/A'
                 else:
                     # SELECT
                     if ins == 'A4':
@@ -96,7 +96,7 @@ def rst(input):
                             log_ch, file_name, error = SELECT.process(prot_data[m], log_ch, log_ch_id)
                             last_file_id = prot_data[m][2]
                         else:
-                            info = '*N/A'
+                            info = 'N/A'
                             error = 'Incomplete APDU'
 
                     # SFI (Short file id)
@@ -135,7 +135,7 @@ def rst(input):
                             elif SIM_resp_type == 'DC':
                                 RES = ''
                                 AUTS = prot_data[m][-1][6:34]
-                                info = '*Re-Sync'
+                                info = 'Re-Sync'
                             else:
                                 RES = ''
                                 AUTS = ''
@@ -229,18 +229,15 @@ def rst(input):
                 error = '*No status word'
             # status word included
             else:
-                # Error status word
-                if sw != '9000' and sw[:2] != '91' and ins[0] != '2':
-                    cmd += ' (X)'
-                # Normal status word
-                else:
-                    # Incomplete APDU
-                    if prot_data[m][1][:2] != ins:
-                        # except for STATUS, MANAGE CHANNEL, UNBLOCK/VERIFY PIN
-                        if ins not in ['F2', '70', '2C', '20', 'F2']:
-                            cmd += ' (X)'
-                            sw = None
-                            error = '*Incomplete APDU'
+                # ERROR except for GET IDENTITY, GET DATA, STATUS, MANAGE CHANNEL, UNBLOCK/VERIFY PIN
+                if ins not in ['78', 'CA', 'F2', '70', '2C', '20', 'F2'] and cmd != 'Unknown':
+                    # File not found, Record not found, unsuccessful search, security status not satisfied
+                    if sw in ['6A82', '6A83', '6282', '6982']:
+                        cmd += ' (X)'
+                    # Error status word
+                    elif sw != '9000' and sw[:2] != '91':
+                        info = f"ERROR: {sw[:2]} {sw[2:]} (SW1 SW2)"
+
 
             # sum_rst
             sum_rst.append(num + '  ' + time + '  ' +'%-37s'%cmd + ' |  ')
@@ -323,9 +320,15 @@ def rst(input):
             if sw == '6A82': # ETSI ts102.221 Table 10.14
                 if error: error = '*File not found (SW:6A82) ' + error
                 else: error = '*File not found (SW:6A82)'
+            elif sw == '6A83': # ETSI ts102.221 Table 10.14
+                if error: error = '*Record not found  (SW:6A83) ' + error
+                else: error = '*Record not found  (SW:6A83)'
             elif sw == '6282': # ETSI ts102.221 Table 10.9
                 if error: error = '*unsuccessful search (SW:6282)' + error
                 else: error = '*unsuccessful search (SW:6282)'
+            elif sw == '6982': # ETSI ts102.221 Table 10.13
+                if error: error = '*Security status not satisfied' + error
+                else: error = '*Security status not satisfied (SW:6982)'
             sum_error.append(error)
             if debug_mode: print('error          :', sum_error[-1])
 

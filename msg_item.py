@@ -23,8 +23,12 @@ def process(msg):
         for n in range(msg_start[m], msg_end[m]+1):
             if 'Data' in msg[n] or 'DATA' in msg[n]:
                 if '{' in msg[n]:
-                    if msg[n].split('{ ')[1]:
-                        msg_data[-1] = msg[n].split('{ ')[1].replace('  }', '').replace(' ','')
+
+                    # single line
+                    if '}' in msg[n]:
+                        msg_data[-1] = msg[n].split('{')[1].split('}')[0].replace(' ','')
+
+                    # multiple lines
                     else:
                         msg_data_item = ''
                         for a in range(n+1, msg_end[m]+1):
@@ -53,28 +57,37 @@ def process2(msg_all):
             msg_start.append(n)
             msg_end.append(n)
             msg_SN.append(cnt)
-            msg_port.append(int(msg_all[n].split("SLOT_")[1].split(" ")[0]))
+            msg_port.append(int(msg_all[n].split("SLOT_")[1][0]))
 
             type_str = msg_all[n].split("Type =")[1]
-            if type_str == '' or type_str == '  ':
-                msg_type.append("RESET")
-                msg_data.append('')
 
-            elif "DATA" in type_str:
-                msg_type.append(type_str.split(" DATA")[0][1:].replace(' ', '_'))
-                msg_data.append(type_str.split("=")[1].replace(' ', ''))
-                if '{' in msg_data[-1]: msg_data[-1] = msg_data[-1].replace('{', '').replace('}', '')
+            # ATR, PPS
+            if "DATA" in type_str:
+                msg_type.append(type_str.split(" DATA")[0][1:].replace(' ', '_')) # ATR_RX / ATR_TX / PPS_RX / PPS_TX
+                msg_data.append(type_str.split("=")[1])
+                if '{' in msg_data[-1]:
+                    msg_data[-1] = msg_data[-1].split('}')[0].replace('{', '').replace(' ', '')
 
+            # RX, TX
             elif "Data" in type_str:
                 msg_type.append(type_str.split(" Data")[0][1:])
-                msg_data.append(type_str.split("=")[1].replace(' ', ''))
+                msg_data.append(type_str.split("=")[1])
+
                 if '{' in msg_data[-1]:
-                    msg_data[-1] = msg_data[-1].split('{')[1]
-                    if msg_data[-1] == '':
+                    # single line
+                    if '}' in msg_data[-1]:
+                        msg_data[-1] = msg_data[-1].split('{')[1].split('}')[0].replace(' ', '')
+                    # multiple lines
+                    else:
+                        msg_data[-1] = ''
                         cnt_prev = cnt
                         CONTINUED = 1
-                    else:
-                        msg_data[-1] = msg_data[-1].replace('}', '')
+                # single byte
+                else:
+                    msg_data[-1] = msg_data[-1].split()[0]
+            else:
+                msg_type.append("RESET")
+                msg_data.append('')
 
         else:
             if '}' not in msg_all[n]:
