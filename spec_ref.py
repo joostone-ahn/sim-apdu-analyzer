@@ -228,7 +228,12 @@ TR_RST_list['31'] = 'Command type not understood by terminal'
 TR_RST_list['32'] = 'Command data not understood by terminal'
 TR_RST_list['33'] = 'Command number not known by terminal'
 
-
+# ETSI ts102.221 10.2. Response APDU
+RAPDU_list = dict()
+RAPDU_list['6282'] = 'Unsuccessful search' #Table 10.9
+RAPDU_list['6982'] = 'Security status not satisfied' #Table 10.13
+RAPDU_list['6A82'] = 'File not found' #Table 10.14
+RAPDU_list['6A83'] = 'Record not found' #Table 10.14
 
 
 # ETSI TS 102.223

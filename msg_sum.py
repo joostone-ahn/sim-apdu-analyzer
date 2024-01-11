@@ -121,7 +121,8 @@ def rst(input):
                         if debug_mode: print('AUTH check     :',prot_data[m])
                         if debug_mode: print('log_ch DF name :',log_ch[log_ch_id][0])
                         file_name, error = file_system.process(log_ch[log_ch_id][0], '', last_file_id)
-                        if 'ADF' in file_name: cmd += ' (%s)'%file_name.split(' ')[1].replace(']','')
+                        if 'ADF' in file_name:
+                            info = file_name.replace(']','').replace('[','')
                         file_name = ''
                         RAND_len = int(prot_data[m][2][:2],16)
                         RAND = prot_data[m][2][2:2+RAND_len*2]
@@ -229,15 +230,20 @@ def rst(input):
                 error = '*No status word'
             # status word included
             else:
-                # ERROR except for GET IDENTITY, GET DATA, STATUS, MANAGE CHANNEL, UNBLOCK/VERIFY PIN
-                if ins not in ['78', 'CA', 'F2', '70', '2C', '20', 'F2'] and cmd != 'Unknown':
-                    # File not found, Record not found, unsuccessful search, security status not satisfied
-                    if sw in ['6A82', '6A83', '6282', '6982']:
-                        cmd += ' (X)'
-                    # Error status word
-                    elif sw != '9000' and sw[:2] != '91':
-                        info = f"ERROR: {sw[:2]} {sw[2:]} (SW1 SW2)"
+                # File not found, Record not found, unsuccessful search, security status not satisfied
+                if sw in spec_ref.RAPDU_list:
+                    cmd += ' (X)'
+                    error = f"*{spec_ref.RAPDU_list[sw]} (SW:{sw}) " + error
+                # Error status word
+                elif sw != '9000' and sw[:2] != '91':
+                    # ERROR except for GET IDENTITY, GET DATA, STATUS, MANAGE CHANNEL, UNBLOCK/VERIFY PIN
+                    if ins not in ['78', 'CA', 'F2', '70', '2C', '20', 'F2'] and cmd != 'Unknown':
+                        info = f"ERROR (SW:{sw})"
+                        error = "*Please check ETSI ts102.221 10.2.Response APDU " + error
 
+            # sum_error
+            sum_error.append(error)
+            if debug_mode: print('error          :', sum_error[-1])
 
             # sum_rst
             sum_rst.append(num + '  ' + time + '  ' +'%-37s'%cmd + ' |  ')
@@ -260,6 +266,7 @@ def rst(input):
                         # print(SFI_used)
                         # print("="*200)
 
+                        # TBD ###################################################################################
                         # file_name, adf_id, file_id, SFI, type(LF or TF), Record_Num, Len, contents, parsing
                         file_item = []
                         file_item.append(file_name)
@@ -278,16 +285,13 @@ def rst(input):
                         sum_read.append(['',''])
 
                 # UPDATE BINARY
-                # 23.09.19 READ BINARY와 동일 포맷 (EPSLOCI, EPSNSC 타겟)
-                elif ins == 'D6':
+                # READ BINARY와 동일 포맷 (EPSLOCI 타겟)
+                elif ins == 'D6' and len(prot_data[m]) ==4:
                     if sw == '9000' or sw[:2] == '91':
                         update_data = []
                         update_data.append([prot_data[m][2]])
                         update_data.append([prot_data[m][0][-4:-2], prot_data[m][0][-2:]])
                         sum_read.append(update_data)
-                        # print(sum_read[-1])
-                        # print(log_ch[log_ch_id])
-                        # print(SFI_used)
                     else:
                         sum_read.append(['',''])
 
@@ -313,28 +317,7 @@ def rst(input):
                             print('')
                 else:
                     sum_read.append(['',''])
-
             if debug_mode: print('sum_read       :', sum_read[-1])
-
-            # sum_error (R-APDU TBD)
-            if sw == '6A82': # ETSI ts102.221 Table 10.14
-                if error: error = '*File not found (SW:6A82) ' + error
-                else: error = '*File not found (SW:6A82)'
-            elif sw == '6A83': # ETSI ts102.221 Table 10.14
-                if error: error = '*Record not found  (SW:6A83) ' + error
-                else: error = '*Record not found  (SW:6A83)'
-            elif sw == '6282': # ETSI ts102.221 Table 10.9
-                if error: error = '*unsuccessful search (SW:6282)' + error
-                else: error = '*unsuccessful search (SW:6282)'
-            elif sw == '6982': # ETSI ts102.221 Table 10.13
-                if error: error = '*Security status not satisfied' + error
-                else: error = '*Security status not satisfied (SW:6982)'
-            sum_error.append(error)
-            if debug_mode: print('error          :', sum_error[-1])
-
-            # if debug_mode == 2:
-            #     for n in log_ch:
-            #         print(n)
 
         if debug_mode: print("=" * 200)
 

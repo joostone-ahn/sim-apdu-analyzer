@@ -202,23 +202,21 @@ class Basic_GUI(QWidget):
 
         # Clipboard logs (QXDM)
         elif '[0x19B7]' in self.msg_all[0]:
+            for n in range(len(self.msg_all)):
+                self.msg_all[n] = ' '.join(self.msg_all[n].split())
             msg_filter = []
             line_end = True
             for line in self.msg_all:
                 if line.split(' ')[0] == '[0x19B7]':
                     msg_filter.append(line)
                     if '{' in line:
-                        if '}' in line:
-                            line_end = True
-                        else:
-                            line_end = False
-                    else:
-                        line_end = True
+                        if '}' in line: line_end = True
+                        else: line_end = False
+                    else: line_end = True
                 else:
                     if line_end is False:
                         msg_filter.append(line)
-                        if '}' in line:
-                            line_end = True
+                        if '}' in line: line_end = True
             self.msg_all = msg_filter
             self.msg_start, self.msg_end, self.msg_SN, self.msg_port, self.msg_type, self.msg_data \
                 = msg_item.process2(self.msg_all)
@@ -255,36 +253,40 @@ class Basic_GUI(QWidget):
         self.Prot_list.clear()
         self.File_system.clear()
 
-
         self.msg_all = clipboard.paste()
         self.msg_all = self.msg_all.split('\r')
-
         for n in range(len(self.msg_all)):
             if '\n' in self.msg_all[n]:
-                self.msg_all[n] = self.msg_all[n].replace('\n','')
-            self.msg_all[n] = ' '.join(self.msg_all[n].split())
+                self.msg_all[n] = self.msg_all[n].replace('\n', '')
 
-        msg_filter = []
-        line_end = True
-        for line in self.msg_all:
-            if line.split(' ')[0] == '[0x19B7]':
-                msg_filter.append(line)
-                if '{' in line:
-                    if '}' in line:
-                        line_end = True
-                    else:
-                        line_end = False
-                else:
-                    line_end = True
-            else:
-                if line_end is False:
+        # QXDM
+        if '19B7' in self.msg_all[0]:
+            for n in range(len(self.msg_all)):
+                self.msg_all[n] = ' '.join(self.msg_all[n].split())
+            msg_filter = []
+            line_end = True
+            for line in self.msg_all:
+                if line.split(' ')[0] == '[0x19B7]':
                     msg_filter.append(line)
-                    if '}' in line:
-                        line_end = True
-        self.msg_all = msg_filter
+                    if '{' in line:
+                        if '}' in line: line_end = True
+                        else: line_end = False
+                    else: line_end = True
+                else:
+                    if line_end is False:
+                        msg_filter.append(line)
+                        if '}' in line: line_end = True
+            self.msg_all = msg_filter
+            self.msg_start, self.msg_end, self.msg_SN, self.msg_port, self.msg_type, self.msg_data \
+                = msg_item.process2(self.msg_all)
 
-        self.msg_start, self.msg_end, self.msg_SN, self.msg_port, self.msg_type, self.msg_data \
-            = msg_item.process2(self.msg_all)
+        # Shannon DM
+        elif 'USIM_MAIN' in self.msg_all[0]:
+            for msg in self.msg_all:
+                print(msg.split('\t'))
+            self.msg_data = ''
+        else:
+            self.msg_data = ''
 
         if debug_mode:
             print('[Clipboard]')
@@ -356,23 +358,35 @@ class Basic_GUI(QWidget):
         sum_input = self.msg_all, self.prot_start, self.prot_type, self.prot_data
         self.sum_rst, self.sum_log_ch, self.sum_log_ch_id, self.sum_cmd, self.sum_read, self.sum_error \
             = msg_sum.rst(sum_input)
+
         for line in self.sum_rst:
             item = QListWidgetItem(line)
             self.SUM_list.addItem(item)
 
-            yellow_items = ['ENVELOPE','REFRESH']
-            red_items = ['*', 'ERROR', 'Re-Sync']
+            red_items = ['ERROR']
+            magenta_items = ['Re-Sync']
             grey_items = ['(X)','Unknown']
-
-            if any(yellow_item in line for yellow_item in yellow_items):
-                item.setForeground(QColor("yellow"))
+            yellow_items = ['ENVELOPE','REFRESH']
+            cyan_items = ['RESET', 'POWER']
+            lightblue_items = ['MANAGE CHANNEL']
+            lightgreen_items = ['AUTHENTICATE']
 
             if any(red_item in line for red_item in red_items):
                 item.setFont(BoldFont)
                 item.setForeground(QColor("red"))
-
-            if any(grey_item in line for grey_item in grey_items):
+            elif any(magenta_item in line for magenta_item in magenta_items):
+                item.setForeground(QColor("magenta"))
+            elif any(grey_item in line for grey_item in grey_items):
                 item.setForeground(QColor("gray"))
+            elif any(yellow_item in line for yellow_item in yellow_items):
+                item.setForeground(QColor("yellow"))
+            elif any(cyan_item in line for cyan_item in cyan_items):
+                item.setForeground(QColor("cyan"))
+            elif any(lightblue_item in line for lightblue_item in lightblue_items):
+                item.setForeground(QColor("lightblue"))
+            elif any(lightgreen_item in line for lightgreen_item in lightgreen_items):
+                item.setForeground(QColor("lightgreen"))
+
 
 
         if debug_mode :
