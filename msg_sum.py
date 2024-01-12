@@ -33,6 +33,7 @@ def rst(input):
             time = '%-12s'%time
 
         type = prot_type[m][0]
+        file_name, sw, info, error  = '', '', '', ''
 
         # RESET, ATR
         if type != 'TX' and type != 'RX':
@@ -45,15 +46,6 @@ def rst(input):
 
         # 'TX' or 'RX'
         else:
-            if prot_type[m][-1] == 'RX':
-                if len(prot_data[m][-1]) >= 4:
-                    sw = prot_data[m][-1][-4:]
-                else:
-                    sw = None # Incomplete APDU
-            else:
-                sw = None # Incomplete APDU
-            if debug_mode: print('status word    :', sw)
-
             # sum_log_ch_id
             cla = prot_data[m][0][:2]
             cla_bin = format(int(cla,16),'b').zfill(8)
@@ -69,42 +61,63 @@ def rst(input):
             if debug_mode: print('log_ch_id      :', sum_log_ch_id[-1])
 
             if sum_rst:
-                if 'SELECT (X)' in sum_rst[-1]:
+                if 'SELECT (X)' in sum_rst[-1] or 'SELECT (*)' in sum_rst[-1]:
                     log_ch[log_ch_id][1] = ''
 
             # log_ch
-            file_name, info, error = '', '', ''
             ins = prot_data[m][0][2:4]
             if debug_mode: print('INS byte       :', ins)
 
             # Unknown INS
             if ins not in command.cmd_name:
-                cmd = "Unknown"
-                info = f"Unknown INS: 0x{ins}"
+                cmd = f"INS: 0x{ins}"
+                info = f"Unknown INS"
 
             # Known INS
             else:
                 cmd = command.cmd_name[ins]
-                if sw is None:
-                    error = 'Incomplete APDU'
-                    if ins == 'A4':
-                        info = 'N/A'
+
+                # sw (Status Word)
+                if prot_type[m][-1] == 'RX': # len(prot_data[m])>=2
+                    if len(prot_data[m][-1]) >= 4:
+                        sw = prot_data[m][-1][-4:]
+                    else:
+                        sw = None
+                        cmd += ' (*)'
+                        info = 'Status Words not received'
                 else:
+                    sw = None
+                    cmd += ' (*)'
+                    info = 'RX data not received'
+                if debug_mode: print('status word    :', sw)
+
+                # status word included
+                if sw is not None:
+                    # File not found, Record not found, unsuccessful search, security status not satisfied
+                    if sw in spec_ref.RAPDU_list:
+                        cmd += ' (X)'
+                        error = f"*{spec_ref.RAPDU_list[sw]} (SW:{sw}) " + error
+                    # Error status word
+                    elif sw != '9000' and sw[:2] != '91':
+                        # except for GET IDENTITY, GET DATA, STATUS, MANAGE CHANNEL, UNBLOCK/VERIFY PIN, TERMINCAL CAPABILITY
+                        if ins not in ['78', 'CA', 'F2', '70', '2C', '20', 'AA'] and cmd != 'Unknown':
+                            info = f"ERROR (SW:{sw})"
+                            error = "*Please check ETSI ts102.221 10.2.Response APDU " + error
+                        # else:
+                        #     info = f"SW:{sw}" # in order to check status words of above INS sets
+
                     # SELECT
                     if ins == 'A4':
-                        if len(prot_data[m])>2:
-                            log_ch, file_name, error = SELECT.process(prot_data[m], log_ch, log_ch_id)
-                            last_file_id = prot_data[m][2]
-                        else:
-                            info = 'N/A'
-                            error = 'Incomplete APDU'
+                        log_ch, file_name, error = SELECT.process(prot_data[m], log_ch, log_ch_id)
+                        last_file_id = prot_data[m][2]
 
                     # SFI (Short file id)
                     elif ins in short_file_id.cmd_SFI_list:
                         SFI_used, SFI = short_file_id.category(prot_data[m][0])
                         if SFI_used:
                             log_ch, file_name, error = short_file_id.process(log_ch, log_ch_id, SFI)
-                            cmd += ' (SFI: 0x%s)' % SFI
+                            if '(X)' not in cmd: cmd += f' (SFI: 0x{SFI})'
+                            else: cmd = cmd.replace(' (X)','') + f' (SFI: 0x{SFI}) (X)'
 
                     # STATUS
                     elif ins == 'F2':
@@ -117,7 +130,6 @@ def rst(input):
 
                     # AUTHENTICATE
                     elif ins == '88' or ins == '89':
-                        info = ''
                         if debug_mode: print('AUTH check     :',prot_data[m])
                         if debug_mode: print('log_ch DF name :',log_ch[log_ch_id][0])
                         file_name, error = file_system.process(log_ch[log_ch_id][0], '', last_file_id)
@@ -151,7 +163,6 @@ def rst(input):
 
                     # MANAGE CHANNEL
                     elif ins == '70':
-                        info = ''
                         if prot_data[m][0][4:6] == '80':
                             cmd += ' (CLOSE)'
                             info = f'Logical channel number: {int(prot_data[m][0][6:8],16)}'
@@ -167,7 +178,6 @@ def rst(input):
 
                     # FETCH
                     elif ins == '12':
-                        info = ''
                         if debug_mode: print('FETCH check    :',prot_data[m])
                         if '810301' in prot_data[m][1]:
                             FETCH_data = prot_data[m][1].split('810301')[1][:4]
@@ -192,7 +202,6 @@ def rst(input):
 
                     # TERMINAL RESPONSE
                     elif ins == '14':
-                        info = ''
                         if debug_mode: print('T/R check      :', prot_data[m])
                         if '810301' in prot_data[m][2]:
                             TR_data = prot_data[m][2].split('810301')[1][:4]
@@ -201,12 +210,11 @@ def rst(input):
                                 cmd += ' (%s)'%TR_type
                                 TR_rst = prot_data[m][2].split('8281')[1][4:6]
                                 if TR_rst in spec_ref.TR_RST_list:
-                                    info = f'*0x{TR_rst}'
-                                    info += f'({spec_ref.TR_RST_list[TR_rst]})'
+                                    info = f"ERROR (T/R result: 0x{TR_rst})"
+                                    error = f"*T/R result: {spec_ref.TR_RST_list[TR_rst]} (0x{TR_rst}) " + error
 
                     # ENVELOPE
                     elif ins == 'C2':
-                        info = ''
                         if debug_mode: print('ENVELOPE check :', prot_data[m])
                         if prot_data[m][2][:2] in spec_ref.Envelope_type:
                             ENV_type = spec_ref.Envelope_type[prot_data[m][2][:2]]
@@ -224,33 +232,16 @@ def rst(input):
             sum_log_ch.append(log_ch[log_ch_id][0:2])
             if debug_mode: print('sum_log_ch     :', sum_log_ch[-1])
 
-            # status word NOT included
-            if sw is None:
-                cmd += ' (X)'
-                error = '*No status word'
-            # status word included
-            else:
-                # File not found, Record not found, unsuccessful search, security status not satisfied
-                if sw in spec_ref.RAPDU_list:
-                    cmd += ' (X)'
-                    error = f"*{spec_ref.RAPDU_list[sw]} (SW:{sw}) " + error
-                # Error status word
-                elif sw != '9000' and sw[:2] != '91':
-                    # ERROR except for GET IDENTITY, GET DATA, STATUS, MANAGE CHANNEL, UNBLOCK/VERIFY PIN
-                    if ins not in ['78', 'CA', 'F2', '70', '2C', '20', 'F2'] and cmd != 'Unknown':
-                        info = f"ERROR (SW:{sw})"
-                        error = "*Please check ETSI ts102.221 10.2.Response APDU " + error
-
-            # sum_error
-            sum_error.append(error)
-            if debug_mode: print('error          :', sum_error[-1])
-
             # sum_rst
             sum_rst.append(num + '  ' + time + '  ' +'%-37s'%cmd + ' |  ')
             sum_cmd.append(cmd)
             if file_name: sum_rst[-1] += file_name
             if info: sum_rst[-1] += info
             if debug_mode: print('sum_rst        :', sum_rst[-1])
+
+            # sum_error
+            sum_error.append(error)
+            if debug_mode: print('error          :', sum_error[-1])
 
             # sum_read
             if sw is None:

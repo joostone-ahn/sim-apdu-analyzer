@@ -361,11 +361,12 @@ class Basic_GUI(QWidget):
 
         for line in self.sum_rst:
             item = QListWidgetItem(line)
+
             self.SUM_list.addItem(item)
 
             red_items = ['ERROR']
             magenta_items = ['Re-Sync']
-            grey_items = ['(X)','Unknown']
+            grey_items = ['(X)','(*)','Unknown']
             yellow_items = ['ENVELOPE','REFRESH']
             cyan_items = ['RESET', 'POWER']
             lightblue_items = ['MANAGE CHANNEL']

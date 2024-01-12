@@ -58,7 +58,10 @@ def process(input):
 
         # RESET, ATR 등
         if exe_type[n] != 'TX' and exe_type[n] != 'RX':
-            cmd_type.append(exe_type[n])
+            if cmd_cnt >= 2:
+                cmd_type.append('ERROR: POWER_OFF during APDU')
+            else:
+                cmd_type.append(exe_type[n])
 
         # TX, RX
         else:
@@ -132,6 +135,7 @@ def process(input):
                 del prot_type[-1][-1]
                 del prot_data[-1][-1]
 
+                # New Instruction Set
                 if exe_type[n] == 'TX' and len(exe_data[n]) == 10:
                     cmd_cnt = 1
                     prot_start_item.append(exe_start[n])
@@ -140,10 +144,31 @@ def process(input):
                     prot_data_item.append(exe_data[n])
 
             if debug_mode == 1:
-                print("sum_num    : [%d]"%(len(prot_type)))
-                print("cmd_type   :", cmd_type[-1])
-                print("prot_data  :", prot_data[-1])
+                print(f"sum_num    : [{len(prot_type)}]")
+                print(f"cmd_type   : {cmd_type[-1]}")
+                print(f"prot_start : {prot_start[-1]}")
+                print(f"prot_end   : {prot_end[-1]}")
+                print(f"prot_type  : {prot_type[-1]}")
+                print(f"prot_data  : {prot_data[-1]}")
                 print("="*50)
+                print()
+
+            if 'POWER_OFF during APDU' in cmd_type[-1]:
+                cmd_type.append('POWER_OFF')
+                prot_start.append([exe_start[n]])
+                prot_end.append([exe_end[n]])
+                prot_type.append([exe_type[n]])
+                prot_data.append([exe_data[n]])
+
+                if debug_mode == 1:
+                    print(f"sum_num    : [{len(prot_type)}]")
+                    print(f"cmd_type   : {cmd_type[-1]}")
+                    print(f"prot_start : {prot_start[-1]}")
+                    print(f"prot_end   : {prot_end[-1]}")
+                    print(f"prot_type  : {prot_type[-1]}")
+                    print(f"prot_data  : {prot_data[-1]}")
+                    print("=" * 50)
+                    print()
 
     return prot_start, prot_end, prot_type, prot_data
 

@@ -50,8 +50,8 @@ def process(log_ch, log_ch_id, SFI):
 
     # current DF is NOT determined
     if current_DF == '':
-        file_name = "*Unknown"
-        file_id = "0x%s(SFI)" % SFI + ' *Unknown'
+        file_name = "Unknown File Id"
+        file_id = "0x%s(SFI)" % SFI + ' Unknown File Id'
         error = '*current DF is NOT determined'
         # log_ch[log_ch_id][1] = file_id
 
@@ -69,13 +69,13 @@ def process(log_ch, log_ch_id, SFI):
 
             # Unknown SFI in current DF
             else:
-                file_name = "*Unknown"
-                file_id = "0x%s(SFI)" % SFI + ' *Unknown'
+                file_name = "Unknown File Id"
+                file_id = "0x%s(SFI)" % SFI + ' Unknown File Id'
                 log_ch[log_ch_id][1] = file_id
                 error = '*Unknown SFI in current DF'
         else:
-            file_name = "*Unknown"
-            file_id = "0x%s(SFI)" % SFI + ' *Unknown'
+            file_name = "Unknown File Id"
+            file_id = "0x%s(SFI)" % SFI + ' Unknown File Id'
             log_ch[log_ch_id][1] = file_id
             error = '*Unknown SFI in current DF'
 
