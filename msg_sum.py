@@ -96,13 +96,13 @@ def rst(input):
                     # File not found, Record not found, unsuccessful search, security status not satisfied
                     if sw in spec_ref.RAPDU_list:
                         cmd += ' (X)'
-                        error += f"*{spec_ref.RAPDU_list[sw]} (SW:{sw})"
+                        error += f"*SW'{sw}': {spec_ref.RAPDU_list[sw]}"
                     # Error status word
                     elif sw != '9000' and sw[:2] != '91':
                         # except for GET IDENTITY, GET DATA, STATUS, MANAGE CHANNEL, UNBLOCK/VERIFY PIN, TERMINCAL CAPABILITY
                         if ins not in ['78', 'CA', 'F2', '70', '2C', '20', 'AA'] and cmd != 'Unknown':
-                            info = f"ERROR (SW:{sw})"
-                            error += "*Please check ETSI ts102.221 10.2.Response APDU"
+                            info = f"ERROR (SW'{sw}')"
+                            error += f"*SW'{sw}': please check ETSI ts102.221 10.2.Response APDU"
                         # else:
                         #     info = f"SW:{sw}" # in order to check status words of above INS sets
 
@@ -142,7 +142,7 @@ def rst(input):
                     elif ins == '88' or ins == '89':
                         if debug_mode: print('AUTH check     :',prot_data[m])
                         if debug_mode: print('log_ch DF name :',log_ch[log_ch_id][0])
-                        file_name, error = file_system.process(log_ch[log_ch_id][0], '', last_file_id)
+                        file_name = file_system.process(log_ch[log_ch_id][0], '', last_file_id)[0]
                         if 'ADF' in file_name:
                             info = file_name.replace(']','').replace('[','')
                         file_name = ''
@@ -220,8 +220,8 @@ def rst(input):
                                 cmd += ' (%s)'%TR_type
                                 TR_rst = prot_data[m][2].split('8281')[1][4:6]
                                 if TR_rst in spec_ref.TR_RST_list:
-                                    info = f"ERROR (T/R result: 0x{TR_rst})"
-                                    error = f"*T/R result: {spec_ref.TR_RST_list[TR_rst]} (0x{TR_rst}) " + error
+                                    info = f"ERROR (result'0x{TR_rst}')"
+                                    error = f"*result'0x{TR_rst}': {spec_ref.TR_RST_list[TR_rst]}"
 
                     # ENVELOPE
                     elif ins == 'C2':
@@ -262,9 +262,7 @@ def rst(input):
                 if ins == 'B0' or ins == 'B2':
                     if sw == '9000' or sw[:2] == '91':
                         if SFI_used == False:
-                            file_system_rst = file_system.process(log_ch[log_ch_id][0], log_ch[log_ch_id][1], last_file_id)
-                            file_name = file_system_rst[0]
-                            error += file_system_rst[1]
+                            file_name = file_system.process(log_ch[log_ch_id][0], log_ch[log_ch_id][1], last_file_id)[0]
                         sum_read = READ.process(ins, file_name, prot_data[m], sum_read)
                         # print(sum_read[-1])
                         # print(log_ch[log_ch_id])
