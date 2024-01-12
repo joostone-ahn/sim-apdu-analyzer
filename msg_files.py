@@ -11,10 +11,9 @@ def process(sum_rst, sum_read, sum_log_ch, sum_log_ch_id):
     df_sum_log_ch = pd.DataFrame(sum_log_ch)
     df_sum_log_ch_id = pd.DataFrame(sum_log_ch_id)
     df = pd.concat([df_sum_rst, df_sum_read, df_sum_log_ch, df_sum_log_ch_id], axis=1)
-    print(df.head())
     df.columns = ['rst', 'read_1', 'read_2', 'read_3', 'DF', 'File_Id', 'log_ch_id']
-    df = df[df['rst'].str.contains('READ')]
 
+    df = df[df['rst'].str.contains('READ')]
     df['contents'] = df['read_1'].apply(lambda x: x[0] if len(x) >= 1 else None)
     df['parsing'] = df['read_1'].apply(lambda x: x[1] if len(x) == 2 else None)
     del df['read_1']
