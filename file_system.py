@@ -5,7 +5,7 @@ def process(current_DF, current_EF, file_id):
 
     # current DF is NOT determined
     if current_DF == '':
-        file_name = "Unknown File Id"
+        file_name = "DF NOT determined"
         error = '*current DF is NOT determined'
 
     # current DF is determined

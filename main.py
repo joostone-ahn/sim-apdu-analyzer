@@ -361,7 +361,6 @@ class Basic_GUI(QWidget):
 
         for line in self.sum_rst:
             item = QListWidgetItem(line)
-
             self.SUM_list.addItem(item)
 
             red_items = ['ERROR']

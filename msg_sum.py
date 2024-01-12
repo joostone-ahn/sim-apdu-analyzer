@@ -96,26 +96,36 @@ def rst(input):
                     # File not found, Record not found, unsuccessful search, security status not satisfied
                     if sw in spec_ref.RAPDU_list:
                         cmd += ' (X)'
-                        error = f"*{spec_ref.RAPDU_list[sw]} (SW:{sw}) " + error
+                        error += f"*{spec_ref.RAPDU_list[sw]} (SW:{sw})"
                     # Error status word
                     elif sw != '9000' and sw[:2] != '91':
                         # except for GET IDENTITY, GET DATA, STATUS, MANAGE CHANNEL, UNBLOCK/VERIFY PIN, TERMINCAL CAPABILITY
                         if ins not in ['78', 'CA', 'F2', '70', '2C', '20', 'AA'] and cmd != 'Unknown':
                             info = f"ERROR (SW:{sw})"
-                            error = "*Please check ETSI ts102.221 10.2.Response APDU " + error
+                            error += "*Please check ETSI ts102.221 10.2.Response APDU"
                         # else:
                         #     info = f"SW:{sw}" # in order to check status words of above INS sets
 
                     # SELECT
                     if ins == 'A4':
-                        log_ch, file_name, error = SELECT.process(prot_data[m], log_ch, log_ch_id)
+                        SELECT_rst = SELECT.process(prot_data[m], log_ch, log_ch_id)
+                        log_ch = SELECT_rst[0]
+                        file_name = SELECT_rst[1]
+                        if error and SELECT_rst[2]:
+                            error += '\n' + ' '*len(f"[{m+1}] ")
+                        error += SELECT_rst[2]
                         last_file_id = prot_data[m][2]
 
                     # SFI (Short file id)
                     elif ins in short_file_id.cmd_SFI_list:
                         SFI_used, SFI = short_file_id.category(prot_data[m][0])
                         if SFI_used:
-                            log_ch, file_name, error = short_file_id.process(log_ch, log_ch_id, SFI)
+                            short_file_id_rst = short_file_id.process(log_ch, log_ch_id, SFI)
+                            log_ch = short_file_id_rst[0]
+                            file_name = short_file_id_rst[1]
+                            if error and short_file_id_rst[2]:
+                                error += '\n' + ' '*len(f"[{m+1}] ")
+                            error += short_file_id_rst[2]
                             if '(X)' not in cmd: cmd += f' (SFI: 0x{SFI})'
                             else: cmd = cmd.replace(' (X)','') + f' (SFI: 0x{SFI}) (X)'
 
@@ -235,7 +245,8 @@ def rst(input):
             # sum_rst
             sum_rst.append(num + '  ' + time + '  ' +'%-37s'%cmd + ' |  ')
             sum_cmd.append(cmd)
-            if file_name: sum_rst[-1] += file_name
+            if file_name:
+                if 'ERROR' not in info: sum_rst[-1] += file_name
             if info: sum_rst[-1] += info
             if debug_mode: print('sum_rst        :', sum_rst[-1])
 
@@ -250,7 +261,10 @@ def rst(input):
                 # READ BINARY or READ RECORD
                 if ins == 'B0' or ins == 'B2':
                     if sw == '9000' or sw[:2] == '91':
-                        if SFI_used == False : file_name, error = file_system.process(log_ch[log_ch_id][0], log_ch[log_ch_id][1], last_file_id)
+                        if SFI_used == False:
+                            file_system_rst = file_system.process(log_ch[log_ch_id][0], log_ch[log_ch_id][1], last_file_id)
+                            file_name = file_system_rst[0]
+                            error += file_system_rst[1]
                         sum_read = READ.process(ins, file_name, prot_data[m], sum_read)
                         # print(sum_read[-1])
                         # print(log_ch[log_ch_id])
