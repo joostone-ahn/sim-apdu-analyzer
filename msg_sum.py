@@ -284,7 +284,6 @@ def rst(input):
                         sum_read.append(['',''])
 
                 # UPDATE BINARY
-                # READ BINARY와 동일 포맷 (EPSLOCI 타겟)
                 elif ins == 'D6' and len(prot_data[m]) ==4:
                     if sw == '9000' or sw[:2] == '91':
                         update_data = []
