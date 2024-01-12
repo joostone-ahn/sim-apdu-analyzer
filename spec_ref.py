@@ -235,6 +235,12 @@ RAPDU_list['6982'] = 'Security status not satisfied' #Table 10.13
 RAPDU_list['6A82'] = 'File not found' #Table 10.14
 RAPDU_list['6A83'] = 'Record not found' #Table 10.14
 
+# ETSI ts102.221 10.2. Response APDU
+Error_RAPDU_list = dict()
+Error_RAPDU_list['6700'] = 'Wrong length' #Table 10.11
+Error_RAPDU_list['6F00'] = 'Technical problem, no precise diagnosis' #Table 10.11
+Error_RAPDU_list['6881'] = 'Logical channel not supported' #Table 10.12
+Error_RAPDU_list['6981'] = 'Command incompatible with file structure' #Table 10.13
 
 # ETSI TS 102.223
 Proactive_type = dict()

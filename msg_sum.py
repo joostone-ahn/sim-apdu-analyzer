@@ -102,9 +102,12 @@ def rst(input):
                         # except for GET IDENTITY, GET DATA, STATUS, MANAGE CHANNEL, UNBLOCK/VERIFY PIN, TERMINCAL CAPABILITY
                         if ins not in ['78', 'CA', 'F2', '70', '2C', '20', 'AA'] and cmd != 'Unknown':
                             info = f"ERROR (SW'{sw}')"
-                            error += f"*SW'{sw}': please check ETSI ts102.221 10.2.Response APDU"
+                            if sw in spec_ref.Error_RAPDU_list:
+                                error += f"*SW'{sw}': {spec_ref.Error_RAPDU_list[sw]}"
+                            else:
+                                error += f"*SW'{sw}': please check ETSI ts102.221 10.2.Response APDU"
                         # else:
-                        #     info = f"SW:{sw}" # in order to check status words of above INS sets
+                        #     info = f"SW'{sw}'" # in order to check status words of above INS sets
 
                     # SELECT
                     if ins == 'A4':
@@ -264,13 +267,6 @@ def rst(input):
                         if SFI_used == False:
                             file_name = file_system.process(log_ch[log_ch_id][0], log_ch[log_ch_id][1], last_file_id)[0]
                         sum_read = READ.process(ins, file_name, prot_data[m], sum_read)
-                        # print(sum_read[-1])
-                        # print(log_ch[log_ch_id])
-                        # print(SFI_used)
-                        # print("="*200)
-
-                        # TBD ###################################################################################
-                        # file_name, adf_id, file_id, SFI, type(LF or TF), Record_Num, Len, contents, parsing
                         file_item = []
                         file_item.append(file_name)
                         file_item.append(sum_log_ch[0])

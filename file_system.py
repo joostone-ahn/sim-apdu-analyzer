@@ -6,7 +6,7 @@ def process(current_DF, current_EF, file_id):
     # current DF is NOT determined
     if current_DF == '':
         file_name = "DF NOT determined"
-        error = '*current DF is NOT determined'
+        error = '*N/A: current DF is NOT determined'
 
     # current DF is determined
     else:
@@ -17,7 +17,7 @@ def process(current_DF, current_EF, file_id):
         # Unknown DF
         if current_DF not in DF_name:
             file_name = file_id
-            error = '*Unknown DF'
+            error = f"*'{current_DF}': Unknown DF"
 
         # Known DF (if current_DF in DF_name:)
         else:
@@ -33,11 +33,11 @@ def process(current_DF, current_EF, file_id):
                     # Unknown file id in current DF
                     else:
                         file_name = file_id
-                        error = '*Unknown file id in current DF'
+                        error = f"*'{file_id}': Unknown file id in current DF"
                 # current DF parsing N/A
                 else:
                     file_name = file_id
-                    error = '*EF parsing N/A in current DF'
+                    error = f"*'{file_id}': N/A in in current DF"
 
     if debug_mode: print(current_DF, current_EF, file_name, error)
 
