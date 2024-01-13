@@ -10,7 +10,6 @@ import msg_app
 import msg_prot
 import msg_files
 import clipboard
-import pandas as pd
 
 BoldFont = QtGui.QFont()
 BoldFont.setBold(True)
@@ -48,11 +47,11 @@ class Basic_GUI(QWidget):
 
         self.opened_label = QLabel()
 
-        hbox1 = QHBoxLayout()
-        hbox1.addWidget(self.open_btn)
-        hbox1.addWidget(self.clipboard_btn)
-        hbox1.addWidget(self.opened_label)
-        hbox1.addStretch()
+        Load_hbox = QHBoxLayout()
+        Load_hbox.addWidget(self.open_btn)
+        Load_hbox.addWidget(self.clipboard_btn)
+        Load_hbox.addWidget(self.opened_label)
+        Load_hbox.addStretch()
 
         self.comb_box = QComboBox()
         self.comb_box.addItem("SIM1")
@@ -73,11 +72,16 @@ class Basic_GUI(QWidget):
 
         self.exe_label = QLabel()
 
-        hbox2 = QHBoxLayout()
-        hbox2.addWidget(self.comb_box)
-        hbox2.addWidget(self.exe_btn)
-        hbox2.addWidget(self.exe_label)
-        hbox2.addStretch()
+        Exe_hbox = QHBoxLayout()
+        Exe_hbox.addWidget(self.comb_box)
+        Exe_hbox.addWidget(self.exe_btn)
+        Exe_hbox.addWidget(self.exe_label)
+        Exe_hbox.addStretch()
+
+        vbox = QVBoxLayout()
+        vbox.addLayout(Load_hbox)
+        vbox.addLayout(Exe_hbox)
+        vbox.addWidget(QLabel())
 
         self.SUM_label = QLabel()
         self.SUM_label.setText("Summary")
@@ -124,31 +128,72 @@ class Basic_GUI(QWidget):
         ProtApp_vbox.addLayout(App_vbox)
         ProtApp_vbox.addStretch()
 
-        hbox3 = QHBoxLayout()
-        hbox3.addLayout(SUM_vbox)
-        hbox3.addLayout(ProtApp_vbox)
-        hbox3.addStretch()
+        APDU_hbox = QHBoxLayout()
+        APDU_hbox.addLayout(SUM_vbox)
+        APDU_hbox.addLayout(ProtApp_vbox)
+        APDU_hbox.addStretch()
 
-        vbox = QVBoxLayout()
-        vbox.addLayout(hbox1)
-        vbox.addLayout(hbox2)
-        vbox.addWidget(QLabel())
 
         self.tabs = QTabWidget()
-
         tab1 = QWidget()
-        tab1.setLayout(hbox3)
+        tab1.setLayout(APDU_hbox)
         self.tabs.addTab(tab1, "APDU")
 
-        tab2 = QWidget()
-        self.File_system = QTextBrowser()
-        self.File_system.setStyleSheet(style_sheet)
+
+        self.File_label = QLabel()
+        self.File_label.setText("File List")
+        self.File_label.setFont(CourierNewFont)
+        self.File_list = MyQListWidget()
+        self.File_list.setStyleSheet(style_sheet)
+        self.File_list.setFont(CourierNewFont)
+        self.File_list.setAutoScroll(True)
+        self.File_list.setFixedWidth(720)
         File_vbox = QVBoxLayout()
-        File_vbox.addWidget(self.File_system)
-        tab2.setLayout(File_vbox)
+        File_vbox.addWidget(self.File_label)
+        File_vbox.addWidget(self.File_list)
+
+        self.File_list.selection_changed.connect(self.clicked_file)
+
+
+        self.Conts_label = QLabel()
+        self.Conts_label.setText("File Contents")
+        self.Conts_label.setFont(CourierNewFont)
+        self.Conts_list = QTextBrowser()
+        self.Conts_list.setFixedWidth(590)
+        self.Conts_list.setFixedHeight(200)
+        self.Conts_list.setFont(CourierNewFont)
+        self.Conts_list.setStyleSheet(style_sheet)
+        Conts_vbox = QVBoxLayout()
+        Conts_vbox.addWidget(self.Conts_label)
+        Conts_vbox.addWidget(self.Conts_list)
+
+        self.Parsing_label = QLabel()
+        self.Parsing_label.setText("File Contents Parsing")
+        self.Parsing_label.setFont(CourierNewFont)
+        self.Parsing_list = QTextBrowser()
+        self.Parsing_list.setFont(CourierNewFont)
+        self.Parsing_list.setStyleSheet(style_sheet)
+        self.Parsing_list.setFixedWidth(590)
+        self.Parsing_list.setFixedHeight(560)
+        Parsing_vbox = QVBoxLayout()
+        Parsing_vbox.addWidget(self.Parsing_label)
+        Parsing_vbox.addWidget(self.Parsing_list)
+
+        ContsParsing_vbox = QVBoxLayout()
+        ContsParsing_vbox.addLayout(Conts_vbox)
+        ContsParsing_vbox.addWidget(QLabel())
+        ContsParsing_vbox.addLayout(Parsing_vbox)
+        ContsParsing_vbox.addStretch()
+
+        File_hbox = QHBoxLayout()
+        File_hbox.addLayout(File_vbox)
+        File_hbox.addLayout(ContsParsing_vbox)
+        File_hbox.addStretch()
+
+        tab2 = QWidget()
+        tab2.setLayout(File_hbox)
         self.tabs.addTab(tab2, "File System")
         self.tabs.setFont(CourierNewFont)
-
 
         vbox.addWidget(self.tabs)
         vbox.addStretch()
@@ -170,7 +215,9 @@ class Basic_GUI(QWidget):
             self.SUM_list.clear()
             self.App_list.clear()
             self.Prot_list.clear()
-            self.File_system.clear()
+            self.File_list.clear()
+            self.Conts_list.clear()
+            self.Parsing_list.clear()
 
             self.exe_btn.setEnabled(True)
             self.clipboard_btn.setDisabled(True)
@@ -182,7 +229,9 @@ class Basic_GUI(QWidget):
         self.SUM_list.clear()
         self.App_list.clear()
         self.Prot_list.clear()
-        self.File_system.clear()
+        self.File_list.clear()
+        self.Conts_list.clear()
+        self.Parsing_list.clear()
 
         fname = QFileDialog.getOpenFileName(self,'Load file','',"Text files(*.txt)")
         opened_file = fname[0]
@@ -252,7 +301,9 @@ class Basic_GUI(QWidget):
         self.SUM_list.clear()
         self.App_list.clear()
         self.Prot_list.clear()
-        self.File_system.clear()
+        self.File_list.clear()
+        self.Conts_list.clear()
+        self.Parsing_list.clear()
 
         self.msg_all = clipboard.paste()
         self.msg_all = self.msg_all.split('\r')
@@ -319,13 +370,16 @@ class Basic_GUI(QWidget):
         self.SUM_list.clear()
         self.App_list.clear()
         self.Prot_list.clear()
-        self.File_system.clear()
+        self.File_list.clear()
+        self.Conts_list.clear()
+        self.Parsing_list.clear()
+
 
         self.exe_btn.setDisabled(True)
         self.open_btn.setEnabled(True)
         self.clipboard_btn.setEnabled(True)
 
-        self.tabs.setCurrentIndex(0)
+        # self.tabs.setCurrentIndex(0)
 
         port_num = self.comb_box.currentIndex()+1
 
@@ -360,7 +414,39 @@ class Basic_GUI(QWidget):
         self.sum_rst, self.sum_log_ch, self.sum_log_ch_id, self.sum_cmd, self.sum_read, self.sum_error \
             = msg_sum.rst(sum_input)
 
-        msg_files.process(self.sum_rst, self.sum_read, self.sum_log_ch, self.sum_log_ch_id)
+        if debug_mode :
+            print('[ SUMMARY FILTER ]')
+            print('sum_rst       :', len(self.sum_rst), self.sum_rst)
+            print('sum_log_ch    :', len(self.sum_log_ch), self.sum_log_ch)
+            print('sum_log_ch_id :', len(self.sum_log_ch_id), self.sum_log_ch_id)
+            print('sum_cmd       :', len(self.sum_cmd), self.sum_cmd)
+            print('sum_read      :', len(self.sum_read), self.sum_read)
+            print('sum_error     :', len(self.sum_error), self.sum_error)
+            print()
+
+        if any('READ' in cmd for cmd in self.sum_cmd):
+            self.df = msg_files.process(self.sum_rst, self.sum_read, self.sum_log_ch, self.sum_log_ch_id)
+            df_files = self.df.iloc[:, :-4] # excluding 'log_ch_id'
+
+            file_str = df_files.to_markdown(tablefmt='orgtbl', numalign='left', index=False)
+            lines = file_str.split('\n')
+            col_names = ''.join(lines[0].split('|')[:-1])
+            self.File_label.setText(' '+col_names)
+            self.File_label.setFont(BoldFont)
+
+            files = lines[2:]
+            for n in range(len(files)):
+                item = QListWidgetItem(''.join(files[n].split('|')[1:-1]))
+                self.File_list.addItem(item)
+
+                # OTA_updated
+                yellow_items = ['IMSI','MSISDN','OPLMNwAcT','ACC','Routing_Indicator','IMPI','IMPU']
+
+                if self.df['OTA_updated'][n]:
+                    if self.df['File'][n] in yellow_items:
+                        item.setForeground(QColor("yellow"))
+                    else:
+                        item.setForeground(QColor("lightgreen"))
 
         for line in self.sum_rst:
             item = QListWidgetItem(line)
@@ -390,18 +476,6 @@ class Basic_GUI(QWidget):
             elif any(lightgreen_item in line for lightgreen_item in lightgreen_items):
                 item.setForeground(QColor("lightgreen"))
 
-
-
-        if debug_mode :
-            print('[ SUMMARY FILTER ]')
-            print('sum_rst       :', len(self.sum_rst), self.sum_rst)
-            print('sum_log_ch    :', len(self.sum_log_ch), self.sum_log_ch)
-            print('sum_log_ch_id :', len(self.sum_log_ch_id), self.sum_log_ch_id)
-            print('sum_cmd       :', len(self.sum_cmd), self.sum_cmd)
-            print('sum_read      :', len(self.sum_read), self.sum_read)
-            print('sum_error     :', len(self.sum_error), self.sum_error)
-            print()
-
         self.exe_label.setText("Complete")
 
     @pyqtSlot()
@@ -430,6 +504,19 @@ class Basic_GUI(QWidget):
                     app_rst_show +=n +'\n'
             if app_rst and len(selected_list)>0: app_rst_show += '=' * 80
             self.App_list.setPlainText(app_rst_show)
+    @pyqtSlot()
+    def clicked_file(self):
+        self.Conts_list.clear()
+        self.Parsing_list.clear()
+
+        num = self.File_list.currentRow()
+        contents = self.df['contents'][num]
+        parsing = self.df['parsing'][num]
+
+        if contents:
+            self.Conts_list.setText(contents)
+        if parsing:
+            self.Parsing_list.setText(parsing)
 
 class MyQListWidget(QListWidget):
 

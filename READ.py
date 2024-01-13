@@ -1,4 +1,5 @@
 debug_mode = 0
+import spec_ref
 
 def process(ins, file_name, data, sum_read):
 
@@ -30,31 +31,30 @@ def process(ins, file_name, data, sum_read):
 
 def parser(file_name, data, offset):
     parsing = ''
+
     if file_name == 'ICCID':
         for n in range(int(len(data)/2)):
             parsing += data[2*n+1]
             parsing += data[2*n]
+
     elif file_name == 'IMSI':
         data = data[2:2+int(data[:2],16)*2]
         for n in range(int(len(data)/2)):
             parsing += data[2*n+1]
             parsing += data[2*n]
         parsing = parsing[1:]
+
     elif file_name in ['IMPI', 'IMPU', 'P-CSCF']:
         if data[2:4] != 'FF': # IMPU [0x] not used
             byte_array = bytearray.fromhex(data[4:4+int(data[2:4],16)*2])
             parsing += byte_array.decode()
+
     elif file_name == 'ACC':
         parsing = '0x%s'%data[:2] + '%s '%data[2:]
-        # print(parsing)
         parsing += '(BIN ' + format(int(data[:2], 16), 'b').zfill(8)
-        # print(parsing)
         parsing += ' ' + format(int(data[2:], 16), 'b').zfill(8) +')'
-        # print(parsing)
-        # cnt = 0
-        # for n in list(parsing.split('BIN ')[1].replace(' ','')[-10:]):
-        #     cnt +=1
-        #     if n == '1': parsing = "Access Control Class '%d'"%(10-cnt) + ' (%s)'%parsing
+
+
     elif file_name in ['HPLMNwAcT','OPLMNwAcT','PLMNwAcT']:
         PLMNwAcT = []
         for n in range(int(len(data)/10)):
@@ -74,6 +74,7 @@ def parser(file_name, data, offset):
                     AcT = n[-4:]
                 parsing += '[PLMN %3d]'%(cnt+int(int(offset, 16)/10*2))+' MCC %s'%MCC+' MNC %s'%MNC+' '
                 parsing += '[AcT] %s'%AcT
+
     elif file_name == 'FPLMN':
         FPLMN = []
         for n in range(int(len(data)/6)):
@@ -88,6 +89,7 @@ def parser(file_name, data, offset):
                 MNC = n[5] + n[4] + n[2]
                 # if 'F' in MNC: MNC = MNC.replace('F',' ')
                 parsing += '[FPLMN %2d]'%(cnt+int(int(offset, 16)/10*2)) + ' MCC %s' % MCC + ' MNC %s' % MNC
+
     elif file_name == 'MSISDN':
         byte_array = bytearray.fromhex(data[:32].split('FFFF')[0])
         data_len = int(data[32:34],16)
@@ -97,8 +99,34 @@ def parser(file_name, data, offset):
             parsing += Num[2*n+1]
             parsing += Num[2*n]
         # parsing += " (Alpha Id/TON and NPI/Dialling Num)"
-    elif file_name in ['SUCI_Calc_Info', 'Routing_Indicator']:
-        parsing += data
+
+    # EF_UST (31.102)
+    elif file_name == 'UST':
+        UST_binary = bin(int(data, 16))[2:]
+        cnt = 0
+        for i in range(0, len(UST_binary), 8):
+            for bin_value in UST_binary[i:i + 8][::-1]:
+                cnt += 1
+                if cnt > len(spec_ref.UST_type):
+                    break
+                parsing += "[O]" if bin_value == '1' else "[X]"
+                parsing += ' Service n%-3d' % cnt
+                parsing += " %s" % spec_ref.UST_type[cnt] + '\n'
+
+    # EF_IST (31.103)
+    elif file_name == 'IST':
+        IST_binary = bin(int(data, 16))[2:]
+        if debug_mode: print(IST_binary)
+        cnt = 0
+        for i in range(0, len(IST_binary), 8):
+            for bin_value in IST_binary[i:i + 8][::-1]:
+                cnt += 1
+                if cnt > len(spec_ref.IST_type):
+                    break
+                parsing += "[O]" if bin_value == '1' else "[X]"
+                parsing += ' Service n%-3d' % cnt
+                parsing += " %s" % spec_ref.IST_type[cnt] + '\n'
+
     return parsing
 
 AccessTech = dict()

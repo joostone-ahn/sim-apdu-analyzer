@@ -76,38 +76,6 @@ def rst(input, read, error, item_num):
                     app_rst.append(void + ' ')
                     app_rst = split_parsing(read[item_num][0][1], app_rst)
 
-            # EF_UST (31.102)
-            if current_EF == '6F38':
-                app_rst.append(void + ' ' + '-' * (80 - len(void) - 1))
-                UST_binary = bin(int(read[item_num][0][0],16))[2:]
-                if debug_mode: print(UST_binary)
-                cnt = 0
-                for i in range(0, len(UST_binary), 8):
-                    for bin_value in UST_binary[i:i+8][::-1]:
-                        cnt += 1
-                        if cnt > len(spec_ref.UST_type):
-                            break
-                        app_rst.append(void + ' ')
-                        app_rst[-1] += "[O]" if bin_value == '1' else "[X]"
-                        app_rst[-1] += ' Service n%-3d' % cnt
-                        app_rst[-1] += " %s" % spec_ref.UST_type[cnt]
-
-            # EF_IST (31.103)
-            elif 'A0000000871004' in current_DF and current_EF == '6F07':
-                app_rst.append(void + ' ' + '-' * (80 - len(void) - 1))
-                IST_binary = bin(int(read[item_num][0][0],16))[2:]
-                if debug_mode: print(IST_binary)
-                cnt = 0
-                for i in range(0, len(IST_binary), 8):
-                    for bin_value in IST_binary[i:i+8][::-1]:
-                        cnt += 1
-                        if cnt > len(spec_ref.IST_type):
-                            break
-                        app_rst.append(void + ' ')
-                        app_rst[-1] += "[O]" if bin_value == '1' else "[X]"
-                        app_rst[-1] += ' Service n%-3d' % cnt
-                        app_rst[-1] += " %s" % spec_ref.IST_type[cnt]
-
         if 'UPDATE' in cmd and read[item_num][0] != '':
             app_rst.append(void + ' ' + '-' *(80-len(void)-1))
 

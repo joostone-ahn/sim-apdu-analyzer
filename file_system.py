@@ -372,7 +372,7 @@ EF_name ={
         '4F07': 'SUCI_Calc_Info',
         '4F08': 'OPL5G',
         '4F09': 'NSI',
-        '4F0A': 'Routing_Indicator',
+        '4F0A': 'Routing_Ind',
         '4F0B': 'URSP',
         '4F0C': 'TN3GPPSNN'
     },

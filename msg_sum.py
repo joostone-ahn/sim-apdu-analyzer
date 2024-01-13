@@ -279,7 +279,6 @@ def rst(input):
                             file_item.append('TF')
                         elif ins == 'B2':
                             file_item.append('LF')
-
                     else:
                         sum_read.append(['',''])
 
