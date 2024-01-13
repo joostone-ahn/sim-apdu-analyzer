@@ -111,13 +111,14 @@ def rst(input):
 
                     # SELECT
                     if ins == 'A4':
-                        SELECT_rst = SELECT.process(prot_data[m], log_ch, log_ch_id)
-                        log_ch = SELECT_rst[0]
-                        file_name = SELECT_rst[1]
-                        if error and SELECT_rst[2]:
-                            error += '\n' + ' '*len(f"[{m+1}] ")
-                        error += SELECT_rst[2]
-                        last_file_id = prot_data[m][2]
+                        if len(prot_data[m]) > 2:
+                            SELECT_rst = SELECT.process(prot_data[m], log_ch, log_ch_id)
+                            log_ch = SELECT_rst[0]
+                            file_name = SELECT_rst[1]
+                            if error and SELECT_rst[2]:
+                                error += '\n' + ' '*len(f"[{m+1}] ")
+                            error += SELECT_rst[2]
+                            last_file_id = prot_data[m][2]
 
                     # SFI (Short file id)
                     elif ins in short_file_id.cmd_SFI_list:

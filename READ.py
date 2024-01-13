@@ -127,6 +127,14 @@ def parser(file_name, data, offset):
                 parsing += ' Service n%-3d' % cnt
                 parsing += " %s" % spec_ref.IST_type[cnt] + '\n'
 
+    elif file_name == 'EPSLOCI':
+        parsing += "[Bytes  1-12] GUTI : "
+        parsing += data[:24] + '\n'
+        parsing += "[Bytes 13-17] Last visited registered TAI : "
+        parsing += data[24:34] + '\n'
+        parsing += "[Bytes    18] EPS update status : "
+        parsing += data[34:36] + '\n'
+
     return parsing
 
 AccessTech = dict()

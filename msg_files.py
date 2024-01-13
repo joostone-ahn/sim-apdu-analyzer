@@ -5,15 +5,14 @@ pd.set_option('display.max_rows', None)
 pd.set_option('expand_frame_repr', False)
 pd.set_option('display.max_colwidth', None)
 
-def process(sum_rst, sum_read, sum_log_ch, sum_log_ch_id):
+def process(sum_rst, sum_read, sum_log_ch):
 
     df_sum_rst = pd.DataFrame(sum_rst)
     df_sum_read = pd.DataFrame(sum_read)
     df_sum_log_ch = pd.DataFrame(sum_log_ch)
-    df_sum_log_ch_id = pd.DataFrame(sum_log_ch_id)
-    df = pd.concat([df_sum_rst, df_sum_read, df_sum_log_ch, df_sum_log_ch_id], axis=1)
-    if len(df.columns) < 7: df.insert(loc=3, column='read_3',value='')
-    df.columns = ['rst', 'read_1', 'read_2', 'read_3', 'DF_Id', 'File_Id', 'log_ch_id']
+    df = pd.concat([df_sum_rst, df_sum_read, df_sum_log_ch], axis=1)
+    if len(df.columns) < 6: df.insert(loc=3, column='read_3',value='')
+    df.columns = ['rst', 'read_1', 'read_2', 'read_3', 'DF_Id', 'File_Id']
 
     df = df[df['rst'].str.contains('READ')]
     df['contents'] = df['read_1'].apply(lambda x: x[0] if len(x) >= 1 else None)
@@ -58,24 +57,27 @@ def process(sum_rst, sum_read, sum_log_ch, sum_log_ch_id):
     df['File'] = df['File'].fillna('-')
     # df.dropna(subset='File', inplace=True)
 
+    unique_contents = df.groupby(['DF','DF_Id','File','File_Id','REC#','OFS'])['contents'].nunique() > 1
+    mapped_values = df.set_index(['DF','DF_Id','File','File_Id','REC#','OFS']).index.map(unique_contents)
+    df['OTA_updated'] = mapped_values.fillna(0).astype(int)
+
     df.loc[df['DF'].str.contains('ADF USIM'), 'DF_Id'] = 'AID'
     df.loc[df['DF'].str.contains('ADF ISIM'), 'DF_Id'] = 'AID'
-
-    unique_contents = df.groupby(['DF','File','REC#'])['contents'].nunique() > 1
-    mapped_values = df.set_index(['DF','File','REC#']).index.map(unique_contents)
-    df['OTA_updated'] = mapped_values.fillna(0).astype(int)
 
     all_columns = df.columns.tolist()
     columns_to_check = [col for col in all_columns if col != 'ref']
     df.drop_duplicates(subset=columns_to_check, inplace= True)
 
-    df.sort_values(['log_ch_id', 'DF','File_Id','REC#'], ascending=[True, True, True, True], inplace=True)
+    df.sort_values(['DF','File_Id','REC#'], ascending=[True, True, True], inplace=True)
     df_MF = df[df['DF'].str.contains('MF')]
     df_nonMF = df[~df['DF'].str.contains('MF')]
     df = pd.concat([df_MF, df_nonMF], ignore_index=True)
+    df_ISIM = df[df['DF'].str.contains('ISIM')]
+    df_nonISIM = df[~df['DF'].str.contains('ISIM')]
+    df = pd.concat([df_nonISIM, df_ISIM], ignore_index=True)
 
     new_order = ['DF', 'File', 'DF_Id', 'File_Id',  'Type', 'SFI', 'REC#', 'OFS', 'LEN',
-                 'ref', 'log_ch_id', 'OTA_updated', 'contents', 'parsing']
+                 'ref', 'OTA_updated', 'contents', 'parsing']
     df = df[new_order]
 
     # df.to_excel('output.xlsx', index=False)

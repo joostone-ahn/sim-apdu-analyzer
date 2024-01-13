@@ -425,8 +425,8 @@ class Basic_GUI(QWidget):
             print()
 
         if any('READ' in cmd for cmd in self.sum_cmd):
-            self.df = msg_files.process(self.sum_rst, self.sum_read, self.sum_log_ch, self.sum_log_ch_id)
-            df_files = self.df.iloc[:, :-4] # excluding 'log_ch_id'
+            self.df = msg_files.process(self.sum_rst, self.sum_read, self.sum_log_ch)
+            df_files = self.df.iloc[:, :-3]
 
             file_str = df_files.to_markdown(tablefmt='orgtbl', numalign='left', index=False)
             lines = file_str.split('\n')
@@ -440,7 +440,7 @@ class Basic_GUI(QWidget):
                 self.File_list.addItem(item)
 
                 # OTA_updated
-                yellow_items = ['IMSI','MSISDN','OPLMNwAcT','ACC','Routing_Indicator','IMPI','IMPU']
+                yellow_items = ['IMSI','MSISDN','OPLMNwAcT','ACC','Routing_Ind','IMPI','IMPU']
 
                 if self.df['OTA_updated'][n]:
                     if self.df['File'][n] in yellow_items:
