@@ -47,6 +47,8 @@ def process(sum_rst, sum_read, sum_log_ch):
 
     df = df.copy()
     df['ref'] = df['rst'].str.extract('(\[\d+\])')
+    # df.loc[df['ref'].str.contains('Unknown DF'), 'DF'] = 'Unknown DF'
+    # df.loc[df['DF'].str.contains('Unknown DF'), 'DF_Id'] = 'AID'
     del df['rst']
 
     df['DF'] = df['DF_Id'].str[:14].map(file_system.DF_name)
@@ -61,8 +63,9 @@ def process(sum_rst, sum_read, sum_log_ch):
     mapped_values = df.set_index(['DF','DF_Id','File','File_Id','REC#','OFS']).index.map(unique_contents)
     df['OTA_updated'] = mapped_values.fillna(0).astype(int)
 
-    df.loc[df['DF'].str.contains('ADF USIM'), 'DF_Id'] = 'AID'
-    df.loc[df['DF'].str.contains('ADF ISIM'), 'DF_Id'] = 'AID'
+    df.loc[df['DF_Id'].str.contains('A0'), 'DF_Id'] = 'AID'
+    # df.loc[df['DF'].str.contains('ADF USIM'), 'DF_Id'] = 'AID'
+    # df.loc[df['DF'].str.contains('ADF ISIM'), 'DF_Id'] = 'AID'
 
     all_columns = df.columns.tolist()
     columns_to_check = [col for col in all_columns if col != 'ref']
