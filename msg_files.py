@@ -13,6 +13,7 @@ def process(sum_rst, sum_read, sum_log_ch):
     df = pd.concat([df_sum_rst, df_sum_read, df_sum_log_ch], axis=1)
     if len(df.columns) < 6: df.insert(loc=3, column='read_3',value='')
     df.columns = ['rst', 'read_1', 'read_2', 'read_3', 'DF_Id', 'File_Id']
+    df = df[df['DF_Id'] != '']
 
     df = df[df['rst'].str.contains('READ')]
     df['contents'] = df['read_1'].apply(lambda x: x[0] if len(x) >= 1 else None)
@@ -47,16 +48,14 @@ def process(sum_rst, sum_read, sum_log_ch):
 
     df = df.copy()
     df['ref'] = df['rst'].str.extract('(\[\d+\])')
-    # df.loc[df['ref'].str.contains('Unknown DF'), 'DF'] = 'Unknown DF'
-    # df.loc[df['DF'].str.contains('Unknown DF'), 'DF_Id'] = 'AID'
     del df['rst']
 
     df['DF'] = df['DF_Id'].str[:14].map(file_system.DF_name)
-    df['DF'] = df['DF'].fillna('-')
+    df['DF'] = df['DF'].fillna('Unknown DF')
     def get_File_name(row):
         return file_system.EF_name.get(row['DF_Id'][:14], {}).get(row['File_Id'])
     df['File'] = df.apply(get_File_name, axis=1)
-    df['File'] = df['File'].fillna('-')
+    df['File'] = df['File'].fillna('Unknown EF')
     # df.dropna(subset='File', inplace=True)
 
     unique_contents = df.groupby(['DF','DF_Id','File','File_Id','REC#','OFS'])['contents'].nunique() > 1
@@ -64,8 +63,6 @@ def process(sum_rst, sum_read, sum_log_ch):
     df['OTA_updated'] = mapped_values.fillna(0).astype(int)
 
     df.loc[df['DF_Id'].str.contains('A0'), 'DF_Id'] = 'AID'
-    # df.loc[df['DF'].str.contains('ADF USIM'), 'DF_Id'] = 'AID'
-    # df.loc[df['DF'].str.contains('ADF ISIM'), 'DF_Id'] = 'AID'
 
     all_columns = df.columns.tolist()
     columns_to_check = [col for col in all_columns if col != 'ref']
@@ -78,6 +75,9 @@ def process(sum_rst, sum_read, sum_log_ch):
     df_ISIM = df[df['DF'].str.contains('ISIM')]
     df_nonISIM = df[~df['DF'].str.contains('ISIM')]
     df = pd.concat([df_nonISIM, df_ISIM], ignore_index=True)
+    df_Unknown = df[df['DF'].str.contains('Unknown')]
+    df_Knokwn = df[~df['DF'].str.contains('Unknown')]
+    df = pd.concat([df_Knokwn, df_Unknown], ignore_index=True)
 
     new_order = ['DF', 'File', 'DF_Id', 'File_Id',  'Type', 'SFI', 'REC#', 'OFS', 'LEN',
                  'ref', 'OTA_updated', 'contents', 'parsing']
