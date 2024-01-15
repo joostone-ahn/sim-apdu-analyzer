@@ -241,6 +241,7 @@ Error_RAPDU_list['6700'] = 'Wrong length' #Table 10.11
 Error_RAPDU_list['6F00'] = 'Technical problem, no precise diagnosis' #Table 10.11
 Error_RAPDU_list['6881'] = 'Logical channel not supported' #Table 10.12
 Error_RAPDU_list['6981'] = 'Command incompatible with file structure' #Table 10.13
+Error_RAPDU_list['9862'] = 'Authentication error, application specific' #Table 10.15
 
 # ETSI TS 102.223
 Proactive_type = dict()

@@ -148,7 +148,8 @@ def rst(input):
                         if debug_mode: print('log_ch DF name :',log_ch[log_ch_id][0])
                         file_name = file_system.process(log_ch[log_ch_id][0], '', last_file_id)[0]
                         if 'ADF' in file_name:
-                            info = file_name.replace(']','').replace('[','')
+                            if info: None
+                            else: info = file_name.replace(']','').replace('[','')
                         file_name = ''
                         RAND_len = int(prot_data[m][2][:2],16)
                         RAND = prot_data[m][2][2:2+RAND_len*2]
