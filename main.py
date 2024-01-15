@@ -1,7 +1,7 @@
 import sys
 from PyQt5.QtWidgets import *
 from PyQt5 import QtGui
-from PyQt5.QtCore import pyqtSignal, pyqtSlot
+from PyQt5.QtCore import pyqtSignal, pyqtSlot, Qt
 from PyQt5.QtGui import QColor
 import msg_item
 import port
@@ -507,6 +507,7 @@ class Basic_GUI(QWidget):
                     app_rst_show +=n +'\n'
             if app_rst and len(selected_list)>0: app_rst_show += '=' * 80
             self.App_list.setPlainText(app_rst_show)
+
     @pyqtSlot()
     def clicked_file(self):
         self.Conts_list.clear()
@@ -543,6 +544,17 @@ class MyQListWidget(QListWidget):
     def mouseReleaseEvent(self, event):
         QListWidget.mouseReleaseEvent(self, event)
         self.sth_changed()
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key_C and event.modifiers() & Qt.ControlModifier:
+            self.copySelectedItems()
+        else:
+            QListWidget.keyPressEvent(self, event)
+
+    def copySelectedItems(self):
+        selectedItems = self.selectedItems()
+        copiedText = '\n'.join(item.text() for item in selectedItems)
+        QApplication.clipboard().setText(copiedText)
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
