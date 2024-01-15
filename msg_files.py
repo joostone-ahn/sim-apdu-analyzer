@@ -14,6 +14,7 @@ def process(sum_rst, sum_read, sum_log_ch):
     if len(df.columns) < 6: df.insert(loc=3, column='read_3',value='')
     df.columns = ['rst', 'read_1', 'read_2', 'read_3', 'DF_Id', 'File_Id']
     df = df[df['DF_Id'] != '']
+    df = df[~df['rst'].str.contains('\\(X\\)|\\(\\*\\)|ERROR')]
 
     df = df[df['rst'].str.contains('READ')]
     df['contents'] = df['read_1'].apply(lambda x: x[0] if len(x) >= 1 else None)
@@ -56,7 +57,6 @@ def process(sum_rst, sum_read, sum_log_ch):
         return file_system.EF_name.get(row['DF_Id'][:14], {}).get(row['File_Id'])
     df['File'] = df.apply(get_File_name, axis=1)
     df['File'] = df['File'].fillna('Unknown EF')
-    # df.dropna(subset='File', inplace=True)
 
     unique_contents = df.groupby(['DF','DF_Id','File','File_Id','REC#','OFS'])['contents'].nunique() > 1
     mapped_values = df.set_index(['DF','DF_Id','File','File_Id','REC#','OFS']).index.map(unique_contents)
@@ -65,7 +65,7 @@ def process(sum_rst, sum_read, sum_log_ch):
     df.loc[df['DF_Id'].str.contains('A0'), 'DF_Id'] = 'AID'
 
     all_columns = df.columns.tolist()
-    columns_to_check = [col for col in all_columns if col != 'ref']
+    columns_to_check = [col for col in all_columns if col not in ['SFI','ref']]
     df.drop_duplicates(subset=columns_to_check, inplace= True)
 
     df.sort_values(['DF','File_Id','REC#'], ascending=[True, True, True], inplace=True)
