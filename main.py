@@ -235,6 +235,7 @@ class Basic_GUI(QWidget):
         self.File_list.clear()
         self.Conts_list.clear()
         self.Parsing_list.clear()
+        self.msg_all = ['']
 
         fname = QFileDialog.getOpenFileName(self,'Load file','',"Text files(*.txt)")
         opened_file = fname[0]
@@ -248,13 +249,8 @@ class Basic_GUI(QWidget):
                 for n in range(len(self.msg_all)):
                     self.msg_all[n] = self.msg_all[n].replace('\n', '')
 
-        # QCAT logs
-        if '[0x19B7]' not in self.msg_all[0]:
-            self.msg_start, self.msg_end, self.msg_SN, self.msg_port, self.msg_type, self.msg_data \
-                = msg_item.process(self.msg_all)
-
-        # Clipboard logs (QXDM)
-        elif '[0x19B7]' in self.msg_all[0]:
+        # QXDM
+        if '[0x19B7]' in self.msg_all[0]:
             for n in range(len(self.msg_all)):
                 self.msg_all[n] = ' '.join(self.msg_all[n].split())
             msg_filter = []
@@ -263,16 +259,29 @@ class Basic_GUI(QWidget):
                 if line.split(' ')[0] == '[0x19B7]':
                     msg_filter.append(line)
                     if '{' in line:
-                        if '}' in line: line_end = True
-                        else: line_end = False
-                    else: line_end = True
+                        if '}' in line:
+                            line_end = True
+                        else:
+                            line_end = False
+                    else:
+                        line_end = True
                 else:
                     if line_end is False:
                         msg_filter.append(line)
                         if '}' in line: line_end = True
             self.msg_all = msg_filter
             self.msg_start, self.msg_end, self.msg_SN, self.msg_port, self.msg_type, self.msg_data \
-                = msg_item.process2(self.msg_all)
+                = msg_item.QXDM(self.msg_all)
+
+        # Shannon DM
+        elif 'USIM_MAIN' in self.msg_all[0]:
+            self.msg_start, self.msg_end, self.msg_SN, self.msg_port, self.msg_type, self.msg_data \
+                = msg_item.ShannonDM(self.msg_all)
+
+        # QCAT
+        else:
+            self.msg_start, self.msg_end, self.msg_SN, self.msg_port, self.msg_type, self.msg_data \
+                = msg_item.QCAT(self.msg_all)
 
         if debug_mode:
             print('[File Name]', opened_file)
@@ -315,7 +324,7 @@ class Basic_GUI(QWidget):
                 self.msg_all[n] = self.msg_all[n].replace('\n', '')
 
         # QXDM
-        if '19B7' in self.msg_all[0]:
+        if '[0x19B7]' in self.msg_all[0]:
             for n in range(len(self.msg_all)):
                 self.msg_all[n] = ' '.join(self.msg_all[n].split())
             msg_filter = []
@@ -333,13 +342,14 @@ class Basic_GUI(QWidget):
                         if '}' in line: line_end = True
             self.msg_all = msg_filter
             self.msg_start, self.msg_end, self.msg_SN, self.msg_port, self.msg_type, self.msg_data \
-                = msg_item.process2(self.msg_all)
+                = msg_item.QXDM(self.msg_all)
 
         # Shannon DM
         elif 'USIM_MAIN' in self.msg_all[0]:
-            for msg in self.msg_all:
-                print(msg.split('\t'))
-            self.msg_data = ''
+            self.msg_start, self.msg_end, self.msg_SN, self.msg_port, self.msg_type, self.msg_data \
+                = msg_item.ShannonDM(self.msg_all)
+
+        # No APDU log
         else:
             self.msg_data = ''
 

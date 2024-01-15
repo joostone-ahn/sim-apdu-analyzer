@@ -1,7 +1,7 @@
 debug_mode = 0
 
 # Open file
-def process(msg):
+def QCAT(msg):
     msg_start, msg_end, msg_SN, msg_port, msg_type = [],[],[],[],[]
     for n in range(len(msg)):
         if '0x19B7' in msg[n]:
@@ -42,7 +42,7 @@ def process(msg):
     return msg_start, msg_end, msg_SN, msg_port, msg_type, msg_data
 
 # Load clipboard
-def process2(msg_all):
+def QXDM(msg_all):
     msg_start, msg_end, msg_SN, msg_port, msg_type, msg_data = [], [], [], [], [], []
 
     if '19B7' not in msg_all[0]:
@@ -107,5 +107,11 @@ def process2(msg_all):
             print('%4s'%msg_SN[n], msg_port[n], msg_type[n], msg_data[n])
 
     return msg_start, msg_end, msg_SN, msg_port, msg_type, msg_data
+
+def ShannonDM(msg_all):
+    for msg in msg_all:
+        print(msg.split('\t'))
+
+    return [],[],[],[],[],[]
 
 
