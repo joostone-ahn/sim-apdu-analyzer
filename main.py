@@ -235,7 +235,7 @@ class Basic_GUI(QWidget):
         self.File_list.clear()
         self.Conts_list.clear()
         self.Parsing_list.clear()
-        self.msg_all = ['']
+        self.msg_data = []
 
         fname = QFileDialog.getOpenFileName(self,'Load file','',"Text files(*.txt)")
         opened_file = fname[0]
@@ -245,7 +245,8 @@ class Basic_GUI(QWidget):
                 try:
                     self.msg_all = f.readlines()
                 except:
-                    print("read fail")
+                    print("***read fail")
+                    self.msg_all = ['']
                 for n in range(len(self.msg_all)):
                     self.msg_all[n] = self.msg_all[n].replace('\n', '')
 
@@ -275,8 +276,7 @@ class Basic_GUI(QWidget):
 
         # Shannon DM
         elif 'USIM_MAIN' in self.msg_all[0]:
-            self.msg_start, self.msg_end, self.msg_SN, self.msg_port, self.msg_type, self.msg_data \
-                = msg_item.ShannonDM(self.msg_all)
+            self.msg_all = msg_item.ShannonDM(self.msg_all)
 
         # QCAT
         else:
@@ -316,6 +316,7 @@ class Basic_GUI(QWidget):
         self.File_list.clear()
         self.Conts_list.clear()
         self.Parsing_list.clear()
+        self.msg_data = []
 
         self.msg_all = clipboard.paste()
         self.msg_all = self.msg_all.split('\r')
@@ -346,12 +347,11 @@ class Basic_GUI(QWidget):
 
         # Shannon DM
         elif 'USIM_MAIN' in self.msg_all[0]:
-            self.msg_start, self.msg_end, self.msg_SN, self.msg_port, self.msg_type, self.msg_data \
-                = msg_item.ShannonDM(self.msg_all)
+            self.msg_all = msg_item.ShannonDM(self.msg_all)
 
         # No APDU log
         else:
-            self.msg_data = ''
+            None
 
         if debug_mode:
             print('[Clipboard]')

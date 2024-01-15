@@ -1,4 +1,5 @@
 debug_mode = 0
+import re
 
 # Open file
 def QCAT(msg):
@@ -109,9 +110,57 @@ def QXDM(msg_all):
     return msg_start, msg_end, msg_SN, msg_port, msg_type, msg_data
 
 def ShannonDM(msg_all):
-    for msg in msg_all:
-        print(msg.split('\t'))
+    new_msg_all = []
+    concat_len = 0
+    for n in range(len(msg_all)):
+        msg_items = msg_all[n].split('\t')
+        if 'Hex Dump -> :' in msg_items[5]:
+            hex_values = msg_items[5].split(':')[1].replace(' ', '')
+            if concat_len == 0:
+                new_msg_all.append(basic_format(msg_items, 'TX') + format('{ %s }')%split_hex(hex_values[:10]))
 
-    return [],[],[],[],[],[]
+                if len(hex_values) > 10:
+                    new_msg_all.append(basic_format(msg_items, 'RX') + hex_values[2:4])
+                    Length = int(hex_values[8:10], 16) * 2
+                    if len(hex_values[10:]) == Length:
+                        new_msg_all.append(basic_format(msg_items, 'TX') + format('{ %s }')%split_hex(hex_values[10:]))
+                    elif len(hex_values[10:]) < Length:
+                        msg_concat = basic_format(msg_items, 'TX') + format('{ %s ')%split_hex(hex_values[10:])
+                        concat_len = Length - len(hex_values[10:])
+            elif concat_len > 0:
+                msg_concat += format('%s ')%split_hex(hex_values)
+                concat_len -= len(hex_values)
+                if concat_len == 0:
+                    new_msg_all.append(msg_concat + '}')
+        elif 'SW1' in msg_items[5]:
+            match = re.search(r'SW1: (0x[0-9A-Fa-f]{2}) SW2: (0x[0-9A-Fa-f]{2})$', msg_items[5])
+            if match:
+                sw1, sw2 = match.groups()
+                new_msg_all.append(basic_format(msg_items, 'RX') + "{{ {} {} }}".format(sw1[2:].upper(), sw2[2:].upper()))
+
+            # For testing
+            # [USIM_0] Send TR status SW1:0x90, SW2:0x0
+            # [USIM_0] SW1: 0x90, SW2: 0x0, INS: 0x70, P3: 0x0, Le: 0x2
+            # [USIM_0] RetVal after Status: 1 RspApdu. SW1: 0x90
+            # if ',' not in msg_items[5]:
+            #     if 'RetVal' not in msg_items[5]:
+            #         print(msg_items[5])
+
+    for msg in new_msg_all:
+        print(msg)
+
+    return new_msg_all
+
+def basic_format(msg_items, Type):
+    msg_converted = '[0x19B7] ' # QCAT Tag
+    msg_converted += msg_items[1] # CP_TIME
+    msg_converted += ' SLOT_' + str(int(msg_items[5].split('USIM_')[1][0])+1) # SLOT_1 or SLOT_2
+    msg_converted += f' Type = {Type} Data = ' # TX or RX
+    return msg_converted
+
+def split_hex(hex_values):
+    return ' '.join([hex_values[i:i+2] for i in range(0, len(hex_values), 2)])
+
+
 
 
