@@ -10,6 +10,9 @@ import msg_app
 import msg_prot
 import msg_files
 import clipboard
+import tabulate
+import pandas as pd
+
 
 BoldFont = QtGui.QFont()
 BoldFont.setBold(True)
