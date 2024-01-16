@@ -208,7 +208,7 @@ class Basic_GUI(QWidget):
         main_layout.addWidget(copyright_label)
 
         self.setLayout(main_layout)
-        self.setWindowTitle('SIM APDU Analyzer v3.1')
+        self.setWindowTitle('SIM APDU Analyzer v3.2')
         self.setGeometry(110, 50, 0, 0)
         self.show()
 
@@ -252,6 +252,7 @@ class Basic_GUI(QWidget):
 
         # QXDM
         if '[0x19B7]' in self.msg_all[0]:
+            self.msg_all = msg_item.QXDM_filter(self.msg_all) # PC 환경에 따른 Clipboard 차이 대응
             self.msg_start, self.msg_end, self.msg_SN, self.msg_port, self.msg_type, self.msg_data \
                 = msg_item.QXDM(self.msg_all)
 
@@ -309,6 +310,7 @@ class Basic_GUI(QWidget):
 
         # QXDM
         if '[0x19B7]' in self.msg_all[0]:
+            self.msg_all = msg_item.QXDM_filter(self.msg_all) # PC 환경에 따른 Clipboard 차이 대응
             self.msg_start, self.msg_end, self.msg_SN, self.msg_port, self.msg_type, self.msg_data \
                 = msg_item.QXDM(self.msg_all)
 

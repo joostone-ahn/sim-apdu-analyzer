@@ -26,6 +26,15 @@ def process(data, log_ch, log_ch_id):
                             log_ch[log_ch_id][0] = 'A00000008710' + data[-1].split('A00000008710')[1][:20]
                     else:
                         log_ch[log_ch_id][0] = '' # 'current DF is NOT determined'
+            # LSI Chipset example: SELECT 5F40(DF_5GS) wo/7FFF
+            elif file_id[:2] == '5F':
+                file_id = '7FFF'+file_id
+                log_ch[log_ch_id][0] = file_id
+                log_ch[log_ch_id][1] = ''
+            # LGU+ Custom File
+            elif file_id == '2F30':
+                log_ch[log_ch_id][0] = '3F00'
+                log_ch[log_ch_id][1] = file_id
             else:
                 log_ch[log_ch_id][1] = file_id
         else: # len(file_id) > 4

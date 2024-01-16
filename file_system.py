@@ -37,7 +37,7 @@ def process(current_DF, current_EF, file_id):
                 # current DF parsing N/A
                 else:
                     file_name = file_id
-                    error = f"*'{file_id}': N/A in in current DF"
+                    error = f"*'{file_id}': parsing not supported in current DF"
 
     if debug_mode: print(current_DF, current_EF, file_name, error)
 
@@ -91,7 +91,8 @@ EF_name ={
         '2F05': 'PL',
         '2F06': 'ARR',
         '2FE2': 'ICCID',
-        '2F08': 'UMPC'
+        '2F08': 'UMPC',
+        '2F30': 'VER',
     },
     '7F10': {
         '6F06': 'ARR',

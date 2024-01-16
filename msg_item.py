@@ -43,7 +43,7 @@ def QCAT(msg):
     return msg_start, msg_end, msg_SN, msg_port, msg_type, msg_data
 
 # Load clipboard
-def QXDM(msg_all):
+def QXDM_filter(msg_all):
     for n in range(len(msg_all)):
         msg_all[n] = ' '.join(msg_all[n].split())
     msg_filter = []
@@ -62,8 +62,9 @@ def QXDM(msg_all):
             if line_end is False:
                 msg_filter.append(line)
                 if '}' in line: line_end = True
-    msg_all = msg_filter
+    return msg_filter
 
+def QXDM(msg_all):
     msg_start, msg_end, msg_SN, msg_port, msg_type, msg_data = [], [], [], [], [], []
 
     if '19B7' not in msg_all[0]:

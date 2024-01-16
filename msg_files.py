@@ -21,6 +21,9 @@ def process(sum_rst, sum_read, sum_log_ch):
     df['parsing'] = df['read_1'].apply(lambda x: x[1] if len(x) == 2 else None)
     del df['read_1']
 
+    if len(df) == 0:
+        return df
+
     df_binary = df[df['rst'].str.contains('READ BINARY')]
     df_record = df[df['rst'].str.contains('READ RECORD')]
 
@@ -54,8 +57,10 @@ def process(sum_rst, sum_read, sum_log_ch):
     df['ref'] = df['rst'].str.extract('(\[\d+\])')
     del df['rst']
 
-    df['DF'] = df['DF_Id'].str[:14].map(file_system.DF_name)
+    # [:14] 는 USIM, ISIM 체크 목적 (사업자 별로 전체 AID 다름)
+    df['DF'] = df['DF_Id'].apply(lambda x: file_system.DF_name.get(x[:14]) or file_system.DF_name.get(x))
     df['DF'] = df['DF'].fillna('Unknown DF')
+
     def get_File_name(row):
         return file_system.EF_name.get(row['DF_Id'][:14], {}).get(row['File_Id'])
     df['File'] = df.apply(get_File_name, axis=1)
@@ -72,12 +77,15 @@ def process(sum_rst, sum_read, sum_log_ch):
     df.drop_duplicates(subset=columns_to_check, inplace= True)
 
     df.sort_values(['DF','File_Id','REC#'], ascending=[True, True, True], inplace=True)
+
     df_MF = df[df['DF'].str.contains('MF')]
     df_nonMF = df[~df['DF'].str.contains('MF')]
     df = pd.concat([df_MF, df_nonMF], ignore_index=True)
+
     df_ISIM = df[df['DF'].str.contains('ISIM')]
     df_nonISIM = df[~df['DF'].str.contains('ISIM')]
     df = pd.concat([df_nonISIM, df_ISIM], ignore_index=True)
+
     df_Unknown = df[df['DF'].str.contains('Unknown')]
     df_Knokwn = df[~df['DF'].str.contains('Unknown')]
     df = pd.concat([df_Knokwn, df_Unknown], ignore_index=True)
