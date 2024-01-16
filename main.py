@@ -208,7 +208,7 @@ class Basic_GUI(QWidget):
         main_layout.addWidget(copyright_label)
 
         self.setLayout(main_layout)
-        self.setWindowTitle('SIM APDU Analyzer v3.0')
+        self.setWindowTitle('SIM APDU Analyzer v3.1')
         self.setGeometry(110, 50, 0, 0)
         self.show()
 
@@ -252,31 +252,14 @@ class Basic_GUI(QWidget):
 
         # QXDM
         if '[0x19B7]' in self.msg_all[0]:
-            for n in range(len(self.msg_all)):
-                self.msg_all[n] = ' '.join(self.msg_all[n].split())
-            msg_filter = []
-            line_end = True
-            for line in self.msg_all:
-                if line.split(' ')[0] == '[0x19B7]':
-                    msg_filter.append(line)
-                    if '{' in line:
-                        if '}' in line:
-                            line_end = True
-                        else:
-                            line_end = False
-                    else:
-                        line_end = True
-                else:
-                    if line_end is False:
-                        msg_filter.append(line)
-                        if '}' in line: line_end = True
-            self.msg_all = msg_filter
             self.msg_start, self.msg_end, self.msg_SN, self.msg_port, self.msg_type, self.msg_data \
                 = msg_item.QXDM(self.msg_all)
 
         # Shannon DM
-        elif 'USIM_MAIN' in self.msg_all[0]:
+        elif 'USIM_MAIN' in self.msg_all[1]:
             self.msg_all = msg_item.ShannonDM(self.msg_all)
+            self.msg_start, self.msg_end, self.msg_SN, self.msg_port, self.msg_type, self.msg_data \
+                = msg_item.QXDM(self.msg_all)
 
         # QCAT
         else:
@@ -326,28 +309,14 @@ class Basic_GUI(QWidget):
 
         # QXDM
         if '[0x19B7]' in self.msg_all[0]:
-            for n in range(len(self.msg_all)):
-                self.msg_all[n] = ' '.join(self.msg_all[n].split())
-            msg_filter = []
-            line_end = True
-            for line in self.msg_all:
-                if line.split(' ')[0] == '[0x19B7]':
-                    msg_filter.append(line)
-                    if '{' in line:
-                        if '}' in line: line_end = True
-                        else: line_end = False
-                    else: line_end = True
-                else:
-                    if line_end is False:
-                        msg_filter.append(line)
-                        if '}' in line: line_end = True
-            self.msg_all = msg_filter
             self.msg_start, self.msg_end, self.msg_SN, self.msg_port, self.msg_type, self.msg_data \
                 = msg_item.QXDM(self.msg_all)
 
         # Shannon DM
         elif 'USIM_MAIN' in self.msg_all[0]:
             self.msg_all = msg_item.ShannonDM(self.msg_all)
+            self.msg_start, self.msg_end, self.msg_SN, self.msg_port, self.msg_type, self.msg_data \
+                = msg_item.QXDM(self.msg_all)
 
         # No APDU log
         else:

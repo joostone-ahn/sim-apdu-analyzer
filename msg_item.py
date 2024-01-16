@@ -44,6 +44,26 @@ def QCAT(msg):
 
 # Load clipboard
 def QXDM(msg_all):
+    for n in range(len(msg_all)):
+        msg_all[n] = ' '.join(msg_all[n].split())
+    msg_filter = []
+    line_end = True
+    for line in msg_all:
+        if line.split(' ')[0] == '[0x19B7]':
+            msg_filter.append(line)
+            if '{' in line:
+                if '}' in line:
+                    line_end = True
+                else:
+                    line_end = False
+            else:
+                line_end = True
+        else:
+            if line_end is False:
+                msg_filter.append(line)
+                if '}' in line: line_end = True
+    msg_all = msg_filter
+
     msg_start, msg_end, msg_SN, msg_port, msg_type, msg_data = [], [], [], [], [], []
 
     if '19B7' not in msg_all[0]:
@@ -111,43 +131,87 @@ def QXDM(msg_all):
 
 def ShannonDM(msg_all):
     new_msg_all = []
-    concat_len = 0
+    Tx_len, Rx_len = 0, 0
+    msg_concat = ''
+
     for n in range(len(msg_all)):
         msg_items = msg_all[n].split('\t')
-        if 'Hex Dump -> :' in msg_items[5]:
-            hex_values = msg_items[5].split(':')[1].replace(' ', '')
-            if concat_len == 0:
-                new_msg_all.append(basic_format(msg_items, 'TX') + format('{ %s }')%split_hex(hex_values[:10]))
+        if 'Hex Dump' in msg_items[5]:
+            if '[UICC APDU CMD]' in msg_items[5]:
+                hex_values = msg_items[5].split(':')[1].replace(' ', '')
+                INS = hex_values[2:4]
+                if Tx_len == 0:
+                    new_msg_all.append(basic_format(msg_items, 'TX') + f'{{ {split_hex(hex_values[:10])} }}')
+                    if len(hex_values) > 10:
+                        new_msg_all.append(basic_format(msg_items, 'RX') + INS)
+                        Length = int(hex_values[8:10], 16) * 2
+                        if len(hex_values[10:]) == Length:
+                            new_msg_all.append(basic_format(msg_items, 'TX') + f'{{ {split_hex(hex_values[10:])} }}')
+                        elif len(hex_values[10:]) < Length:
+                            msg_concat = basic_format(msg_items, 'TX') + f'{{ {split_hex(hex_values[10:])} '
+                            Tx_len = Length - len(hex_values[10:])
+                elif Tx_len > 0:
+                    msg_concat += format('%s ')%split_hex(hex_values)
+                    Tx_len -= len(hex_values)
+                    if Tx_len == 0:
+                        new_msg_all.append(msg_concat + '}')
+                        msg_concat = ''
 
-                if len(hex_values) > 10:
-                    new_msg_all.append(basic_format(msg_items, 'RX') + hex_values[2:4])
-                    Length = int(hex_values[8:10], 16) * 2
-                    if len(hex_values[10:]) == Length:
-                        new_msg_all.append(basic_format(msg_items, 'TX') + format('{ %s }')%split_hex(hex_values[10:]))
-                    elif len(hex_values[10:]) < Length:
-                        msg_concat = basic_format(msg_items, 'TX') + format('{ %s ')%split_hex(hex_values[10:])
-                        concat_len = Length - len(hex_values[10:])
-            elif concat_len > 0:
-                msg_concat += format('%s ')%split_hex(hex_values)
-                concat_len -= len(hex_values)
-                if concat_len == 0:
-                    new_msg_all.append(msg_concat + '}')
+            elif '[UICC APDU RSP]' in msg_items[5]:
+                hex_values = msg_items[5].split(':')[1].replace(' ','')
+                INS = new_msg_all[-1].split('{')[1].replace(' ', '')[2:4]
+
+                if len(hex_values) == Rx_len:
+                    if not msg_concat:
+                        new_msg_all.append(basic_format(msg_items, 'RX') + f'{{ {INS} {split_hex(hex_values)} }}')
+                    elif msg_concat:
+                        new_msg_all.append(msg_concat + split_hex(hex_values) + ' }')
+                        msg_concat = ''
+                elif len(hex_values) < Rx_len:
+                    if not msg_concat:
+                        if len(hex_values) == 2:
+                            msg_concat = basic_format(msg_items, 'RX') + f'{{ {INS} {hex_values} '
+                        else:
+                            msg_concat = basic_format(msg_items, 'RX') + f'{{ {INS} {split_hex(hex_values)} '
+                            Rx_len -= len(hex_values)
+                            if Rx_len == 0:
+                                new_msg_all.append(msg_concat + '}')
+                                msg_concat = ''
+                    elif msg_concat:
+                        msg_concat += f'{split_hex(hex_values)} '
+                        Rx_len -= len(hex_values)
+                        if Rx_len == 0:
+                            new_msg_all.append(msg_concat + '}')
+                            msg_concat = ''
+
         elif 'SW1' in msg_items[5]:
             match = re.search(r'SW1: (0x[0-9A-Fa-f]{2}) SW2: (0x[0-9A-Fa-f]{2})$', msg_items[5])
             if match:
                 sw1, sw2 = match.groups()
-                new_msg_all.append(basic_format(msg_items, 'RX') + "{{ {} {} }}".format(sw1[2:].upper(), sw2[2:].upper()))
+                sw1 = sw1[2:].upper()
+                sw2 = sw2[2:].upper()
+                if not msg_concat:
+                    new_msg_all.append(basic_format(msg_items, 'RX') + f"{{ {sw1} {sw2} }}")
+                elif msg_concat:
+                    msg_concat += f'{sw1} {sw2} }}'
+                    new_msg_all.append(msg_concat)
+                    msg_concat = ''
+        elif 'Length of Response Data' in msg_items[5]:
+            Rx_len = int(msg_items[5].split('0x')[1], 16) * 2
 
-            # For testing
-            # [USIM_0] Send TR status SW1:0x90, SW2:0x0
-            # [USIM_0] SW1: 0x90, SW2: 0x0, INS: 0x70, P3: 0x0, Le: 0x2
-            # [USIM_0] RetVal after Status: 1 RspApdu. SW1: 0x90
-            # if ',' not in msg_items[5]:
-            #     if 'RetVal' not in msg_items[5]:
-            #         print(msg_items[5])
 
-    for msg in new_msg_all:
-        print(msg)
+    n = 0
+    while n < len(new_msg_all):
+        if 'RX Data' in new_msg_all[n]:
+            if n+1 < len(new_msg_all):
+                if 'RX Data' in new_msg_all[n+1]:
+                    rx_data_2 = new_msg_all[n+1].split("{ ")[1].split(" }")[0]
+                    new_msg_all[n] = new_msg_all[n].replace('}','') + f'{rx_data_2} }}'
+                    del new_msg_all[n+1]
+        n += 1
+
+    # for msg in new_msg_all:
+    #     print(msg)
 
     return new_msg_all
 

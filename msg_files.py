@@ -22,21 +22,24 @@ def process(sum_rst, sum_read, sum_log_ch):
     del df['read_1']
 
     df_binary = df[df['rst'].str.contains('READ BINARY')]
-    df_binary = df_binary.copy()
-    df_binary[['OFS', 'LEN']] = df_binary['read_2'].apply(pd.Series)
-    df_binary.drop(['read_2', 'read_3'], axis=1, inplace=True)
-    df_binary['Type'] = 'TF'
-
     df_record = df[df['rst'].str.contains('READ RECORD')]
-    df_record = df_record.copy()
-    df_record['REC#'] = df_record['read_2']
-    df_record['LEN'] = df_record['read_3']
-    df_record.drop(['read_2', 'read_3'], axis=1, inplace=True)
-    df_record['Type'] = 'LF'
+
+    if len(df_binary) > 0:
+        df_binary = df_binary.copy()
+        df_binary[['OFS', 'LEN']] = df_binary['read_2'].apply(pd.Series)
+        df_binary.drop(['read_2', 'read_3'], axis=1, inplace=True)
+        df_binary['Type'] = 'TF'
+        df_binary['REC#'] = '-'
+
+    if len(df_record) > 0:
+        df_record = df_record.copy()
+        df_record['REC#'] = df_record['read_2']
+        df_record['LEN'] = df_record['read_3']
+        df_record.drop(['read_2', 'read_3'], axis=1, inplace=True)
+        df_record['Type'] = 'LF'
+        df_record['OFS'] = '-'
 
     df = pd.concat([df_binary, df_record])
-    df['REC#'] = df['REC#'].fillna('-')
-    df['OFS'] = df['OFS'].fillna('-')
 
     df_SFI = df[df['rst'].str.contains('SFI')]
     df_nonSFI = df[~df['rst'].str.contains('SFI')]
