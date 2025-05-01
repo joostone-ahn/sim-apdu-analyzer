@@ -45,9 +45,12 @@ def parser(file_name, data, offset):
         parsing = parsing[1:]
 
     elif file_name in ['IMPI', 'IMPU', 'P-CSCF']:
+        # print(file_name)
+        # print(data)
         if data[2:4] != 'FF': # IMPU [0x] not used
             byte_array = bytearray.fromhex(data[4:4+int(data[2:4],16)*2])
-            parsing += byte_array.decode()
+            # print(byte_array)
+            parsing += byte_array.decode('utf-8', errors='ignore')
 
     elif file_name == 'ACC':
         parsing = '0x%s'%data[:2] + '%s '%data[2:]
