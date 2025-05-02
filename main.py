@@ -17,6 +17,7 @@ BoldFont = QtGui.QFont()
 BoldFont.setBold(True)
 
 CourierNewFont = QtGui.QFont("Courier New", 12)
+# CourierNewFont = QtGui.QFont("Courier New")
 
 style_sheet = "background-color: black; color: white;"
 
