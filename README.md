@@ -1,21 +1,55 @@
-# QXDM-SIM-APDU-Analyzer
+# 🔍 SIM-APDU-Analyzer
 
-eSIM device supporting DSDS(Dual SIM Dual Standby) has following limitations.
- - The interface between eSIM and ME(Mobile Equipment) can not be traced with contact-based SIM tracer alike Minimove (COMPRION) 
- - ME's logs includes mixed APDU logs from pSIM and eSIM.
+### A powerful tool for analyzing SIM/eSIM APDU logs from QXDM or QCAT
 
-This tool helps you to overcome the above limits.
- - APDU logs can be analyzed on application-level and protocol-leved similarly to contact-based SIM tracer.
- - APDU logs from pSIM or eSIM can be sorted by user's selection.
+Modern eSIM-enabled devices with **DSDS (Dual SIM Dual Standby)** present new challenges in APDU-level tracing:
 
+* Traditional contact-based SIM tracers (e.g., COMPRION Minimove) **cannot intercept communication** between eSIM and Mobile Equipment (ME).
+* Log traces from ME contain **interleaved APDU data** from both pSIM and eSIM, making it difficult to distinguish between them.
 
-[Guide]
-1) run main.py
-2) click 'Open file' or 'Clipboard' button
-3) select SIM1 or SIM2
-4) click 'Execute' button
+---
 
-※ text file(.txt) in 'file_sample' directory, which is filtered with 'UIM APDU [0x19B7]' from QCAT logs
+### 💡 What This Tool Does
+
+**QXDM-SIM-APDU-Analyzer** bridges that gap by enabling detailed, protocol-aware analysis of APDU logs — even in dual SIM environments.
+
+* Analyze APDUs at **application** and **protocol layer levels**, similar to physical SIM trace tools.
+* **Distinguish and filter** APDU logs by SIM type (SIM1 or SIM2), allowing focused inspection of either **pSIM** or **eSIM** traffic.
+* Designed for logs captured from QXDM/QCAT — specifically `UIM APDU [0x19B7]` messages.
+
+---
+
+### 🛠 How to Use
+
+1. Run the tool:
+
+   ```bash
+   python main.py
+   ```
+
+2. Choose input:
+
+   * Click **"Open File"** to load a `.txt` file
+   * Or use **"Clipboard"** to paste copied log text
+
+3. Select target SIM:
+
+   * **SIM1** or **SIM2** based on which SIM’s APDU logs you want to view
+
+4. Click **"Execute"** to analyze and visualize the log contents
+
+---
+
+### 📂 Sample Input
+
+Use `.txt` log files in the `file_sample/` directory, filtered with:
+
+> **UIM APDU \[0x19B7]**
+> (Captured from Qualcomm QCAT logs)
+
+---
+
+### 📸 UI Preview
 
 ![image](https://github.com/user-attachments/assets/7246db3b-46c2-4ed1-86f1-d170f112fc41)
 
