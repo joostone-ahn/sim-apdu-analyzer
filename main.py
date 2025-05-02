@@ -13,12 +13,11 @@ import clipboard
 import tabulate
 import pandas as pd
 
-
 BoldFont = QtGui.QFont()
 BoldFont.setBold(True)
 
-CourierNewFont = QtGui.QFont()
-CourierNewFont.setFamily("Courier New")
+# CourierNewFont = QtGui.QFont()
+# CourierNewFont.setFamily("Courier New")
 # CourierNewFont.setFamily("Consolas")
 
 style_sheet = "background-color: black; color: white;"
@@ -35,14 +34,14 @@ class Basic_GUI(QWidget):
     def initUI(self):
 
         self.open_btn = QPushButton("Open file")
-        self.open_btn.setFont(CourierNewFont)
+        # self.open_btn.setFont(CourierNewFont)
         self.open_btn.setFixedWidth(120)
         self.open_btn.setCheckable(False)
 
         self.open_btn.clicked.connect(self.open_file)
 
         self.clipboard_btn = QPushButton("Clipboard")
-        self.clipboard_btn.setFont(CourierNewFont)
+        # self.clipboard_btn.setFont(CourierNewFont)
         self.clipboard_btn.setFixedWidth(120)
         self.clipboard_btn.setCheckable(False)
 
@@ -60,7 +59,7 @@ class Basic_GUI(QWidget):
         self.comb_box.addItem("SIM1")
         self.comb_box.addItem("SIM2")
         self.comb_box.setFixedWidth(120)
-        self.comb_box.setFont(CourierNewFont)
+        # self.comb_box.setFont(CourierNewFont)
         self.comb_box.setDisabled(True)
 
         self.comb_box.currentIndexChanged.connect(self.comb_changed)
@@ -68,7 +67,7 @@ class Basic_GUI(QWidget):
         self.exe_btn = QPushButton("Execute")
         self.exe_btn.setFixedWidth(120)
         self.exe_btn.setCheckable(False)
-        self.exe_btn.setFont(CourierNewFont)
+        # self.exe_btn.setFont(CourierNewFont)
         self.exe_btn.setDisabled(True)
 
         self.exe_btn.clicked.connect(self.exe_msg)
@@ -88,11 +87,11 @@ class Basic_GUI(QWidget):
 
         self.SUM_label = QLabel()
         self.SUM_label.setText("Summary")
-        self.SUM_label.setFont(CourierNewFont)
+        # self.SUM_label.setFont(CourierNewFont)
         self.SUM_list = MyQListWidget()
         self.SUM_list.setAutoScroll(True)
         self.SUM_list.setFixedWidth(700)
-        self.SUM_list.setFont(CourierNewFont)
+        # self.SUM_list.setFont(CourierNewFont)
         self.SUM_list.setSelectionMode(QAbstractItemView.ExtendedSelection)
         self.SUM_list.setStyleSheet(style_sheet)
         SUM_vbox = QVBoxLayout()
@@ -103,11 +102,11 @@ class Basic_GUI(QWidget):
 
         self.Prot_label = QLabel()
         self.Prot_label.setText("Protocol-Level Analysis")
-        self.Prot_label.setFont(CourierNewFont)
+        # self.Prot_label.setFont(CourierNewFont)
         self.Prot_list = QTextBrowser()
         self.Prot_list.setFixedWidth(610)
-        self.Prot_list.setFixedHeight(380)
-        self.Prot_list.setFont(CourierNewFont)
+        self.Prot_list.setFixedHeight(360)
+        # self.Prot_list.setFont(CourierNewFont)
         self.Prot_list.setStyleSheet(style_sheet)
         Prot_vbox = QVBoxLayout()
         Prot_vbox.addWidget(self.Prot_label)
@@ -115,12 +114,12 @@ class Basic_GUI(QWidget):
 
         self.App_label = QLabel()
         self.App_label.setText("Application-Level Analysis")
-        self.App_label.setFont(CourierNewFont)
+        # self.App_label.setFont(CourierNewFont)
         self.App_list = QTextBrowser()
-        self.App_list.setFont(CourierNewFont)
+        # self.App_list.setFont(CourierNewFont)
         self.App_list.setStyleSheet(style_sheet)
         self.App_list.setFixedWidth(610)
-        self.App_list.setFixedHeight(380)
+        self.App_list.setFixedHeight(360)
         App_vbox = QVBoxLayout()
         App_vbox.addWidget(self.App_label)
         App_vbox.addWidget(self.App_list)
@@ -145,10 +144,10 @@ class Basic_GUI(QWidget):
 
         self.File_label = QLabel()
         self.File_label.setText("File List")
-        self.File_label.setFont(CourierNewFont)
+        # self.File_label.setFont(CourierNewFont)
         self.File_list = MyQListWidget()
         self.File_list.setStyleSheet(style_sheet)
-        self.File_list.setFont(CourierNewFont)
+        # self.File_list.setFont(CourierNewFont)
         self.File_list.setAutoScroll(True)
         self.File_list.setFixedWidth(720)
         File_vbox = QVBoxLayout()
@@ -160,11 +159,11 @@ class Basic_GUI(QWidget):
 
         self.Conts_label = QLabel()
         self.Conts_label.setText("File Contents")
-        self.Conts_label.setFont(CourierNewFont)
+        # self.Conts_label.setFont(CourierNewFont)
         self.Conts_list = QTextBrowser()
         self.Conts_list.setFixedWidth(590)
-        self.Conts_list.setFixedHeight(200)
-        self.Conts_list.setFont(CourierNewFont)
+        self.Conts_list.setFixedHeight(180)
+        # self.Conts_list.setFont(CourierNewFont)
         self.Conts_list.setStyleSheet(style_sheet)
         Conts_vbox = QVBoxLayout()
         Conts_vbox.addWidget(self.Conts_label)
@@ -172,12 +171,12 @@ class Basic_GUI(QWidget):
 
         self.Parsing_label = QLabel()
         self.Parsing_label.setText("File Contents Parsing")
-        self.Parsing_label.setFont(CourierNewFont)
+        # self.Parsing_label.setFont(CourierNewFont)
         self.Parsing_list = QTextBrowser()
-        self.Parsing_list.setFont(CourierNewFont)
+        # self.Parsing_list.setFont(CourierNewFont)
         self.Parsing_list.setStyleSheet(style_sheet)
         self.Parsing_list.setFixedWidth(590)
-        self.Parsing_list.setFixedHeight(560)
+        self.Parsing_list.setFixedHeight(540)
         Parsing_vbox = QVBoxLayout()
         Parsing_vbox.addWidget(self.Parsing_label)
         Parsing_vbox.addWidget(self.Parsing_list)
@@ -196,7 +195,7 @@ class Basic_GUI(QWidget):
         tab2 = QWidget()
         tab2.setLayout(File_hbox)
         self.tabs.addTab(tab2, "File System")
-        self.tabs.setFont(CourierNewFont)
+        # self.tabs.setFont(CourierNewFont)
 
         vbox.addWidget(self.tabs)
         vbox.addStretch()
@@ -204,7 +203,7 @@ class Basic_GUI(QWidget):
         main_layout = QVBoxLayout()
         main_layout.addLayout(vbox)
         main_layout.addWidget(QLabel())
-        copyright_label = QLabel("Copyright 2022. JUSEOK AHN<ajs3013@lguplus.co.kr> all rights reserved.")
+        copyright_label = QLabel("Copyright 2025. JUSEOK AHN <ajs3013@lguplus.co.kr> all rights reserved.")
         main_layout.addWidget(copyright_label)
 
         self.setLayout(main_layout)
@@ -539,5 +538,9 @@ class MyQListWidget(QListWidget):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
+
+    app.setStyle("Fusion")
+    app.setFont(QtGui.QFont("Courier New", 12))
+
     ex = Basic_GUI()
     sys.exit(app.exec_())
