@@ -21,22 +21,22 @@ Modern eSIM-enabled devices with **DSDS (Dual SIM Dual Standby)** present new ch
 
 ### 🛠 How to Use
 
-1. Run the tool:
+#### 1. Run the tool:
 
    ```bash
    python main.py
    ```
 
-2. Choose input:
+#### 2. Choose input:
 
    * Click **"Open File"** to load a `.txt` file
    * Or use **"Clipboard"** to paste copied log text
 
-3. Select target SIM:
+#### 3. Select target SIM:
 
    * **SIM1** or **SIM2** based on which SIM’s APDU logs you want to view
 
-4. Click **"Execute"** to analyze and visualize the log contents
+#### 4. Click **"Execute"** to analyze and visualize the log contents
 
 ---
 
