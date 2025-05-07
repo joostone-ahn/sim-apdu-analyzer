@@ -1,4 +1,7 @@
 from flask import Flask, render_template, request, jsonify, session
+from flask_session import Session
+import pandas as pd
+import io
 import msg_item
 import port
 import msg_sum
@@ -6,7 +9,9 @@ import msg_app
 import msg_prot
 import msg_files
 import os
-from flask_session import Session
+import re
+from openpyxl.utils import escape
+
 
 # print("🔥 main_web.py started")
 app = Flask(__name__)
@@ -156,6 +161,42 @@ def file_detail():
             'parsing': df[index].get('parsing', '')
         })
     return jsonify({'contents': '', 'parsing': ''})
+
+# Excel 허용 문자 필터 (openpyxl이 허용하는 범위 외 제거)
+def clean_excel_string(s):
+    if isinstance(s, str):
+        # ASCII 제어문자 제거 (0x00~0x1F 제외: Tab(9), LF(10), CR(13)만 허용)
+        return re.sub(r"[\x00-\x08\x0B\x0C\x0E-\x1F]", "", s)
+    return s
+
+@app.route("/download_excel")
+def download_excel():
+    import pandas as pd
+    from io import BytesIO
+    from flask import send_file
+
+    df_records = session.get('df', [])
+    if not df_records:
+        return "No file system data available", 400
+
+    # 전체 데이터로 DataFrame 구성
+    df_full = pd.DataFrame(df_records)
+
+    # 열 순서 지정 및 셀 문자열 정리
+    desired_cols = ['DF', 'File', 'DF_Id', 'File_Id', 'Type', 'SFI', 'REC', 'OFS', 'LEN', 'ref', 'contents', 'parsing']
+    df_full = df_full[[col for col in desired_cols if col in df_full.columns]]
+    df_full = df_full.applymap(clean_excel_string)
+
+    output = BytesIO()
+    df_full.to_excel(output, index=False, engine='openpyxl')
+    output.seek(0)
+
+    return send_file(
+        output,
+        as_attachment=True,
+        download_name="file_system_export.xlsx",
+        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
 
 if __name__ == '__main__':
     app.run(debug=True)

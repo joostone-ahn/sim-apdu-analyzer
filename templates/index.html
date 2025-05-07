@@ -13,28 +13,11 @@
       margin: 0;
     }
 
-    form {
-      margin-bottom: 20px;
-    }
-
-    .tabs {
-      margin-top: 10px;
-    }
-
-    .tab {
-      display: none;
-    }
-
-    .tab.active {
-      display: flex;
-      gap: 20px;
-      height: 75vh;
-    }
-
-    .tab-buttons {
-      margin-bottom: 14px;
-    }
-
+    form { margin-bottom: 20px; }
+    .tabs { margin-top: 10px; }
+    .tab { display: none; }
+    .tab.active { display: flex; gap: 20px; height: 75vh; }
+    .tab-buttons { margin-bottom: 14px; }
     .tab-buttons button {
       margin-right: 10px;
       padding: 5px 10px;
@@ -43,7 +26,6 @@
       border: 1px solid #444;
       cursor: pointer;
     }
-
     .tab-buttons button.active {
       background: #fff;
       color: #000;
@@ -111,18 +93,10 @@
       border-top: none;
     }
 
-    tr:hover {
-      background: #222;
-      cursor: pointer;
-    }
+    tr:hover { background: #222; cursor: pointer; }
 
-    h1 {
-      margin-top: 0;
-    }
-
-    h2 {
-      margin: 4px 0 8px;
-    }
+    h1 { margin-top: 0; }
+    h2 { margin: 4px 0 8px; }
 
     .red       { color: red; }
     .yellow    { color: yellow; }
@@ -132,9 +106,7 @@
     .lightblue { color: lightblue; }
     .lightgreen{ color: lightgreen; }
 
-    #logfile {
-      display: none;
-    }
+    #logfile { display: none; }
 
     .file-line {
       display: flex;
@@ -159,9 +131,7 @@
       white-space: nowrap;
     }
 
-    .sim-line {
-      margin-bottom: 10px;
-    }
+    .sim-line { margin-bottom: 10px; }
   </style>
 </head>
 <body>
@@ -247,7 +217,17 @@
   <!-- FILE SYSTEM TAB -->
   <div id="tab-file" class="tab">
     <div class="panel-container">
-      <h2>File System</h2>
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <h2 style="margin: 4px 0 8px;">File System</h2>
+        <a href="/download_excel" class="file-button" style="
+          background-color: #2ecc71;
+          color: black;
+          padding: 6px 12px;
+          border-radius: 4px;
+          font-weight: bold;
+          text-decoration: none;
+        ">💾 Save to Excel</a>
+      </div>
       <div class="file-panel">
         <table id="file-table">
           <thead>
@@ -275,6 +255,7 @@
         </table>
       </div>
     </div>
+
     <div class="file-detail-panel">
       <div class="file-detail-half">
         <h2>File Contents</h2>

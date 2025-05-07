@@ -2,4 +2,5 @@ flask
 flask-session
 pandas
 tabulate
+openpyxl
 gunicorn
