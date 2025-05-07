@@ -40,7 +40,8 @@ This tool enables APDU-level analysis of real device logs, clearly separating SI
 3. Click the `Analyze` button to begin decoding  
 4. Switch between `APDU` and `File System` tabs using the top navigation  
 5. In **APDU view**, click each message to see protocol and application-level details below  
-   In **File System view**, click each file item to inspect its decoded contents and parsed structure
+   In **File System view**, click each file item to view its contents and parsing results.
+
 
 ---
 
