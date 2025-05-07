@@ -7,7 +7,7 @@ Designed for modern dual SIM devices (DSDS), where eSIM and pSIM logs are interl
 
 ## 💡 Why This Tool?
 
-Traditional contact-based SIM trace tools — e.g., the Minimove device by COMPRION — can't intercept communication between the eSIM and Mobile Equipment (ME), as they rely on physical interfaces.
+Traditional contact-based SIM trace tools — e.g., the Minimove device by COMPRION — can't intercept communication between the eSIM and Mobile Equipment (ME), as they rely on physical interfaces.  
 This tool enables APDU-level analysis of real device logs, clearly separating SIM1 and SIM2 traffic and parsing both protocol and application-level messages — just like a hardware SIM tracer would.
 
 ---
@@ -35,11 +35,12 @@ This tool enables APDU-level analysis of real device logs, clearly separating SI
 
 ## 🛠 How to Use (Web Version)
 
-1. 접속 후 `📂 File` 버튼으로 `.txt` 파일 업로드 또는 클립보드에서 붙여넣기  
-2. `SIM1` / `SIM2` 선택  
-3. `Analyze` 클릭  
-4. 상단 탭에서 `APDU` 또는 `File System` 전환  
-5. 메시지를 클릭하면 하단에 상세 분석 표시
+1. Click the `📂 File` button to upload a `.txt` log file, or paste log contents from the clipboard  
+2. Select either `SIM1` or `SIM2` to focus analysis  
+3. Click the `Analyze` button to begin decoding  
+4. Switch between `APDU` and `File System` tabs using the top navigation  
+5. In **APDU view**, click each message to see protocol and application-level details below  
+   In **File System view**, click each file item to inspect its decoded contents and parsed structure
 
 ---
 
@@ -55,28 +56,11 @@ You can download test samples directly from the web UI (README > bottom):
 
 ## 🖼 UI Preview
 
-📸 Screenshots are available in [`readme.html`](/readme) or inside the web service:
+### Protocol & Application-level analysis
 
-- Protocol & Application-level analysis
-- File system decoding
-- Interactive inspection per APDU message
 
----
+### File system decoding
 
-## 🧩 Tech Stack
-
-- Python 3.11  
-- Flask + Flask-Session  
-- pandas, tabulate  
-- gunicorn (for Render deployment)
-
----
-
-## 🔒 Data Privacy
-
-- Uploaded logs are stored **only in session memory**
-- No logs are saved to disk or sent externally
-- Session expires on browser close or timeout
 
 ---
 
@@ -86,4 +70,3 @@ You can download test samples directly from the web UI (README > bottom):
 
 This analyzer was developed to assist with internal validation, protocol testing, and eSIM log debugging.  
 Use cases include carrier-side validation, log toolchain automation, and R&D on next-gen SIM management.
-
