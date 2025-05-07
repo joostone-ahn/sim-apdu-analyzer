@@ -7,8 +7,7 @@ Tailored for modern dual SIM (DSDS) architectures, where eSIM and pSIM messages 
 
 ## 💡 Why This Tool?
 
-Traditional SIM analyzers — _e.g., Minimove by COMPRION_ — rely on physical interfaces and can't intercept internal communication with eSIMs.  
-This tool bridges that gap by decoding raw diagnostic logs and enabling accurate analysis of SIM1/SIM2 activity — just like a hardware SIM probe.
+Traditional SIM tracer — _e.g., Minimove by COMPRION_ — rely on physical interfaces and can't intercept internal communication with eSIMs. This tool bridges that gap by decoding raw diagnostic logs and enabling accurate analysis of SIM1/SIM2 activity — just like a hardware SIM probe.
 
 ---
 
