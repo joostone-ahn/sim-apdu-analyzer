@@ -1,4 +1,4 @@
-# 🔍 SIM-APDU-Analyzer v3.2
+# 🔍 SIM-APDU-Analyzer
 
 A powerful web-based tool for analyzing SIM/eSIM APDU logs captured from real devices.  
 Tailored for modern dual SIM (DSDS) architectures, where eSIM and pSIM messages are interleaved in modem traces.
