@@ -53,7 +53,6 @@ Traditional SIM tracer — _e.g., Minimove by COMPRION_ — rely on physical int
 | Area                | Color         | Meaning                                                                 |
 |---------------------|---------------|-------------------------------------------------------------------------|
 | **APDU Tab**        |               |                                                                         |
-| TX/RX APDU lines    | Green         | Raw APDU protocol data                                                  |
 | `SELECT (X)`        | Gray          | Unknown EF selection                                                    |
 | `'ENVELOPE'`, etc.  | Yellow        | Proactive SIM operations                                                |
 | `'RESET'`, `'POWER'`| Cyan          | SIM power/reset events                                                  |
