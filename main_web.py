@@ -8,7 +8,7 @@ import msg_files
 import os
 from flask_session import Session
 
-print("🔥 main_web.py started")
+# print("🔥 main_web.py started")
 app = Flask(__name__)
 app.secret_key = 'apdu-analyzer-secret-key'
 app.config['SESSION_TYPE'] = 'filesystem'
@@ -64,7 +64,7 @@ def index():
             if '[0x19B7]' in msg_all[0]:
                 msg_all = msg_item.QXDM_filter(msg_all)
                 msg_start, msg_end, msg_SN, msg_port, msg_type, msg_data = msg_item.QXDM(msg_all)
-            elif 'USIM_MAIN' in msg_all[0]:
+            elif 'USIM_MAIN' in msg_all[0] or 'USIM_MAIN' in msg_all[1]:
                 msg_all = msg_item.ShannonDM(msg_all)
                 msg_start, msg_end, msg_SN, msg_port, msg_type, msg_data = msg_item.QXDM(msg_all)
             else:
