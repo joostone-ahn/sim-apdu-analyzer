@@ -55,16 +55,16 @@ Traditional SIM tracer — _e.g., Minimove by COMPRION_ — rely on physical int
 | Area                | Color         | Meaning                                                                 |
 |---------------------|---------------|-------------------------------------------------------------------------|
 | **APDU Tab**        |               |                                                                         |
-| SELECT (X)        | Gray          | Unknown EF selection                                                    |
-| 'ENVELOPE', etc.  | Yellow        | Proactive SIM operations                                                |
-| 'RESET', 'POWER'| Cyan          | SIM power/reset events                                                  |
-| 'MANAGE CHANNEL'  | Light Blue    | Logical channel control                                                 |
-| 'AUTHENTICATE'    | Light Green   | AKA or challenge-response authentication                               |
-| 'ERROR'           | Red           | Error message or malformed APDU                                         |
-| 'Re-Sync'         | Magenta       | Authentication resynchronization triggered                              |
+| `SELECT (X)`        | <span style="background:#888; color:#fff; padding:2px 6px; border-radius:4px;">Gray</span> | Unknown EF selection |
+| `'ENVELOPE'`, etc.  | <span style="background:#ffff66; padding:2px 6px; border-radius:4px;">Yellow</span> | Proactive SIM operations |
+| `'RESET'`, `'POWER'`| <span style="background:#00ffff; padding:2px 6px; border-radius:4px;">Cyan</span> | SIM power/reset events |
+| `'MANAGE CHANNEL'`  | <span style="background:#add8e6; padding:2px 6px; border-radius:4px;">Light Blue</span> | Logical channel control |
+| `'AUTHENTICATE'`    | <span style="background:#90ee90; padding:2px 6px; border-radius:4px;">Light Green</span> | AKA or challenge-response authentication |
+| `'ERROR'`           | <span style="background:#ff4d4d; padding:2px 6px; border-radius:4px;">Red</span> | Error message or malformed APDU |
+| `'Re-Sync'`         | <span style="background:#ff66cc; padding:2px 6px; border-radius:4px;">Magenta</span> | Authentication resynchronization triggered |
 | **File System Tab** |               |                                                                         |
-| File updated (highlighted) | Yellow        | OTA-updated file of key importance (e.g., IMSI, MSISDN)                 |
-| File updated        | Light Green   | General EF file updated in log trace                                    |
+| File updated (highlighted) | <span style="background:#ffff66; padding:2px 6px; border-radius:4px;">Yellow</span> | OTA-updated file of key importance (e.g., IMSI, MSISDN) |
+| File updated        | <span style="background:#90ee90; padding:2px 6px; border-radius:4px;">Light Green</span> | General EF file updated in log trace |
 
 ---
 
