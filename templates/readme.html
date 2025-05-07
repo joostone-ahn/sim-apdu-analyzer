@@ -58,7 +58,7 @@ Tailored for modern dual SIM (DSDS) architectures, where eSIM and pSIM messages 
 <hr />
 <h2>✅ Key Features</h2>
 <ul>
-<li><strong>Flexible Log Input</strong>: Upload <code>.txt</code> files or paste from clipboard  </li>
+<li><strong>Flexible Log Input</strong>: Upload <code>.txt</code> files  </li>
 <li><strong>Dual SIM Support</strong>: Analyze logs for SIM1 or SIM2 separately  </li>
 <li><strong>Protocol View</strong>: Visualize TX/RX APDU command sequences with timestamps  </li>
 <li><strong>Application View</strong>: Decode DF/EF structures, logical channels, and command content  </li>
@@ -127,37 +127,37 @@ Tailored for modern dual SIM (DSDS) architectures, where eSIM and pSIM messages 
 </tr>
 <tr>
 <td><code>SELECT (X)</code></td>
-<td>Gray</td>
+<td><span style="background:#888; color:#fff; padding:2px 6px; border-radius:4px;">Gray</span></td>
 <td>Unknown EF selection</td>
 </tr>
 <tr>
 <td><code>'ENVELOPE'</code>, etc.</td>
-<td>Yellow</td>
+<td><span style="background:#ffff66; padding:2px 6px; border-radius:4px;">Yellow</span></td>
 <td>Proactive SIM operations</td>
 </tr>
 <tr>
 <td><code>'RESET'</code>, <code>'POWER'</code></td>
-<td>Cyan</td>
+<td><span style="background:#00ffff; padding:2px 6px; border-radius:4px;">Cyan</span></td>
 <td>SIM power/reset events</td>
 </tr>
 <tr>
 <td><code>'MANAGE CHANNEL'</code></td>
-<td>Light Blue</td>
+<td><span style="background:#add8e6; padding:2px 6px; border-radius:4px;">Light Blue</span></td>
 <td>Logical channel control</td>
 </tr>
 <tr>
 <td><code>'AUTHENTICATE'</code></td>
-<td>Light Green</td>
+<td><span style="background:#90ee90; padding:2px 6px; border-radius:4px;">Light Green</span></td>
 <td>AKA or challenge-response authentication</td>
 </tr>
 <tr>
 <td><code>'ERROR'</code></td>
-<td>Red</td>
+<td><span style="background:#ff4d4d; padding:2px 6px; border-radius:4px;">Red</span></td>
 <td>Error message or malformed APDU</td>
 </tr>
 <tr>
 <td><code>'Re-Sync'</code></td>
-<td>Magenta</td>
+<td><span style="background:#ff66cc; padding:2px 6px; border-radius:4px;">Magenta</span></td>
 <td>Authentication resynchronization triggered</td>
 </tr>
 <tr>
@@ -167,19 +167,16 @@ Tailored for modern dual SIM (DSDS) architectures, where eSIM and pSIM messages 
 </tr>
 <tr>
 <td>File updated (highlighted)</td>
-<td>Yellow</td>
+<td><span style="background:#ffff66; padding:2px 6px; border-radius:4px;">Yellow</span></td>
 <td>OTA-updated file of key importance (e.g., IMSI, MSISDN)</td>
 </tr>
 <tr>
 <td>File updated</td>
-<td>Light Green</td>
+<td><span style="background:#90ee90; padding:2px 6px; border-radius:4px;">Light Green</span></td>
 <td>General EF file updated in log trace</td>
 </tr>
 </tbody>
 </table>
-<hr />
-<h2>📦 Sample Logs</h2>
-<p>📥 <a href="https://drive.google.com/drive/folders/1I1Bpgms0mXRy9NLk4kg_3K9BFDVbe9LD?usp=sharing">Download Sample Logs</a></p>
 <hr />
 <h2>🧩 Tech Stack</h2>
 <ul>
