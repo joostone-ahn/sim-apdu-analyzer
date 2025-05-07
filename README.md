@@ -13,7 +13,7 @@ Traditional SIM tracer — _e.g., Minimove by COMPRION_ — rely on physical int
 
 ## ✅ Key Features
 
-- **Flexible Log Input**: Upload `.txt` files or paste from clipboard  
+- **Flexible Log Input**: Upload `.txt` files  
 - **Dual SIM Support**: Analyze logs for SIM1 or SIM2 separately  
 - **Protocol View**: Visualize TX/RX APDU command sequences with timestamps  
 - **Application View**: Decode DF/EF structures, logical channels, and command content  
