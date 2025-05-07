@@ -45,15 +45,6 @@ This tool enables APDU-level analysis of real device logs, clearly separating SI
 
 ---
 
-## 📦 Sample Logs
-
-You can download test samples directly:
-- [Cilip_CM_US.txt](file_sample/Cilip_CM_US.txt)
-- [Cilip_CM_TW.txt](file_sample/Cilip_CM_TW.txt)
-- [Cilip_CM_HK.txt](file_sample/Cilip_CM_HK.txt)
-
----
-
 ## 🖼 UI Preview
 
 ### Protocol & Application-level analysis
