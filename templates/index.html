@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>SIM APDU Analyzer v3.2</title>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <style>
+    body {
+      font-family: monospace;
+      background: #000;
+      color: #fff;
+      padding: 20px;
+      margin: 0;
+    }
+
+    form {
+      margin-bottom: 20px;
+    }
+
+    .tabs {
+      margin-top: 10px;
+    }
+
+    .tab {
+      display: none;
+    }
+
+    .tab.active {
+      display: flex;
+      gap: 20px;
+      height: 75vh;
+    }
+
+    .tab-buttons {
+      margin-bottom: 14px;
+    }
+
+    .tab-buttons button {
+      margin-right: 10px;
+      padding: 5px 10px;
+      background: #222;
+      color: white;
+      border: 1px solid #444;
+      cursor: pointer;
+    }
+
+    .tab-buttons button.active {
+      background: #fff;
+      color: #000;
+    }
+
+    .panel-container {
+      width: 50%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .file-panel, .summary-panel {
+      flex: 1;
+      overflow-y: auto;
+      border: 1px solid #444;
+    }
+
+    .analysis-panel, .file-detail-panel {
+      width: 50%;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .analysis-half, .file-detail-half {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    textarea {
+      width: 100%;
+      height: 100%;
+      background: #111;
+      color: #0f0;
+      font-family: monospace;
+      padding: 10px;
+      white-space: pre;
+      resize: none;
+    }
+
+    table {
+      border-collapse: collapse;
+      border-spacing: 0;
+      width: 100%;
+      font-family: monospace;
+      table-layout: auto;
+    }
+
+    th, td {
+      border: 1px solid #555;
+      padding: 4px 6px;
+      white-space: pre;
+      text-align: left;
+      line-height: 1.3;
+      margin: 0;
+    }
+
+    thead th {
+      position: sticky;
+      top: 0;
+      background-color: #fff;
+      color: #000;
+      z-index: 10;
+      border-top: none;
+    }
+
+    tr:hover {
+      background: #222;
+      cursor: pointer;
+    }
+
+    h1 {
+      margin-top: 0;
+    }
+
+    h2 {
+      margin: 4px 0 8px;
+    }
+
+    .red       { color: red; }
+    .yellow    { color: yellow; }
+    .gray      { color: gray; }
+    .magenta   { color: magenta; }
+    .cyan      { color: cyan; }
+    .lightblue { color: lightblue; }
+    .lightgreen{ color: lightgreen; }
+
+    #logfile {
+      display: none;
+    }
+
+    .file-line {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+
+    .file-button {
+      padding: 4px 10px;
+      background: white;
+      color: black;
+      border: 1px solid #888;
+      cursor: pointer;
+    }
+
+    .file-name {
+      color: lightgreen;
+      max-width: 400px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .sim-line {
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<h1>SIM APDU Analyzer v3.2</h1>
+
+<form method="POST" enctype="multipart/form-data">
+  <div class="file-line">
+    <label class="file-button" for="logfile">📂 File</label>
+    <input id="logfile" type="file" name="logfile" onchange="updateFileLabel(this)" {% if not filename %}required{% endif %}>
+    <span id="selected-filename" class="file-name">
+      {% if filename %}
+        📄 {{ filename }}
+      {% else %}
+        선택된 파일 없음
+      {% endif %}
+    </span>
+  </div>
+
+  <div class="sim-line">
+    <select name="sim_select">
+      <option value="1" {% if selected_sim == 1 %}selected{% endif %}>SIM1</option>
+      <option value="2" {% if selected_sim == 2 %}selected{% endif %}>SIM2</option>
+    </select>
+    <button type="submit">Analyze</button>
+  </div>
+</form>
+
+{% if result.summary %}
+<div class="tab-buttons">
+  <button class="tab-btn active" onclick="showTab('tab-apdu', this)">APDU</button>
+  <button class="tab-btn" onclick="showTab('tab-file', this)">File System</button>
+</div>
+
+<div class="tabs">
+  <!-- APDU TAB -->
+  <div id="tab-apdu" class="tab active">
+    <div class="panel-container">
+      <h2>Summary</h2>
+      <div class="summary-panel">
+        <table id="summary-table">
+          <thead>
+            <tr><th>Message</th></tr>
+          </thead>
+          <tbody>
+            {% for idx, line, color in result.summary %}
+              <tr data-index="{{ idx }}">
+                <td class="{{ color }}">{{ line }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="analysis-panel">
+      <div class="analysis-half">
+        <h2>Protocol-Level Analysis</h2>
+        <textarea id="protocol-area" readonly></textarea>
+      </div>
+      <div class="analysis-half">
+        <h2>Application-Level Analysis</h2>
+        <textarea id="application-area" readonly></textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- FILE SYSTEM TAB -->
+  <div id="tab-file" class="tab">
+    <div class="panel-container">
+      <h2>File System</h2>
+      <div class="file-panel">
+        <table id="file-table">
+          <thead>
+            <tr>
+              <th>DF</th><th>File</th><th>DF_Id</th><th>File_Id</th><th>Type</th>
+              <th>SFI</th><th>REC#</th><th>OFS</th><th>LEN</th><th>ref</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for idx, row in result.df_with_index %}
+            <tr data-index="{{ idx }}">
+              <td>{{ row.DF }}</td>
+              <td class="{% if row.OTA_updated and row.File in ['IMSI','MSISDN','OPLMNwAcT','ACC','Routing_Ind','IMPI','IMPU'] %}yellow{% elif row.OTA_updated %}lightgreen{% endif %}">{{ row.File }}</td>
+              <td>{{ row.DF_Id }}</td>
+              <td>{{ row.File_Id }}</td>
+              <td>{{ row.Type }}</td>
+              <td>{{ row.SFI }}</td>
+              <td>{{ row.REC }}</td>
+              <td>{{ row.OFS }}</td>
+              <td>{{ row.LEN }}</td>
+              <td>{{ row.ref }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="file-detail-panel">
+      <div class="file-detail-half">
+        <h2>File Contents</h2>
+        <textarea id="file-contents" readonly></textarea>
+      </div>
+      <div class="file-detail-half">
+        <h2>File Contents Parsing</h2>
+        <textarea id="file-parsing" readonly></textarea>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<script>
+function showTab(id, btn) {
+  $('.tab').removeClass('active');
+  $('#' + id).addClass('active');
+
+  $('.tab-buttons button').removeClass('active');
+  $(btn).addClass('active');
+}
+
+function updateFileLabel(input) {
+  const label = document.getElementById('selected-filename');
+  if (input.files.length > 0) {
+    label.textContent = '📄 ' + input.files[0].name;
+    label.style.color = 'lightgreen';
+  } else {
+    label.textContent = '선택된 파일 없음';
+    label.style.color = 'gray';
+  }
+}
+
+$(document).ready(function(){
+  $('#summary-table tr').click(function(){
+    const index = $(this).data('index');
+    if (index !== undefined) {
+      $.post("/analyze_line", { index: index }, function(data){
+        $('#protocol-area').val(data.protocol.join('\\n').replace(/\\n/g, '\n'));
+        $('#application-area').val(data.application.join('\\n').replace(/\\n/g, '\n'));
+      });
+    }
+  });
+
+  $('#file-table tr').click(function(){
+    const index = $(this).data('index');
+    if (index !== undefined) {
+      $.post("/file_detail", { index: index }, function(data){
+        $('#file-contents').val(data.contents);
+        $('#file-parsing').val(data.parsing);
+      });
+    }
+  });
+});
+</script>
+
+</body>
+</html>
