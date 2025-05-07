@@ -1,7 +1,5 @@
 from flask import Flask, render_template, request, jsonify, session
 from flask_session import Session
-import pandas as pd
-import io
 import msg_item
 import port
 import msg_sum
@@ -10,10 +8,7 @@ import msg_prot
 import msg_files
 import os
 import re
-from openpyxl.utils import escape
 
-
-# print("🔥 main_web.py started")
 app = Flask(__name__)
 app.secret_key = 'apdu-analyzer-secret-key'
 app.config['SESSION_TYPE'] = 'filesystem'
