@@ -35,6 +35,11 @@ def get_line_color_class(line):
         return 'lightgreen'
     return ''
 
+
+@app.route("/readme")
+def show_static_readme():
+    return render_template("readme.html")
+
 @app.route('/', methods=['GET', 'POST'])
 def index():
     result = {}

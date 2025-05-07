@@ -1,0 +1,85 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>README</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 20px;
+      line-height: 1.6;
+    }
+    h1, h2, h3 {
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 0.3em;
+    }
+    pre {
+      background: #f4f4f4;
+      padding: 10px;
+      overflow-x: auto;
+    }
+    code {
+      background: #f0f0f0;
+      padding: 2px 4px;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <a href="/" style="display:block;margin-bottom:20px;">← Back to Home</a>
+  <h1>🔍 SIM-APDU-Analyzer v3.2</h1>
+<p>A powerful web-based tool for analyzing SIM/eSIM APDU logs captured from QXDM, QCAT, or Shannon DM.<br />
+Designed for modern dual SIM devices (DSDS), where eSIM and pSIM logs are interleaved.</p>
+<hr />
+<h2>💡 Why This Tool?</h2>
+<p>Traditional contact-based SIM trace tools — e.g., the Minimove device by COMPRION — can't intercept communication between the eSIM and Mobile Equipment (ME), as they rely on physical interfaces.<br />
+This tool enables APDU-level analysis of real device logs, clearly separating SIM1 and SIM2 traffic and parsing both protocol and application-level messages — just like a hardware SIM tracer would.</p>
+<hr />
+<h2>✅ Key Features</h2>
+<ul>
+<li><strong>Log Upload</strong>: Upload <code>.txt</code> logs from QXDM/QCAT/Shannon or paste from clipboard  </li>
+<li><strong>SIM Slot Selection</strong>: Focus analysis on SIM1 or SIM2  </li>
+<li><strong>Protocol-level View</strong>: Visualizes TX/RX APDU sequences  </li>
+<li><strong>Application-level Interpretation</strong>: Extracts logical channel, DF/EF context, APDU commands  </li>
+<li><strong>File System Viewer</strong>: Decodes USIM file hierarchy, EF contents, and interprets binary values  </li>
+<li><strong>Web UI</strong>: Flask-based with modern, responsive layout and session memory</li>
+</ul>
+<hr />
+<h2>🧾 Supported Log Formats</h2>
+<p>| Format Source   | Detection Logic         | Notes                                        |
+|-----------------|--------------------------|----------------------------------------------|
+| QXDM / QCAT     | Contains <code>[0x19B7]</code>      | Qualcomm UIM APDU messages                   |
+| Shannon DM      | Contains <code>USIM_MAIN</code>     | Samsung Shannon logs with internal decoding  |
+| Generic QCAT    | Structured <code>.txt</code> logs   | Must contain UIM records per line            |</p>
+<hr />
+<h2>🛠 How to Use (Web Version)</h2>
+<ol>
+<li>Click the <code>📂 File</code> button to upload a <code>.txt</code> log file, or paste log contents from the clipboard  </li>
+<li>Select either <code>SIM1</code> or <code>SIM2</code> to focus analysis  </li>
+<li>Click the <code>Analyze</code> button to begin decoding  </li>
+<li>Switch between <code>APDU</code> and <code>File System</code> tabs using the top navigation  </li>
+<li>In <strong>APDU view</strong>, click each message to see protocol and application-level details below<br />
+   In <strong>File System view</strong>, click each file item to view its contents and parsing results.</li>
+</ol>
+<hr />
+<h2>📦 Sample Logs</h2>
+<p>You can download test samples directly:
+- <a href="file_sample/Cilip_CM_US.txt">Cilip_CM_US.txt</a>
+- <a href="file_sample/Cilip_CM_TW.txt">Cilip_CM_TW.txt</a>
+- <a href="file_sample/Cilip_CM_HK.txt">Cilip_CM_HK.txt</a></p>
+<hr />
+<h2>🖼 UI Preview</h2>
+<h3>Protocol &amp; Application-level analysis</h3>
+<p><img alt="img_apdu.png" src="images/img_apdu.png" /></p>
+<h3>File system decoding</h3>
+<p><img alt="img_filesystem.png" src="images/img_filesystem.png" /></p>
+<hr />
+<h2>📄 License &amp; Credits</h2>
+<p><strong>Copyright 2025. JUSEOK AHN <a href="&#109;&#97;&#105;&#108;&#116;&#111;&#58;&#97;&#106;&#115;&#51;&#48;&#49;&#51;&#64;&#108;&#103;&#117;&#112;&#108;&#117;&#115;&#46;&#99;&#111;&#46;&#107;&#114;">&#97;&#106;&#115;&#51;&#48;&#49;&#51;&#64;&#108;&#103;&#117;&#112;&#108;&#117;&#115;&#46;&#99;&#111;&#46;&#107;&#114;</a> all rights reserved.</strong></p>
+<p>This analyzer was developed to assist with internal validation, protocol testing, and eSIM log debugging.<br />
+Use cases include carrier-side validation, log toolchain automation, and R&amp;D on next-gen SIM management.</p>
+</body>
+</html>

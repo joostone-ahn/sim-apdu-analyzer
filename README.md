@@ -47,21 +47,20 @@ This tool enables APDU-level analysis of real device logs, clearly separating SI
 
 ## 📦 Sample Logs
 
-You can download test samples directly from the web UI (README > bottom):
-
-- `QXDM_apdu_sim1.txt`  
-- `Shannon_debug_sim2.txt`  
-- `QCAT_export_sim1.txt`
+You can download test samples directly:
+- [Cilip_CM_US.txt](file_sample/Cilip_CM_US.txt)
+- [Cilip_CM_TW.txt](file_sample/Cilip_CM_TW.txt)
+- [Cilip_CM_HK.txt](file_sample/Cilip_CM_HK.txt)
 
 ---
 
 ## 🖼 UI Preview
 
 ### Protocol & Application-level analysis
-
+![img_apdu.png](images/img_apdu.png)
 
 ### File system decoding
-
+![img_filesystem.png](images/img_filesystem.png)
 
 ---
 
