@@ -39,12 +39,12 @@ Traditional SIM tracer — _e.g., Minimove by COMPRION_ — rely on physical int
 2. Choose **SIM1** or **SIM2**  
 3. Click **Analyze**  
 4. Navigate to either **APDU** or **File System** tab  
-   - In **APDU View**, click a message to display:
-     - **Protocol-Level Analysis**: TX/RX breakdown with timestamps
-     - **Application-Level Analysis**: DF/EF, logical channel, APDU interpretation  
-   - In **File System View**, click a file to view:
-     - **File Contents** (raw hex)
-     - **Parsed Structure** (decoded binary interpretation)
+- In **APDU View**, click a message to display:
+  - **Protocol-Level Analysis**: TX/RX breakdown with timestamps
+  - **Application-Level Analysis**: DF/EF, logical channel, APDU interpretation  
+- In **File System View**, click a file to view:
+  - **File Contents** (raw hex)
+  - **Parsed Structure** (decoded binary interpretation)
 
 ---
 
