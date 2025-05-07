@@ -85,12 +85,8 @@ Included examples:
 
 ## 🖼 UI Preview
 
-Browse to `/readme` in your deployment to view screenshots:
-
-- Protocol & Application analysis  
-- EF file system decoding  
-- Clipboard and file input support  
-- Interactive color-coded logs
+![img_apdu.png](images/img_apdu.png)
+![img_filesystem.png](images/img_filesystem.png)
 
 ---
 
