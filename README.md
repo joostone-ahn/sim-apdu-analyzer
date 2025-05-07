@@ -33,18 +33,19 @@ Traditional SIM tracer — _e.g., Minimove by COMPRION_ — rely on physical int
 
 ---
 
-## 🛠 How to Use (Web Version)
+## 🛠 How to Use
 
 1. Click 📂 **File** to upload a `.txt` file, or paste from clipboard  
 2. Choose **SIM1** or **SIM2**  
 3. Click **Analyze**  
 4. Navigate to either **APDU** or **File System** tab  
-- In **APDU View**, click a message to display:
-  - **Protocol-Level Analysis**: TX/RX breakdown with timestamps
-  - **Application-Level Analysis**: DF/EF, logical channel, APDU interpretation  
-- In **File System View**, click a file to view:
-  - **File Contents** (raw hex)
-  - **Parsed Structure** (decoded binary interpretation)
+5. 
+   - In **APDU View**, click a message to display:
+     - **Protocol-Level Analysis**: TX/RX breakdown with timestamps  
+     - **Application-Level Analysis**: DF/EF, logical channel, APDU interpretation  
+   - In **File System View**, click a file to view:
+     - **File Contents** (raw hex)  
+     - **Parsed Structure** (decoded binary interpretation)
 
 ---
 
