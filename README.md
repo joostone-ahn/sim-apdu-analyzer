@@ -1,66 +1,71 @@
 # 🔍 SIM-APDU-Analyzer v3.2
 
-A powerful web-based tool for analyzing SIM/eSIM APDU logs captured from QXDM, QCAT, or Shannon DM.  
-Tailored for modern dual SIM devices (DSDS), where eSIM and pSIM logs are interleaved within the same trace.
+A powerful web-based tool for analyzing SIM/eSIM APDU logs captured from real devices.  
+Tailored for modern dual SIM (DSDS) architectures, where eSIM and pSIM messages are interleaved in modem traces.
 
 ---
 
 ## 💡 Why This Tool?
 
-Traditional SIM analyzers — _e.g., Minimove by COMPRION_ — can only trace physical SIM cards.  
-They fail to capture eSIM activity between the eUICC and the Mobile Equipment (ME), which happens internally.  
-**SIM-APDU-Analyzer** bridges this gap by decoding raw log traces, isolating SIM1/SIM2 traffic, and presenting results comparable to hardware SIM probes.
+Traditional SIM analyzers — _e.g., Minimove by COMPRION_ — rely on physical interfaces and can't intercept internal communication with eSIMs.  
+This tool bridges that gap by decoding raw diagnostic logs and enabling accurate analysis of SIM1/SIM2 activity — just like a hardware SIM probe.
 
 ---
 
 ## ✅ Key Features
 
 - **Flexible Log Input**: Upload `.txt` files or paste from clipboard  
-- **Dual SIM Support**: Analyze logs per SIM slot (SIM1 / SIM2)  
-- **Protocol View**: TX/RX command visualization with timestamp  
-- **Application View**: Parse DF/EF, logical channel, and command types  
-- **File System View**: Browse EF files, see raw and interpreted content  
-- **UI**: Lightweight Flask app with session-based state handling
+- **Dual SIM Support**: Analyze logs for SIM1 or SIM2 separately  
+- **Protocol View**: Visualize TX/RX APDU command sequences with timestamps  
+- **Application View**: Decode DF/EF structures, logical channels, and command content  
+- **File System View**: Inspect EF hierarchy, raw file content, and parsed values  
+- **UI**: Flask-based, responsive design with persistent session handling
 
 ---
 
 ## 🧾 Supported Log Formats
 
-| Format Source   | Detection Logic     | Notes                                                       |
-|-----------------|----------------------|-------------------------------------------------------------|
-| QXDM / QCAT     | Contains `[0x19B7]`  | Qualcomm UIM APDU messages in CP logs                       |
-| Shannon DM      | Contains `USIM_MAIN` | Samsung internal logs with decoded USIM/APDU information    |
-| Generic QCAT    | Text-based `.txt`    | Should include APDU records in each relevant message line   |
+| Format Source      | Detection Logic             | Notes                                                    |
+|--------------------|------------------------------|----------------------------------------------------------|
+| QXDM / QCAT        | Contains `[0x19B7]`           | Qualcomm UIM APDU logs — supports filtering and parsing  |
+| Shannon DM         | Contains `USIM_MAIN`          | Samsung Shannon logs with internal decoding              |
+
+Only basic structural consistency is required. `[0x19B7]` and `USIM_MAIN` act as format identifiers for filtering and decoding.
 
 ---
 
 ## 🛠 How to Use (Web Version)
 
-1. Click 📂 **File** to upload `.txt` logs or paste copied log text  
+1. Click 📂 **File** to upload a `.txt` file, or paste from clipboard  
 2. Choose **SIM1** or **SIM2**  
-3. Click **Analyze** to decode  
-4. Use the top navigation to switch between `APDU` and `File System` views  
-5. In **APDU View**: Click any message to reveal:
-   - **Protocol-Level Analysis**: Raw TX/RX byte sequence
-   - **Application-Level Analysis**: Logical channel, DF/EF, interpreted command  
-6. In **File System View**: Click any file to inspect:
-   - **Raw EF Contents**
-   - **Decoded Structure** such as service bits, identifiers, access rules
+3. Click **Analyze**  
+4. Navigate to either **APDU** or **File System** tab  
+5.  
+   - In **APDU View**, click a message to display:
+     - **Protocol-Level Analysis**: TX/RX breakdown with timestamps
+     - **Application-Level Analysis**: DF/EF, logical channel, APDU interpretation  
+   - In **File System View**, click a file to view:
+     - **File Contents** (raw hex)
+     - **Parsed Structure** (decoded binary interpretation)
 
 ---
 
-## 🎨 UI Color Guide
+## 🎨 Color Guide
 
-| Context                    | Color       | Meaning                                                                 |
-|----------------------------|-------------|-------------------------------------------------------------------------|
-| `[TX]` / `[RX]` lines      | **Green**   | Transmitted / received APDU data at protocol level                      |
-| `SELECT (X)`              | **Gray**    | Unknown or invalid EF selection                                         |
-| `'ENVELOPE'`, `'REFRESH'` | **Yellow**  | Proactive SIM commands / session updates                               |
-| `'RESET'`, `'POWER'`       | **Cyan**    | SIM power/reset operations                                              |
-| `'MANAGE CHANNEL'`         | **Blue**    | Channel management (open, close, etc.)                                  |
-| `'AUTHENTICATE'`           | **Light Green** | SIM authentication (e.g., AKA or challenge-response)             |
-| `'ERROR'` lines            | **Red**     | Malformed or failed APDU responses                                      |
-| `'Re-Sync'` entries        | **Magenta** | Indicates resynchronization activity (e.g., AKA SQN desync handling)    |
+| Area                | Color         | Meaning                                                                 |
+|---------------------|---------------|-------------------------------------------------------------------------|
+| **APDU Tab**        |               |                                                                         |
+| TX/RX APDU lines    | Green         | Raw APDU protocol data                                                  |
+| `SELECT (X)`        | Gray          | Unknown EF selection                                                    |
+| `'ENVELOPE'`, etc.  | Yellow        | Proactive SIM operations                                                |
+| `'RESET'`, `'POWER'`| Cyan          | SIM power/reset events                                                  |
+| `'MANAGE CHANNEL'`  | Light Blue    | Logical channel control                                                 |
+| `'AUTHENTICATE'`    | Light Green   | AKA or challenge-response authentication                               |
+| `'ERROR'`           | Red           | Error message or malformed APDU                                         |
+| `'Re-Sync'`         | Magenta       | Authentication resynchronization triggered                              |
+| **File System Tab** |               |                                                                         |
+| File updated (highlighted) | Yellow        | OTA-updated file of key importance (e.g., IMSI, MSISDN)                 |
+| File updated        | Light Green   | General EF file updated in log trace                                    |
 
 ---
 
@@ -68,24 +73,25 @@ They fail to capture eSIM activity between the eUICC and the Mobile Equipment (M
 
 📥 [Download Sample Logs](https://drive.google.com/drive/folders/1I1Bpgms0mXRy9NLk4kg_3K9BFDVbe9LD?usp=sharing)
 
-Included files:
+Included examples:
 
-- `Clip_CM_HK.txt` – eSIM OTA logs (HK)  
-- `Clip_CM_TW.txt` – eSIM OTA logs (Taiwan)  
-- `Clip_CM_US.txt` – eSIM OTA logs (US)  
-- `Clip_eSIM_install_OTA.txt` – Full provisioning trace  
-- `QCAT_Anritsu_SIM.txt` – SIM logs captured from QCAT (lab)  
-- `QCAT_eSIM_error.txt` – Error-prone log for validation/testing
+- `Clip_CM_HK.txt` – eSIM OTA (HK)  
+- `Clip_CM_TW.txt` – eSIM OTA (Taiwan)  
+- `Clip_CM_US.txt` – eSIM OTA (US)  
+- `Clip_eSIM_install_OTA.txt` – End-to-end installation trace  
+- `QCAT_Anritsu_SIM.txt` – Diagnostic log from QCAT  
+- `QCAT_eSIM_error.txt` – Error reproduction sample
 
 ---
 
 ## 🖼 UI Preview
 
-Visit `/readme` on the web server to see example screenshots:
+Browse to `/readme` in your deployment to view screenshots:
 
-- Protocol & Application-level decoded view  
-- EF File System inspection  
-- Interactive UI with file upload and clipboard input
+- Protocol & Application analysis  
+- EF file system decoding  
+- Clipboard and file input support  
+- Interactive color-coded logs
 
 ---
 
@@ -94,15 +100,15 @@ Visit `/readme` on the web server to see example screenshots:
 - Python 3.11  
 - Flask + Flask-Session  
 - pandas, tabulate  
-- gunicorn (Render deployment ready)
+- gunicorn (for cloud deployment)
 
 ---
 
 ## 🔒 Data Privacy
 
-- All uploaded logs are stored in memory (session only)  
-- No persistent or external storage involved  
-- Sessions expire automatically on browser close or timeout
+- Logs are stored only in server-side session memory  
+- Nothing is written to disk or externalized  
+- Sessions expire when the browser is closed or idle
 
 ---
 
@@ -110,5 +116,5 @@ Visit `/readme` on the web server to see example screenshots:
 
 **© 2025 JUSEOK AHN &lt;ajs3013@lguplus.co.kr&gt; All rights reserved.**
 
-Built to support internal network validation, protocol inspection, and dual-SIM eSIM verification.  
-Useful for telecom engineers, QA testers, and researchers exploring APDU behavior on live networks.
+Developed for internal analysis, SIM validation, and automation of diagnostic workflows.  
+Applicable for QA teams, engineers, and researchers working with modern SIM/eSIM infrastructure.
