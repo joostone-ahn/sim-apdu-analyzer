@@ -30,7 +30,7 @@ This tool bridges that gap by decoding raw diagnostic logs and enabling accurate
 | QXDM / QCAT        | Contains `[0x19B7]`           | Qualcomm UIM APDU logs — supports filtering and parsing  |
 | Shannon DM         | Contains `USIM_MAIN`          | Samsung Shannon logs with internal decoding              |
 
-Only basic structural consistency is required. `[0x19B7]` and `USIM_MAIN` act as format identifiers for filtering and decoding.
+> Only basic structural consistency is required. `[0x19B7]` and `USIM_MAIN` act as format identifiers for filtering and decoding.
 
 ---
 
