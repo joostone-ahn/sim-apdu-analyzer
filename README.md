@@ -7,7 +7,7 @@ Designed for modern dual SIM devices (DSDS), where eSIM and pSIM logs are interl
 
 ## 💡 Why This Tool?
 
-Traditional SIM trace tools can't intercept communication between the eSIM and the Mobile Equipment (ME).  
+Traditional contact-based SIM trace tools — e.g., the Minimove device by COMPRION — can't intercept communication between the eSIM and Mobile Equipment (ME), as they rely on physical interfaces.
 This tool enables APDU-level analysis of real device logs, clearly separating SIM1 and SIM2 traffic and parsing both protocol and application-level messages — just like a hardware SIM tracer would.
 
 ---
