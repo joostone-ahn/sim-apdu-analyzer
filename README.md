@@ -45,8 +45,8 @@ Traditional SIM tracer — _e.g., Minimove by COMPRION_ — rely on physical int
   - **Application-Level Analysis**: DF/EF, logical channel, APDU interpretation  
 
 ### **File System View**
-  - **File Contents** (raw hex)  
-  - **Parsed Structure** (decoded binary interpretation)
+  - **File Contents**: raw hex  
+  - **Parsed Structure**: interpreted according to file type — e.g., bitmap flags, PLMN list, ASCII strings, TLV templates
 
 ---
 
