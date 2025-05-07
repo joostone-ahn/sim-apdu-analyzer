@@ -72,22 +72,6 @@ Traditional SIM tracer — _e.g., Minimove by COMPRION_ — rely on physical int
 
 📥 [Download Sample Logs](https://drive.google.com/drive/folders/1I1Bpgms0mXRy9NLk4kg_3K9BFDVbe9LD?usp=sharing)
 
-Included examples:
-
-- `Clip_CM_HK.txt` – eSIM OTA (HK)  
-- `Clip_CM_TW.txt` – eSIM OTA (Taiwan)  
-- `Clip_CM_US.txt` – eSIM OTA (US)  
-- `Clip_eSIM_install_OTA.txt` – End-to-end installation trace  
-- `QCAT_Anritsu_SIM.txt` – Diagnostic log from QCAT  
-- `QCAT_eSIM_error.txt` – Error reproduction sample
-
----
-
-## 🖼 UI Preview
-
-![img_apdu.png](images/img_apdu.png)
-![img_filesystem.png](images/img_filesystem.png)
-
 ---
 
 ## 🧩 Tech Stack
