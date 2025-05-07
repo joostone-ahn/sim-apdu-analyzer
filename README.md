@@ -52,19 +52,15 @@ Traditional SIM tracer — _e.g., Minimove by COMPRION_ — rely on physical int
 
 ## 🎨 Color Guide
 
-| Area                | Color         | Meaning                                                                 |
-|---------------------|---------------|-------------------------------------------------------------------------|
-| **APDU Tab**        |               |                                                                         |
-| `SELECT (X)`        | <span style="background:#888; color:#fff; padding:2px 6px; border-radius:4px;">Gray</span> | Unknown EF selection |
-| `'ENVELOPE'`, etc.  | <span style="background:#ffff66; padding:2px 6px; border-radius:4px;">Yellow</span> | Proactive SIM operations |
-| `'RESET'`, `'POWER'`| <span style="background:#00ffff; padding:2px 6px; border-radius:4px;">Cyan</span> | SIM power/reset events |
-| `'MANAGE CHANNEL'`  | <span style="background:#add8e6; padding:2px 6px; border-radius:4px;">Light Blue</span> | Logical channel control |
-| `'AUTHENTICATE'`    | <span style="background:#90ee90; padding:2px 6px; border-radius:4px;">Light Green</span> | AKA or challenge-response authentication |
-| `'ERROR'`           | <span style="background:#ff4d4d; padding:2px 6px; border-radius:4px;">Red</span> | Error message or malformed APDU |
-| `'Re-Sync'`         | <span style="background:#ff66cc; padding:2px 6px; border-radius:4px;">Magenta</span> | Authentication resynchronization triggered |
-| **File System Tab** |               |                                                                         |
-| File updated (highlighted) | <span style="background:#ffff66; padding:2px 6px; border-radius:4px;">Yellow</span> | OTA-updated file of key importance (e.g., IMSI, MSISDN) |
-| File updated        | <span style="background:#90ee90; padding:2px 6px; border-radius:4px;">Light Green</span> | General EF file updated in log trace |
+| Area                | Color       | Meaning                                |
+|---------------------|-------------|----------------------------------------|
+| `SELECT (X)`        | ![#888888](https://via.placeholder.com/15/888888/000000?text=+) Gray | Unknown EF selection |
+| `'ENVELOPE'`, etc.  | ![#FFFF66](https://via.placeholder.com/15/FFFF66/000000?text=+) Yellow | Proactive SIM operations |
+| `'RESET'`, `'POWER'`| ![#00FFFF](https://via.placeholder.com/15/00FFFF/000000?text=+) Cyan | SIM power/reset events |
+| `'MANAGE CHANNEL'`  | ![#ADD8E6](https://via.placeholder.com/15/ADD8E6/000000?text=+) Light Blue | Logical channel control |
+| `'AUTHENTICATE'`    | ![#90EE90](https://via.placeholder.com/15/90EE90/000000?text=+) Light Green | AKA authentication |
+| `'ERROR'`           | ![#FF4D4D](https://via.placeholder.com/15/FF4D4D/000000?text=+) Red | APDU error |
+| `'Re-Sync'`         | ![#FF66CC](https://via.placeholder.com/15/FF66CC/000000?text=+) Magenta | Re-synchronization |
 
 ---
 
