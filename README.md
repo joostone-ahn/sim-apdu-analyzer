@@ -52,15 +52,19 @@ Traditional SIM tracer — _e.g., Minimove by COMPRION_ — rely on physical int
 
 ## 🎨 Color Guide
 
-| Area                | Color       | Meaning                                |
-|---------------------|-------------|----------------------------------------|
-| `SELECT (X)`        | ![#888888](https://via.placeholder.com/15/888888/000000?text=+) Gray | Unknown EF selection |
-| `'ENVELOPE'`, etc.  | ![#FFFF66](https://via.placeholder.com/15/FFFF66/000000?text=+) Yellow | Proactive SIM operations |
-| `'RESET'`, `'POWER'`| ![#00FFFF](https://via.placeholder.com/15/00FFFF/000000?text=+) Cyan | SIM power/reset events |
-| `'MANAGE CHANNEL'`  | ![#ADD8E6](https://via.placeholder.com/15/ADD8E6/000000?text=+) Light Blue | Logical channel control |
-| `'AUTHENTICATE'`    | ![#90EE90](https://via.placeholder.com/15/90EE90/000000?text=+) Light Green | AKA authentication |
-| `'ERROR'`           | ![#FF4D4D](https://via.placeholder.com/15/FF4D4D/000000?text=+) Red | APDU error |
-| `'Re-Sync'`         | ![#FF66CC](https://via.placeholder.com/15/FF66CC/000000?text=+) Magenta | Re-synchronization |
+| Area                | Color         | Meaning                                                                 |
+|---------------------|---------------|-------------------------------------------------------------------------|
+| **APDU Tab**        |               |                                                                         |
+| SELECT (X)        | Gray          | Unknown EF selection                                                    |
+| 'ENVELOPE', etc.  | Yellow        | Proactive SIM operations                                                |
+| 'RESET', 'POWER'| Cyan          | SIM power/reset events                                                  |
+| 'MANAGE CHANNEL'  | Light Blue    | Logical channel control                                                 |
+| 'AUTHENTICATE'    | Light Green   | AKA or challenge-response authentication                               |
+| 'ERROR'           | Red           | Error message or malformed APDU                                         |
+| 'Re-Sync'         | Magenta       | Authentication resynchronization triggered                              |
+| **File System Tab** |               |                                                                         |
+| File updated (highlighted) | Yellow        | OTA-updated file of key importance (e.g., IMSI, MSISDN)                 |
+| File updated        | Light Green   | General EF file updated in log trace                                    |
 
 ---
 
