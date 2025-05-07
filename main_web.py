@@ -8,6 +8,7 @@ import msg_files
 import os
 from flask_session import Session
 
+print("🔥 main_web.py started")
 app = Flask(__name__)
 app.secret_key = 'apdu-analyzer-secret-key'
 app.config['SESSION_TYPE'] = 'filesystem'
