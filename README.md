@@ -68,12 +68,6 @@ Traditional SIM tracer — _e.g., Minimove by COMPRION_ — rely on physical int
 
 ---
 
-## 📦 Sample Logs
-
-📥 [Download Sample Logs](https://drive.google.com/drive/folders/1I1Bpgms0mXRy9NLk4kg_3K9BFDVbe9LD?usp=sharing)
-
----
-
 ## 🧩 Tech Stack
 
 - Python 3.11  
