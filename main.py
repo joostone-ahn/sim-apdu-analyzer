@@ -16,8 +16,11 @@ import pandas as pd
 BoldFont = QtGui.QFont()
 BoldFont.setBold(True)
 
-CourierNewFont = QtGui.QFont("Courier New", 12)
-# CourierNewFont = QtGui.QFont("Courier New")
+# For MAC
+# CourierNewFont = QtGui.QFont("Courier New", 12)
+
+# For Windows
+CourierNewFont = QtGui.QFont("Courier New")
 
 style_sheet = "background-color: black; color: white;"
 
