@@ -193,5 +193,10 @@ def download_excel():
         mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     )
 
+# if __name__ == '__main__':
+#     app.run(debug=True)
+
 if __name__ == '__main__':
-    app.run(debug=True)
+    # host='0.0.0.0'은 외부 접속을 허용하기 위한 필수 설정입니다.
+    # port는 Dockerfile의 EXPOSE와 맞춥니다.
+    app.run(host='0.0.0.0', port=5000, debug=False)
