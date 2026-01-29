@@ -1,368 +1,294 @@
-# Requirements Document: SIM APDU Analyzer
+# 요구사항 문서
 
-## Introduction
+## 소개
 
-SIM APDU Analyzer는 SIM/eSIM APDU 로그를 분석하여 Protocol, Application, File System 3계층으로 시각화하는 웹 기반 분석 도구입니다. 이 시스템은 3GPP TS 31.102/31.103 표준을 기반으로 APDU 명령어를 해석하며, QXDM, QCAT, Shannon DM 로그 포맷을 지원합니다.
+SIM APDU Analyzer는 실제 단말기에서 수집된 SIM/eSIM APDU 로그를 분석하는 웹 기반 도구입니다. 
+모뎀과 SIM 카드 간의 통신을 프로토콜 레벨, 애플리케이션 레벨, 파일 시스템 레벨의 3단계로 분석하여 
+SIM 카드 동작을 상세히 파악할 수 있습니다.
 
-## Glossary
+## 용어 정의
 
-- **APDU**: Application Protocol Data Unit - SIM 카드와 단말기 간 통신 프로토콜 단위
 - **System**: SIM APDU Analyzer 웹 애플리케이션
-- **Parser**: 로그 파일에서 APDU 메시지를 추출하고 구조화하는 모듈
-- **Protocol_Analyzer**: TX/RX 쌍을 매칭하고 APDU Case를 분류하는 모듈
-- **Application_Analyzer**: INS 코드를 해석하고 파일 시스템을 추적하는 모듈
-- **File_System_Analyzer**: READ 명령어로 읽은 파일 목록을 생성하는 모듈
-- **Web_Interface**: Flask 기반 웹 사용자 인터페이스
-- **QXDM**: Qualcomm eXtensible Diagnostic Monitor 로그 포맷
-- **QCAT**: Qualcomm QCAT 로그 포맷
-- **Shannon_DM**: Samsung Shannon DM 로그 포맷
-- **DSDS**: Dual SIM Dual Standby - 듀얼 SIM 환경
-- **INS**: Instruction byte - APDU 명령어 코드
-- **DF**: Dedicated File - SIM 파일 시스템의 디렉토리
-- **EF**: Elementary File - SIM 파일 시스템의 파일
-- **SFI**: Short File Identifier - 파일의 짧은 식별자
+- **User**: LG U+ 엔지니어 또는 기술 담당자
+- **APDU**: Application Protocol Data Unit (SIM 카드와 모뎀 간 통신 단위)
+- **TX**: Transmit (모뎀에서 SIM으로 전송되는 명령)
+- **RX**: Receive (SIM에서 모뎀으로 전송되는 응답)
+- **QXDM**: Qualcomm eXtensible Diagnostic Monitor (Qualcomm 모뎀 진단 도구)
+- **QCAT**: Qualcomm QXDM Configuration and Analysis Tool
+- **Shannon_DM**: Samsung Shannon 모뎀 진단 도구
+- **DF**: Dedicated File (SIM 파일 시스템의 디렉토리)
+- **EF**: Elementary File (SIM 파일 시스템의 파일)
+- **SFI**: Short File Identifier (파일 단축 식별자)
 - **Logical_Channel**: SIM 카드와의 논리적 통신 채널 (0-19)
+- **DSDS**: Dual SIM Dual Standby (듀얼 SIM 지원)
+- **OTA**: Over-The-Air (무선 업데이트)
 - **Status_Word**: APDU 응답의 상태 코드 (SW1, SW2)
-- **OTA**: Over-The-Air - 무선 업데이트
+- **AKA**: Authentication and Key Agreement (인증 프로토콜)
 
-## Requirements
+## 요구사항
 
-### Requirement 1: 로그 파일 업로드 및 포맷 감지
+### 요구사항 1: 로그 파일 업로드 및 포맷 감지
 
-**User Story:** As a SIM engineer, I want to upload log files and have the system automatically detect the format, so that I can analyze logs from different tools without manual configuration.
+**사용자 스토리:** 엔지니어로서, 다양한 진단 도구에서 생성된 로그 파일을 업로드하면 자동으로 포맷을 감지하여 분석할 수 있기를 원합니다.
 
-#### Acceptance Criteria
+#### 인수 기준
 
-1. WHEN a user uploads a text file, THE System SHALL accept files with .txt extension
-2. WHEN a log file is uploaded, THE System SHALL automatically detect the format by examining file content
-3. WHEN the log contains '[0x19B7]' tag, THE System SHALL identify it as QXDM or QCAT format
-4. WHEN the log contains 'USIM_MAIN' string, THE System SHALL identify it as Shannon DM format
-5. WHEN format detection fails, THE System SHALL return an error message to the user
-6. THE System SHALL store uploaded files in a designated upload directory
-7. THE System SHALL maintain the uploaded file in session for subsequent analysis
+1. WHEN User가 .txt 확장자의 로그 파일을 업로드하면, THE System SHALL 파일을 수신하고 저장한다
+2. WHEN 로그 파일의 첫 번째 라인에 '[0x19B7]'이 포함되면, THE System SHALL QXDM 포맷으로 감지한다
+3. WHEN 로그 파일의 첫 두 라인에 'USIM_MAIN'이 포함되면, THE System SHALL Shannon DM 포맷으로 감지한다
+4. WHEN 로그 파일이 위 조건에 해당하지 않으면, THE System SHALL QCAT 포맷으로 감지한다
+5. THE System SHALL 감지된 포맷에 맞는 파서를 사용하여 APDU 메시지를 추출한다
 
-### Requirement 2: SIM 포트 선택 및 필터링
 
-**User Story:** As a SIM engineer, I want to select which SIM (SIM1 or SIM2) to analyze in DSDS environment, so that I can focus on specific SIM card behavior.
+### 요구사항 2: SIM 포트 선택 및 필터링
 
-#### Acceptance Criteria
+**사용자 스토리:** 엔지니어로서, 듀얼 SIM 단말기의 로그에서 SIM1 또는 SIM2의 메시지만 선택적으로 분석할 수 있기를 원합니다.
 
-1. THE System SHALL provide a dropdown interface for selecting SIM1 or SIM2
-2. WHEN a SIM is selected, THE System SHALL filter messages belonging to that SIM port only
-3. WHEN duplicate sequence numbers are detected for the same port, THE System SHALL remove duplicate messages
-4. THE System SHALL maintain the selected SIM choice in session across page interactions
-5. WHEN the user changes SIM selection, THE System SHALL re-analyze the log with the new selection
+#### 인수 기준
 
-### Requirement 3: APDU 메시지 파싱
+1. THE System SHALL SIM1과 SIM2 선택 옵션을 제공한다
+2. WHEN User가 SIM 포트를 선택하면, THE System SHALL 해당 포트의 메시지만 필터링한다
+3. WHEN User가 SIM 포트를 변경하면, THE System SHALL 기존 로그 파일을 재분석하여 새로운 포트의 결과를 표시한다
+4. THE System SHALL 선택된 SIM 포트 정보를 세션에 저장한다
 
-**User Story:** As a SIM engineer, I want the system to parse APDU messages from log files, so that I can see structured message data.
+### 요구사항 3: APDU 메시지 파싱
 
-#### Acceptance Criteria
+**사용자 스토리:** 엔지니어로서, 로그 파일에서 APDU 메시지의 타임스탬프, 방향(TX/RX), 데이터를 정확히 추출할 수 있기를 원합니다.
 
-1. WHEN parsing QXDM format, THE Parser SHALL extract timestamp, SIM port, message type, and data from each log line
-2. WHEN parsing QCAT format, THE Parser SHALL identify messages by '0x19B7' tag and extract structured fields
-3. WHEN parsing Shannon DM format, THE Parser SHALL convert Shannon-specific format to standard APDU format
-4. THE Parser SHALL handle multi-line APDU data by concatenating lines until closing brace
-5. THE Parser SHALL extract sequence numbers from log messages
-6. THE Parser SHALL identify message types as TX, RX, ATR, PPS, or RESET
-7. WHEN consecutive duplicate messages are detected, THE Parser SHALL remove duplicates
-8. THE Parser SHALL preserve message order from the original log file
+#### 인수 기준
 
-### Requirement 4: 프로토콜 레벨 분석
+1. THE System SHALL 각 APDU 메시지에서 타임스탬프를 추출한다
+2. THE System SHALL 각 APDU 메시지의 방향(TX, RX, ATR_TX, ATR_RX, PPS_TX, PPS_RX, RESET)을 식별한다
+3. THE System SHALL 각 APDU 메시지의 16진수 데이터를 추출한다
+4. WHEN APDU 데이터가 여러 라인에 걸쳐 있으면, THE System SHALL 데이터를 연결하여 완전한 메시지를 구성한다
+5. THE System SHALL 중복된 메시지를 제거한다
 
-**User Story:** As a SIM engineer, I want to see TX/RX message pairs and APDU case classification, so that I can understand the protocol-level communication flow.
+### 요구사항 4: 프로토콜 레벨 분석
 
-#### Acceptance Criteria
+**사용자 스토리:** 엔지니어로서, APDU 명령과 응답을 매칭하고 APDU Case를 분류하여 프로토콜 레벨에서 통신을 이해할 수 있기를 원합니다.
 
-1. WHEN analyzing messages, THE Protocol_Analyzer SHALL pair TX messages with corresponding RX messages
-2. THE Protocol_Analyzer SHALL classify APDU commands into Case 1, Case 2, Case 3, or Case 4
-3. WHEN consecutive TX or RX messages are detected without pairing, THE Protocol_Analyzer SHALL flag as ERROR_1
-4. WHEN TX data length does not match P3 parameter, THE Protocol_Analyzer SHALL flag as ERROR_2
-5. WHEN Status Word is incomplete or missing, THE Protocol_Analyzer SHALL flag as ERROR_3
-6. THE Protocol_Analyzer SHALL handle POWER_OFF and RESET events as separate message types
-7. WHEN POWER_OFF occurs during APDU transaction, THE Protocol_Analyzer SHALL mark it as error and create separate POWER_OFF entry
-8. THE Protocol_Analyzer SHALL validate that RX messages include INS byte matching the TX command
+#### 인수 기준
 
-### Requirement 5: 애플리케이션 레벨 분석
+1. THE System SHALL TX와 RX 메시지를 페어링하여 완전한 APDU 트랜잭션을 구성한다
+2. THE System SHALL APDU를 Case 1, Case 2, Case 3, Case 4로 분류한다
+3. WHEN 연속된 TX 또는 RX가 발생하면, THE System SHALL 프로토콜 오류로 표시한다
+4. WHEN TX 데이터 길이가 P3 파라미터와 일치하지 않으면, THE System SHALL 오류로 표시한다
+5. WHEN Status Word가 수신되지 않으면, THE System SHALL 오류로 표시한다
+6. THE System SHALL APDU 트랜잭션 중 POWER_OFF 이벤트를 감지한다
 
-**User Story:** As a SIM engineer, I want to see interpreted APDU commands with file system context, so that I can understand what operations are being performed.
 
-#### Acceptance Criteria
+### 요구사항 5: 명령어 해석 및 파일 추적
 
-1. THE Application_Analyzer SHALL interpret INS codes using 3GPP TS 31.102/31.103 standard command mappings
-2. THE Application_Analyzer SHALL maintain logical channel state for channels 0-19
-3. THE Application_Analyzer SHALL track current DF and EF for each logical channel
-4. WHEN SELECT command is executed, THE Application_Analyzer SHALL update current DF/EF in the logical channel
-5. WHEN Status Word indicates error, THE Application_Analyzer SHALL display error description from 3GPP specifications
-6. THE Application_Analyzer SHALL detect and mark commands with Status Words 6A82, 6A83, 6282, 6982 as failed operations
-7. THE Application_Analyzer SHALL support extended logical channels (4-19) by parsing CLA byte bits
-8. WHEN unknown INS code is encountered, THE Application_Analyzer SHALL display "Unknown INS" with hex value
+**사용자 스토리:** 엔지니어로서, APDU 명령어를 사람이 읽을 수 있는 형태로 해석하고 현재 선택된 파일을 추적할 수 있기를 원합니다.
 
-### Requirement 6: SELECT 명령어 처리
+#### 인수 기준
 
-**User Story:** As a SIM engineer, I want SELECT commands to update the file system context, so that subsequent commands are interpreted in the correct file context.
+1. THE System SHALL INS 바이트를 명령어 이름으로 변환한다 (SELECT, READ BINARY, UPDATE BINARY, AUTHENTICATE 등)
+2. WHEN INS 바이트가 알려지지 않은 값이면, THE System SHALL "INS: 0xXX" 형식으로 표시한다
+3. THE System SHALL CLA 바이트에서 논리 채널 번호(0-19)를 추출한다
+4. THE System SHALL 각 논리 채널별로 현재 DF와 EF를 추적한다
+5. WHEN SELECT 명령이 실행되면, THE System SHALL 현재 DF 또는 EF를 업데이트한다
+6. THE System SHALL 3GPP 표준에 정의된 파일 ID를 파일 이름으로 변환한다
+7. WHEN 파일 ID가 알려지지 않으면, THE System SHALL "Unknown EF" 또는 "Unknown DF"로 표시한다
 
-#### Acceptance Criteria
+### 요구사항 6: Status Word 분석 및 오류 감지
 
-1. WHEN SELECT command targets AID starting with 'A0', THE Application_Analyzer SHALL update current DF to the AID
-2. WHEN SELECT command targets MF or DF, THE Application_Analyzer SHALL update current DF and clear current EF
-3. WHEN SELECT command targets EF, THE Application_Analyzer SHALL update current EF while maintaining current DF
-4. WHEN SELECT targets '7FFF', THE Application_Analyzer SHALL select the previously stored ADF
-5. THE Application_Analyzer SHALL handle hierarchical file paths by parsing multi-byte file IDs
-6. WHEN SELECT fails with error Status Word, THE Application_Analyzer SHALL mark the command as failed but not update file context
-7. THE Application_Analyzer SHALL distinguish between USIM ADF (A0000000871002) and ISIM ADF (A0000000871004)
+**사용자 스토리:** 엔지니어로서, APDU 응답의 Status Word를 분석하여 성공/실패 여부와 오류 원인을 파악할 수 있기를 원합니다.
 
-### Requirement 7: Short File ID (SFI) 처리
+#### 인수 기준
 
-**User Story:** As a SIM engineer, I want commands using SFI to be correctly mapped to file names, so that I can identify which files are being accessed.
+1. THE System SHALL Status Word(SW1, SW2)를 추출한다
+2. WHEN Status Word가 '9000' 또는 '91XX'이면, THE System SHALL 성공으로 처리한다
+3. WHEN Status Word가 '6A82'(File not found), '6A83'(Record not found), '6282'(Unsuccessful search), '6982'(Security status not satisfied)이면, THE System SHALL 명령어에 '(X)' 표시를 추가한다
+4. WHEN Status Word가 오류 코드이면, THE System SHALL ETSI TS 102.221 표준에 따라 오류 메시지를 표시한다
+5. THE System SHALL 각 오류에 대해 3GPP 규격 참조 정보를 제공한다
 
-#### Acceptance Criteria
+### 요구사항 7: Short File Identifier (SFI) 처리
 
-1. WHEN READ BINARY, UPDATE BINARY, or INCREASE commands use SFI, THE Application_Analyzer SHALL extract SFI from P1 byte
-2. WHEN READ RECORD, UPDATE RECORD, or SEARCH RECORD commands use SFI, THE Application_Analyzer SHALL extract SFI from P2 byte
-3. WHEN RETRIEVE DATA or SET DATA commands use SFI, THE Application_Analyzer SHALL extract SFI from P2 byte
-4. THE Application_Analyzer SHALL map SFI to file ID using current DF context
-5. WHEN SFI is used, THE Application_Analyzer SHALL update current EF to the mapped file ID
-6. WHEN SFI is unknown in current DF, THE Application_Analyzer SHALL display error message with SFI value
-7. THE Application_Analyzer SHALL display SFI value in command summary when SFI is used
+**사용자 스토리:** 엔지니어로서, SFI를 사용하는 READ/UPDATE 명령에서 대상 파일을 자동으로 식별할 수 있기를 원합니다.
 
-### Requirement 8: AUTHENTICATE 명령어 처리
+#### 인수 기준
 
-**User Story:** As a SIM engineer, I want AUTHENTICATE commands to show RAND, AUTN, RES, and AUTS values, so that I can analyze authentication procedures and detect re-synchronization.
+1. THE System SHALL READ BINARY, READ RECORD, UPDATE BINARY, UPDATE RECORD 명령에서 SFI 사용 여부를 감지한다
+2. WHEN SFI가 사용되면, THE System SHALL P1 바이트에서 SFI 값을 추출한다
+3. THE System SHALL SFI를 파일 ID로 변환하여 파일 이름을 표시한다
+4. THE System SHALL 명령어에 "(SFI: 0xXX)" 표시를 추가한다
 
-#### Acceptance Criteria
 
-1. WHEN AUTHENTICATE command is executed, THE Application_Analyzer SHALL parse RAND value from command data
-2. THE Application_Analyzer SHALL parse AUTN value from command data
-3. WHEN authentication succeeds, THE Application_Analyzer SHALL parse RES value from response data
-4. WHEN authentication fails with re-sync, THE Application_Analyzer SHALL parse AUTS value from response data
-5. WHEN response type is 'DC', THE Application_Analyzer SHALL mark the command as "Re-Sync"
-6. THE Application_Analyzer SHALL display ADF context (USIM or ISIM) for AUTHENTICATE commands
-7. THE Application_Analyzer SHALL format RAND, AUTN, RES, AUTS values as separate labeled fields
+### 요구사항 8: 인증 프로토콜 분석
 
-### Requirement 9: FETCH 명령어 처리
+**사용자 스토리:** 엔지니어로서, AKA 인증 과정의 RAND, AUTN, RES, AUTS 값을 추출하고 Re-Sync 이벤트를 감지할 수 있기를 원합니다.
 
-**User Story:** As a SIM engineer, I want FETCH commands to show proactive command types, so that I can understand SIM-initiated operations.
+#### 인수 기준
 
-#### Acceptance Criteria
+1. WHEN AUTHENTICATE 명령(INS: 0x88 또는 0x89)이 실행되면, THE System SHALL RAND와 AUTN 값을 추출한다
+2. WHEN 인증 응답이 성공(0xDB 태그)이면, THE System SHALL RES 값을 추출한다
+3. WHEN 인증 응답이 Re-Sync(0xDC 태그)이면, THE System SHALL AUTS 값을 추출하고 "Re-Sync"으로 표시한다
+4. THE System SHALL 인증 명령에서 사용된 ADF(USIM 또는 ISIM)를 표시한다
+5. THE System SHALL 인증 정보를 Application-Level Analysis에 표시한다
 
-1. WHEN FETCH command contains proactive command tag '810301', THE Application_Analyzer SHALL extract command type
-2. THE Application_Analyzer SHALL map proactive command type codes to names using ETSI TS 102.223 specification
-3. WHEN FETCH type is REFRESH, THE Application_Analyzer SHALL display REFRESH sub-type
-4. WHEN FETCH type is POLL INTERVAL, THE Application_Analyzer SHALL parse and display interval in seconds
-5. WHEN FETCH type is SETUP EVENT LIST, THE Application_Analyzer SHALL parse and display event list items
-6. THE Application_Analyzer SHALL display proactive command type in parentheses after FETCH command name
+### 요구사항 9: Proactive SIM 명령 처리
 
-### Requirement 10: ENVELOPE 명령어 처리
+**사용자 스토리:** 엔지니어로서, FETCH, TERMINAL RESPONSE, ENVELOPE 등 Proactive SIM 명령을 해석할 수 있기를 원합니다.
 
-**User Story:** As a SIM engineer, I want ENVELOPE commands to show envelope types and event downloads, so that I can track terminal-to-SIM communications.
+#### 인수 기준
 
-#### Acceptance Criteria
+1. WHEN FETCH 명령이 실행되면, THE System SHALL Proactive 명령 타입(REFRESH, POLL INTERVAL, SETUP EVENT LIST 등)을 추출한다
+2. WHEN REFRESH 명령이면, THE System SHALL REFRESH 타입(NAA, FCN, UICC Reset, SoR 등)을 표시한다
+3. WHEN SETUP EVENT LIST 명령이면, THE System SHALL 이벤트 목록(MT call, Call connected, Location status 등)을 표시한다
+4. WHEN TERMINAL RESPONSE 명령이 실행되면, THE System SHALL 결과 코드를 분석하고 오류 시 오류 메시지를 표시한다
+5. WHEN ENVELOPE 명령이 실행되면, THE System SHALL Envelope 타입(Event Download, SMS-PP Download 등)을 표시한다
 
-1. WHEN ENVELOPE command is executed, THE Application_Analyzer SHALL extract envelope type from first byte of command data
-2. THE Application_Analyzer SHALL map envelope type codes to names using ETSI TS 101.220 specification
-3. WHEN envelope type is Event Download, THE Application_Analyzer SHALL parse and display specific event type
-4. THE Application_Analyzer SHALL display envelope type in parentheses after ENVELOPE command name
+### 요구사항 10: 논리 채널 관리
 
-### Requirement 11: TERMINAL RESPONSE 명령어 처리
+**사용자 스토리:** 엔지니어로서, MANAGE CHANNEL 명령을 통한 논리 채널 개설/종료를 추적할 수 있기를 원합니다.
 
-**User Story:** As a SIM engineer, I want TERMINAL RESPONSE commands to show result codes, so that I can verify terminal responses to proactive commands.
+#### 인수 기준
 
-#### Acceptance Criteria
+1. WHEN MANAGE CHANNEL OPEN 명령이 실행되면, THE System SHALL 개설된 논리 채널 번호를 표시한다
+2. WHEN MANAGE CHANNEL CLOSE 명령이 실행되면, THE System SHALL 종료된 논리 채널 번호를 표시한다
+3. THE System SHALL 기본 채널(0-3)과 확장 채널(4-19)을 구분한다
+4. THE System SHALL 각 논리 채널별로 독립적인 DF/EF 컨텍스트를 유지한다
 
-1. WHEN TERMINAL RESPONSE command is executed, THE Application_Analyzer SHALL extract proactive command type from response data
-2. THE Application_Analyzer SHALL parse result code from response data
-3. WHEN result code indicates error, THE Application_Analyzer SHALL display error description from ETSI TS 102.223
-4. THE Application_Analyzer SHALL mark non-successful result codes as errors
 
-### Requirement 12: MANAGE CHANNEL 명령어 처리
+### 요구사항 11: 파일 시스템 추적 및 내용 저장
 
-**User Story:** As a SIM engineer, I want MANAGE CHANNEL commands to show channel operations, so that I can track logical channel lifecycle.
+**사용자 스토리:** 엔지니어로서, READ/UPDATE 명령을 통해 접근된 모든 파일의 내용과 메타데이터를 추적할 수 있기를 원합니다.
 
-#### Acceptance Criteria
+#### 인수 기준
 
-1. WHEN MANAGE CHANNEL opens a channel, THE Application_Analyzer SHALL display "OPEN" with channel number
-2. WHEN MANAGE CHANNEL closes a channel, THE Application_Analyzer SHALL display "CLOSE" with channel number
-3. THE Application_Analyzer SHALL parse channel number from P2 byte for CLOSE operations
-4. THE Application_Analyzer SHALL parse channel number from response data for OPEN operations
+1. WHEN READ BINARY 명령이 성공하면, THE System SHALL 파일 이름, 오프셋, 길이, 내용을 저장한다
+2. WHEN READ RECORD 명령이 성공하면, THE System SHALL 파일 이름, 레코드 번호, 길이, 내용을 저장한다
+3. WHEN UPDATE BINARY 명령이 실행되면, THE System SHALL 업데이트된 오프셋, 길이, 내용을 저장한다
+4. THE System SHALL 파일 타입(TF: Transparent File, LF: Linear Fixed File)을 식별한다
+5. THE System SHALL DF 이름, EF 이름, DF ID, File ID, SFI, 참조 메시지 번호를 함께 저장한다
+6. THE System SHALL 동일한 파일에 대해 내용이 변경되면 OTA 업데이트로 표시한다
 
-### Requirement 13: 파일 시스템 뷰 생성
+### 요구사항 12: 파일 내용 파싱
 
-**User Story:** As a SIM engineer, I want to see a table of all files read from the SIM, so that I can review file contents and detect OTA updates.
+**사용자 스토리:** 엔지니어로서, 주요 SIM 파일의 내용을 사람이 읽을 수 있는 형태로 파싱하여 볼 수 있기를 원합니다.
 
-#### Acceptance Criteria
+#### 인수 기준
 
-1. WHEN READ BINARY or READ RECORD commands succeed, THE File_System_Analyzer SHALL add file entry to file system table
-2. THE File_System_Analyzer SHALL display DF name, EF name, DF ID, EF ID for each file
-3. THE File_System_Analyzer SHALL classify files as TF (Transparent File) or LF (Linear Fixed)
-4. WHEN SFI is used, THE File_System_Analyzer SHALL display SFI value in the table
-5. THE File_System_Analyzer SHALL display record number for Linear Fixed files
-6. THE File_System_Analyzer SHALL display offset and length for Transparent Files
-7. THE File_System_Analyzer SHALL store file contents in hexadecimal format
-8. THE File_System_Analyzer SHALL detect OTA updates by comparing contents of same file read multiple times
-9. WHEN file contents change between reads, THE File_System_Analyzer SHALL mark file as "OTA_updated"
-10. THE File_System_Analyzer SHALL remove duplicate file entries with identical contents
-11. THE File_System_Analyzer SHALL sort files by DF, then by File ID, then by record number
+1. WHEN ICCID 파일을 읽으면, THE System SHALL BCD 형식을 디코딩하여 표시한다
+2. WHEN IMSI 파일을 읽으면, THE System SHALL BCD 형식을 디코딩하여 표시한다
+3. WHEN MSISDN 파일을 읽으면, THE System SHALL Alpha ID와 전화번호를 파싱하여 표시한다
+4. WHEN PLMNwAcT, OPLMNwAcT, HPLMNwAcT 파일을 읽으면, THE System SHALL MCC, MNC, Access Technology를 파싱하여 표시한다
+5. WHEN FPLMN 파일을 읽으면, THE System SHALL 금지된 PLMN 목록을 파싱하여 표시한다
+6. WHEN UST(USIM Service Table) 파일을 읽으면, THE System SHALL 각 서비스의 활성화 여부를 표시한다
+7. WHEN IST(ISIM Service Table) 파일을 읽으면, THE System SHALL 각 서비스의 활성화 여부를 표시한다
+8. WHEN ACC(Access Control Class) 파일을 읽으면, THE System SHALL 16진수와 2진수 형식으로 표시한다
+9. WHEN EPSLOCI 파일을 읽으면, THE System SHALL GUTI, TAI, EPS update status를 파싱하여 표시한다
+10. WHEN IMPI, IMPU, P-CSCF 파일을 읽으면, THE System SHALL UTF-8 문자열로 디코딩하여 표시한다
 
-### Requirement 14: 파일 내용 파싱
 
-**User Story:** As a SIM engineer, I want specific file types to be parsed into human-readable format, so that I can understand file contents without manual decoding.
+### 요구사항 13: 웹 UI - Summary 뷰
 
-#### Acceptance Criteria
+**사용자 스토리:** 엔지니어로서, 분석된 APDU 메시지를 시간순으로 요약하여 보고 중요한 이벤트를 색상으로 구분할 수 있기를 원합니다.
 
-1. WHEN file is ICCID, THE System SHALL parse BCD-encoded digits and display as decimal string
-2. WHEN file is IMSI, THE System SHALL parse BCD-encoded digits and display as decimal string
-3. WHEN file is IMPI, IMPU, or P-CSCF, THE System SHALL decode UTF-8 text from hex data
-4. WHEN file is ACC, THE System SHALL display hex and binary representation
-5. WHEN file is HPLMNwAcT, OPLMNwAcT, or PLMNwAcT, THE System SHALL parse MCC, MNC, and Access Technology for each PLMN entry
-6. WHEN file is FPLMN, THE System SHALL parse MCC and MNC for each forbidden PLMN entry
-7. WHEN file is MSISDN, THE System SHALL parse Alpha ID, TON/NPI, and dialing number
-8. WHEN file is UST, THE System SHALL parse service table and display enabled/disabled status for each service
-9. WHEN file is IST, THE System SHALL parse ISIM service table and display enabled/disabled status for each service
-10. WHEN file is EPSLOCI, THE System SHALL parse GUTI, TAI, and EPS update status
-11. THE System SHALL display parsed content alongside raw hex data
+#### 인수 기준
 
-### Requirement 15: 웹 인터페이스 - 파일 업로드
+1. THE System SHALL 각 APDU 트랜잭션을 한 줄로 요약하여 표시한다
+2. THE System SHALL 메시지 번호, 타임스탬프, 명령어 이름, 파일 이름, 추가 정보를 표시한다
+3. WHEN 메시지에 'ERROR'가 포함되면, THE System SHALL 빨간색으로 표시한다
+4. WHEN 메시지에 'Re-Sync'가 포함되면, THE System SHALL 자홍색(magenta)으로 표시한다
+5. WHEN 메시지에 '(X)', '(*)', 'Unknown'이 포함되면, THE System SHALL 회색으로 표시한다
+6. WHEN 메시지에 'ENVELOPE' 또는 'REFRESH'가 포함되면, THE System SHALL 노란색으로 표시한다
+7. WHEN 메시지에 'RESET' 또는 'POWER'가 포함되면, THE System SHALL 청록색(cyan)으로 표시한다
+8. WHEN 메시지에 'MANAGE CHANNEL'이 포함되면, THE System SHALL 연한 파란색(lightblue)으로 표시한다
+9. WHEN 메시지에 'AUTHENTICATE'가 포함되면, THE System SHALL 연한 초록색(lightgreen)으로 표시한다
 
-**User Story:** As a SIM engineer, I want a simple web interface to upload log files, so that I can quickly start analysis.
+### 요구사항 14: 웹 UI - 상세 분석 뷰
 
-#### Acceptance Criteria
+**사용자 스토리:** 엔지니어로서, Summary에서 메시지를 클릭하면 프로토콜 레벨과 애플리케이션 레벨의 상세 분석을 볼 수 있기를 원합니다.
 
-1. THE Web_Interface SHALL display a file upload form on the main page
-2. THE Web_Interface SHALL provide a dropdown to select SIM1 or SIM2
-3. WHEN user uploads a file, THE Web_Interface SHALL validate file extension is .txt
-4. WHEN upload succeeds, THE Web_Interface SHALL display the uploaded filename
-5. THE Web_Interface SHALL maintain session state for uploaded file and selected SIM
-6. WHEN user returns to main page with GET request, THE Web_Interface SHALL clear previous session data
+#### 인수 기준
 
-### Requirement 16: 웹 인터페이스 - 분석 결과 표시
+1. WHEN User가 Summary에서 메시지를 클릭하면, THE System SHALL 해당 메시지의 상세 분석을 표시한다
+2. THE System SHALL Protocol-Level Analysis 영역에 TX/RX 메시지의 16진수 데이터를 표시한다
+3. THE System SHALL Application-Level Analysis 영역에 논리 채널, 현재 DF, 현재 EF, 명령어를 표시한다
+4. WHEN READ 또는 UPDATE 명령이면, THE System SHALL 오프셋/레코드 번호, 길이, 내용을 표시한다
+5. WHEN AUTHENTICATE 명령이면, THE System SHALL RAND, AUTN, RES, AUTS 값을 표시한다
+6. WHEN 파싱된 데이터가 있으면, THE System SHALL 파싱 결과를 함께 표시한다
+7. WHEN 오류가 있으면, THE System SHALL 오류 메시지와 규격 참조를 표시한다
 
-**User Story:** As a SIM engineer, I want to see analysis results in organized tabs, so that I can navigate between different views easily.
 
-#### Acceptance Criteria
+### 요구사항 15: 웹 UI - File System 뷰
 
-1. THE Web_Interface SHALL display analysis results in two tabs: APDU and File System
-2. THE Web_Interface SHALL display summary list in APDU tab showing all commands with timestamps
-3. WHEN user clicks on a summary item, THE Web_Interface SHALL display protocol details and application details
-4. THE Web_Interface SHALL display file system table in File System tab
-5. WHEN user clicks on a file entry, THE Web_Interface SHALL display file contents and parsed data
-6. THE Web_Interface SHALL preserve tab selection and scroll position during interactions
+**사용자 스토리:** 엔지니어로서, 접근된 모든 파일을 테이블 형태로 보고 OTA 업데이트된 파일을 강조 표시할 수 있기를 원합니다.
 
-### Requirement 17: 웹 인터페이스 - 색상 코딩
+#### 인수 기준
 
-**User Story:** As a SIM engineer, I want different command types to be color-coded, so that I can quickly identify important events and errors.
+1. THE System SHALL File System 탭을 제공한다
+2. THE System SHALL 파일 목록을 테이블로 표시한다 (DF, File, DF_Id, File_Id, Type, SFI, REC#, OFS, LEN, ref)
+3. THE System SHALL 파일을 DF 순서로 정렬한다 (MF → USIM → ISIM → Unknown)
+4. THE System SHALL 동일 DF 내에서 File_Id와 REC# 순으로 정렬한다
+5. WHEN 파일이 OTA 업데이트되고 중요 파일(IMSI, MSISDN, OPLMNwAcT, ACC, Routing_Ind, IMPI, IMPU)이면, THE System SHALL 노란색으로 강조 표시한다
+6. WHEN 파일이 OTA 업데이트되고 일반 파일이면, THE System SHALL 연한 초록색으로 강조 표시한다
+7. WHEN User가 파일 행을 클릭하면, THE System SHALL 파일 내용과 파싱 결과를 표시한다
 
-#### Acceptance Criteria
+### 요구사항 16: Excel 내보내기
 
-1. WHEN command contains "ERROR", THE Web_Interface SHALL display the line in red color
-2. WHEN command contains "Re-Sync", THE Web_Interface SHALL display the line in magenta color
-3. WHEN command contains "(X)", "(*)", or "Unknown", THE Web_Interface SHALL display the line in gray color
-4. WHEN command is ENVELOPE or REFRESH, THE Web_Interface SHALL display the line in yellow color
-5. WHEN command is RESET or POWER, THE Web_Interface SHALL display the line in cyan color
-6. WHEN command is MANAGE CHANNEL, THE Web_Interface SHALL display the line in light blue color
-7. WHEN command is AUTHENTICATE, THE Web_Interface SHALL display the line in light green color
+**사용자 스토리:** 엔지니어로서, 파일 시스템 분석 결과를 Excel 파일로 다운로드하여 추가 분석이나 보고서 작성에 활용할 수 있기를 원합니다.
 
-### Requirement 18: 웹 인터페이스 - Excel 내보내기
+#### 인수 기준
 
-**User Story:** As a SIM engineer, I want to export file system data to Excel, so that I can perform additional analysis or share results.
+1. THE System SHALL File System 탭에 "Save to Excel" 버튼을 제공한다
+2. WHEN User가 버튼을 클릭하면, THE System SHALL 파일 시스템 데이터를 Excel 형식(.xlsx)으로 변환한다
+3. THE System SHALL 모든 컬럼(DF, File, DF_Id, File_Id, Type, SFI, REC, OFS, LEN, ref, contents, parsing)을 포함한다
+4. THE System SHALL Excel에서 허용되지 않는 제어 문자를 제거한다
+5. THE System SHALL 파일 이름 "file_system_export.xlsx"로 다운로드를 제공한다
 
-#### Acceptance Criteria
+### 요구사항 17: 세션 관리
 
-1. THE Web_Interface SHALL provide an "Export to Excel" button in File System tab
-2. WHEN user clicks export button, THE System SHALL generate Excel file with all file system data
-3. THE System SHALL include all columns: DF, File, DF_Id, File_Id, Type, SFI, REC, OFS, LEN, ref, contents, parsing
-4. THE System SHALL remove invalid Excel characters from cell contents before export
-5. THE System SHALL send Excel file as downloadable attachment with filename "file_system_export.xlsx"
+**사용자 스토리:** 엔지니어로서, 분석 결과가 세션에 저장되어 SIM 포트를 변경하거나 상세 분석을 볼 때 재분석 없이 빠르게 결과를 확인할 수 있기를 원합니다.
 
-### Requirement 19: 3GPP 표준 준수
+#### 인수 기준
 
-**User Story:** As a SIM engineer, I want the system to follow 3GPP standards, so that analysis results are accurate and reliable.
+1. THE System SHALL 파일 시스템 기반 세션을 사용한다
+2. WHEN User가 페이지에 처음 접속하면, THE System SHALL 기존 세션을 초기화한다
+3. THE System SHALL 업로드된 파일 경로와 이름을 세션에 저장한다
+4. THE System SHALL 파싱된 APDU 메시지 데이터를 세션에 저장한다
+5. THE System SHALL 프로토콜 분석 결과를 세션에 저장한다
+6. THE System SHALL 애플리케이션 분석 결과를 세션에 저장한다
+7. THE System SHALL 파일 시스템 데이터를 세션에 저장한다
+8. THE System SHALL 선택된 SIM 포트를 세션에 저장한다
 
-#### Acceptance Criteria
 
-1. THE System SHALL support DF and EF definitions from 3GPP TS 31.102 Release 16 for USIM
-2. THE System SHALL support DF and EF definitions from 3GPP TS 31.103 Release 16 for ISIM
-3. THE System SHALL support command codes from ETSI TS 102.221
-4. THE System SHALL support Status Word definitions from ETSI TS 102.221 section 10.2
-5. THE System SHALL support proactive command types from ETSI TS 102.223
-6. THE System SHALL support envelope types from ETSI TS 101.220
-7. THE System SHALL support 5G file system (DF 5GS) from 3GPP TS 31.102
-8. THE System SHALL map file IDs to standard file names using 3GPP specifications
+### 요구사항 18: 3GPP 표준 준수
 
-### Requirement 20: 에러 처리 및 검증
+**사용자 스토리:** 엔지니어로서, 시스템이 3GPP 및 ETSI 표준에 정의된 파일 구조와 명령어를 정확히 해석할 수 있기를 원합니다.
 
-**User Story:** As a SIM engineer, I want the system to detect and report errors in APDU sequences, so that I can identify communication problems.
+#### 인수 기준
 
-#### Acceptance Criteria
+1. THE System SHALL 3GPP TS 31.102(USIM Application)에 정의된 파일 구조를 지원한다
+2. THE System SHALL 3GPP TS 31.103(ISIM Application)에 정의된 파일 구조를 지원한다
+3. THE System SHALL ETSI TS 102.221(UICC-Terminal Interface)에 정의된 명령어를 지원한다
+4. THE System SHALL ETSI TS 102.223(Card Application Toolkit)에 정의된 Proactive 명령을 지원한다
+5. THE System SHALL GSMA SGP.02(eSIM Remote Provisioning)에 정의된 ISD-R, ISD-P, ECASD 파일을 지원한다
+6. THE System SHALL Android UICC Carrier Privilege에 정의된 ARA-M, ARA-D 파일을 지원한다
 
-1. WHEN Status Word is 6A82, THE System SHALL report "File not found" error
-2. WHEN Status Word is 6A83, THE System SHALL report "Record not found" error
-3. WHEN Status Word is 6282, THE System SHALL report "Unsuccessful search" error
-4. WHEN Status Word is 6982, THE System SHALL report "Security status not satisfied" error
-5. WHEN Status Word is not 9000 or 91xx for data commands, THE System SHALL report error with Status Word value
-6. WHEN current DF is not determined, THE System SHALL report "DF NOT determined" error
-7. WHEN file ID is unknown in current DF, THE System SHALL report "Unknown file id" error
-8. WHEN DF is unknown, THE System SHALL report "Unknown DF" error
-9. THE System SHALL display error messages with reference to 3GPP specification sections
+### 요구사항 19: 오류 처리 및 복원력
 
-### Requirement 21: 성능 요구사항
+**사용자 스토리:** 엔지니어로서, 불완전하거나 손상된 로그 파일에서도 가능한 한 많은 정보를 추출할 수 있기를 원합니다.
 
-**User Story:** As a SIM engineer, I want the system to process large log files efficiently, so that I can analyze long test sessions without delays.
+#### 인수 기준
 
-#### Acceptance Criteria
+1. WHEN 파일 업로드가 실패하면, THE System SHALL 사용자에게 오류 메시지를 표시한다
+2. WHEN APDU 메시지가 불완전하면, THE System SHALL 해당 메시지를 건너뛰고 다음 메시지를 처리한다
+3. WHEN 파일 시스템 데이터 생성 중 오류가 발생하면, THE System SHALL 오류를 무시하고 Summary 뷰만 제공한다
+4. WHEN 알 수 없는 파일 ID가 발견되면, THE System SHALL "Unknown EF" 또는 "Unknown DF"로 표시하고 계속 진행한다
+5. WHEN Excel 내보내기 중 오류가 발생하면, THE System SHALL 400 오류 코드와 메시지를 반환한다
 
-1. THE System SHALL process log files up to 10MB in size within 30 seconds
-2. THE System SHALL handle logs with up to 10,000 APDU messages
-3. THE System SHALL maintain responsive web interface during file processing
-4. THE System SHALL use session storage to avoid re-processing on page refresh
-5. THE System SHALL clean up uploaded files older than 24 hours
+### 요구사항 20: 성능 및 확장성
 
-### Requirement 22: 데이터 무결성
+**사용자 스토리:** 엔지니어로서, 대용량 로그 파일(수천 개의 APDU 메시지)도 합리적인 시간 내에 분석할 수 있기를 원합니다.
 
-**User Story:** As a SIM engineer, I want the system to preserve original log data, so that analysis results are traceable to source.
+#### 인수 기준
 
-#### Acceptance Criteria
+1. THE System SHALL 10,000개 이상의 APDU 메시지를 포함한 로그 파일을 처리한다
+2. THE System SHALL 분석 결과를 메모리에 효율적으로 저장한다
+3. THE System SHALL 웹 UI에서 대량의 메시지를 스크롤 가능한 테이블로 표시한다
+4. THE System SHALL AJAX를 사용하여 상세 분석을 비동기적으로 로드한다
+5. THE System SHALL 파일 시스템 데이터에서 중복 항목을 제거하여 메모리를 절약한다
 
-1. THE System SHALL preserve original timestamp from log files
-2. THE System SHALL preserve original message order from log files
-3. THE System SHALL not modify original uploaded files
-4. WHEN duplicate messages are removed, THE System SHALL keep the first occurrence
-5. THE System SHALL maintain line number references to original log file
-
-### Requirement 23: 다중 로그 포맷 지원
-
-**User Story:** As a SIM engineer, I want to analyze logs from different tools, so that I can work with various test equipment.
-
-#### Acceptance Criteria
-
-1. THE System SHALL support QXDM log format with [0x19B7] tag
-2. THE System SHALL support QCAT log format with 0x19B7 message ID
-3. THE System SHALL support Shannon DM log format with USIM_MAIN identifier
-4. THE System SHALL convert Shannon DM format to standard APDU format internally
-5. THE System SHALL handle multi-line APDU data in all supported formats
-6. THE System SHALL extract timestamp in format HH:MM:SS.mmm from all supported formats
-
-### Requirement 24: Dual SIM 지원
-
-**User Story:** As a SIM engineer, I want to analyze each SIM separately in DSDS devices, so that I can isolate SIM-specific issues.
-
-#### Acceptance Criteria
-
-1. THE System SHALL identify SIM port from log messages (SLOT_1 or SLOT_2)
-2. THE System SHALL allow user to select which SIM port to analyze
-3. WHEN SIM port is selected, THE System SHALL filter all messages to show only selected port
-4. THE System SHALL handle logs containing both SIM1 and SIM2 messages
-5. THE System SHALL maintain separate logical channel state for each SIM port
-
-### Requirement 25: 배포 및 운영
-
-**User Story:** As a system administrator, I want the application to be easily deployable, so that I can run it in different environments.
-
-#### Acceptance Criteria
-
-1. THE System SHALL be packaged as Docker container
-2. THE System SHALL use Gunicorn as production WSGI server
-3. THE System SHALL expose service on port 8090
-4. THE System SHALL create required directories (uploads, flask_session) on startup
-5. THE System SHALL use filesystem-based session storage
-6. THE System SHALL serve static files and templates correctly in Docker environment
