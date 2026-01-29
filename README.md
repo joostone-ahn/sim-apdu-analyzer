@@ -77,14 +77,14 @@ docker run -d \
 
 ```bash
 docker run -d \
-  --platform linux/arm64 \
+  --platform linux/amd64 \
   -p 8090:8090 \
   -v $(pwd)/uploads:/app/uploads \
   --name sim-apdu-analyzer \
   ghcr.io/joostone-ahn/sim-apdu-analyzer:latest
 ```
 
-> **Note**: Use `--platform linux/arm64` for Apple Silicon (Rosetta 2 emulation)
+> **Note**: Use `--platform linux/amd64` for Apple Silicon (runs via Rosetta 2 emulation)
 
 #### Windows (PowerShell)
 
