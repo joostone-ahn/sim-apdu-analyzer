@@ -76,15 +76,15 @@ The easiest way to run SIM APDU Analyzer is using Docker. No Python installation
 #### Quick Start with Docker
 
 ```bash
-# Pull the pre-built image from Docker Hub
-docker pull <your-dockerhub-username>/sim-apdu-analyzer:latest
+# Pull the pre-built image from GitHub Container Registry
+docker pull ghcr.io/joostone-ahn/sim-apdu-analyzer:latest
 
 # Run the container
 docker run -d \
   --name sim-apdu-analyzer \
   -p 5000:5000 \
   -v $(pwd)/uploads:/app/uploads \
-  <your-dockerhub-username>/sim-apdu-analyzer:latest
+  ghcr.io/joostone-ahn/sim-apdu-analyzer:latest
 
 # Access the application
 # Open browser: http://localhost:5000
@@ -94,14 +94,26 @@ docker run -d \
 
 **Windows (PowerShell)**
 ```powershell
-docker pull <your-dockerhub-username>/sim-apdu-analyzer:latest
-docker run -d --name sim-apdu-analyzer -p 5000:5000 -v ${PWD}/uploads:/app/uploads <your-dockerhub-username>/sim-apdu-analyzer:latest
+docker pull ghcr.io/joostone-ahn/sim-apdu-analyzer:latest
+docker run -d --name sim-apdu-analyzer -p 5000:5000 -v ${PWD}/uploads:/app/uploads ghcr.io/joostone-ahn/sim-apdu-analyzer:latest
 ```
 
-**macOS / Linux**
+**macOS (Apple Silicon - M1/M2/M3)**
 ```bash
-docker pull <your-dockerhub-username>/sim-apdu-analyzer:latest
-docker run -d --name sim-apdu-analyzer -p 5000:5000 -v $(pwd)/uploads:/app/uploads <your-dockerhub-username>/sim-apdu-analyzer:latest
+docker pull ghcr.io/joostone-ahn/sim-apdu-analyzer:latest
+docker run -d --name sim-apdu-analyzer -p 5000:5000 -v $(pwd)/uploads:/app/uploads ghcr.io/joostone-ahn/sim-apdu-analyzer:latest
+```
+
+**macOS (Intel)**
+```bash
+docker pull ghcr.io/joostone-ahn/sim-apdu-analyzer:latest
+docker run -d --name sim-apdu-analyzer -p 5000:5000 -v $(pwd)/uploads:/app/uploads ghcr.io/joostone-ahn/sim-apdu-analyzer:latest
+```
+
+**Linux**
+```bash
+docker pull ghcr.io/joostone-ahn/sim-apdu-analyzer:latest
+docker run -d --name sim-apdu-analyzer -p 5000:5000 -v $(pwd)/uploads:/app/uploads ghcr.io/joostone-ahn/sim-apdu-analyzer:latest
 ```
 
 #### Docker Management Commands
@@ -145,7 +157,7 @@ docker build -t sim-apdu-analyzer:latest .
 docker run -d -p 5000:5000 --name sim-apdu-analyzer sim-apdu-analyzer:latest
 ```
 
-For detailed Docker deployment instructions, see [DOCKER_DEPLOYMENT.md](./DOCKER_DEPLOYMENT.md)
+For more information, see the documentation in the `docs/` directory
 
 ---
 
@@ -271,29 +283,43 @@ Save the log as a `.txt` file.
 
 ## 📚 Documentation
 
-- **[SPECIFICATION.md](./SPECIFICATION.md)**: Complete technical specification
-- **[.kiro/specs/](./kiro/specs/)**: Kiro Spec format documentation
-- **[docs/](./docs/)**: User manuals and presentations
-- **[Sample Logs](https://drive.google.com/drive/folders/1I1Bpgms0mXRy9NLk4kg_3K9BFDVbe9LD)**: Test files and examples
+- **User Manuals**: See `docs/` directory for detailed guides
+- **Sample Logs**: [Google Drive](https://drive.google.com/drive/folders/1I1Bpgms0mXRy9NLk4kg_3K9BFDVbe9LD)
 
 ---
 
 ## 🐳 Docker Deployment
 
-For detailed Docker deployment instructions including troubleshooting and advanced configurations, see [DOCKER_DEPLOYMENT.md](./DOCKER_DEPLOYMENT.md)
-
 ### Quick Docker Commands
 
 ```bash
-# Pull and run pre-built image
-docker pull <your-dockerhub-username>/sim-apdu-analyzer:latest
-docker run -d -p 5000:5000 --name sim-apdu-analyzer <your-dockerhub-username>/sim-apdu-analyzer:latest
+# Pull and run pre-built image from GitHub Container Registry
+docker pull ghcr.io/joostone-ahn/sim-apdu-analyzer:latest
+docker run -d -p 5000:5000 --name sim-apdu-analyzer ghcr.io/joostone-ahn/sim-apdu-analyzer:latest
 
 # Or build from source
 docker-compose up -d
 
-# Access application
-# http://localhost:5000
+# Access application at http://localhost:5000
+```
+
+### Docker Management
+
+```bash
+# Check status
+docker ps
+
+# View logs
+docker logs sim-apdu-analyzer
+
+# Stop container
+docker stop sim-apdu-analyzer
+
+# Start container
+docker start sim-apdu-analyzer
+
+# Remove container
+docker rm -f sim-apdu-analyzer
 ```
 
 ---

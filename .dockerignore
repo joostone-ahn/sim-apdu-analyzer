@@ -1,0 +1,56 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+
+# Virtual environments
+.venv/
+.venv1/
+venv/
+ENV/
+env/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Documentation (제외하지 않음 - 포함 필요)
+# docs/
+
+# Uploads (런타임에 생성)
+uploads/*
+!uploads/.gitkeep
+
+# Flask session (런타임에 생성)
+flask_session/*
+!flask_session/.gitkeep
+
+# Logs
+*.log
+
+# Test files
+tests/
+.pytest_cache/
+
+# Kiro
+.kiro/
+
+# Spec files
+SPECIFICATION.md
+.kiro/

@@ -33,6 +33,7 @@ uploads/*
 *.swp
 *.swo
 *~
+.kiro/
 
 # OS
 .DS_Store
@@ -41,8 +42,20 @@ Thumbs.db
 # Logs
 *.log
 
-# Docker
-.dockerignore
+# Documentation (keep only essential)
+SPECIFICATION.md
+QUICK_START.md
+DOCKER_DEPLOYMENT.md
+
+# Scripts (not needed for Docker deployment)
+*.bat
+*.sh
+!docker-entrypoint.sh
 
 # Local development
 requirements-local.txt
+Procfile
+
+# Sample files (too large for repo)
+file_sample/
+docs/
