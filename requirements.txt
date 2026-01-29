@@ -4,3 +4,4 @@ pandas
 tabulate
 openpyxl
 gunicorn
+requests

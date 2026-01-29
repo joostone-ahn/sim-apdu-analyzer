@@ -1,0 +1,48 @@
+# Python
+*.py[cod]
+*$py.class
+*.so
+__pycache__/
+*.egg-info/
+dist/
+build/
+*.egg
+.Python
+.venv/
+.venv1/
+venv/
+ENV/
+env/
+
+# PyInstaller
+*.spec
+*.manifest
+
+# Flask
+instance/
+flask_session/
+*.db
+
+# Uploads
+uploads/*
+!uploads/.gitkeep
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Docker
+.dockerignore
+
+# Local development
+requirements-local.txt
