@@ -33,7 +33,13 @@ uploads/*
 *.swp
 *.swo
 *~
-.kiro/
+.kiro/*
+!.kiro/specs/
+
+# Node.js (not used)
+node_modules/
+package.json
+package-lock.json
 
 # OS
 .DS_Store
@@ -57,5 +63,5 @@ requirements-local.txt
 Procfile
 
 # Sample files (too large for repo)
-file_sample/
+samples/old/
 docs/

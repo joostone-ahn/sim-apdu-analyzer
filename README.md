@@ -42,18 +42,13 @@ Traditional SIM tracers — _e.g., Minimove by COMPRION_ — rely on physical in
 - **Interactive**: Click any message for detailed analysis
 - **Export**: Download file system data to Excel
 
-### 🖥️ Desktop Version
-- PyQt5-based standalone application
-- Clipboard support for quick analysis
-- Same powerful analysis engine
-
 ---
 
 ## 🧾 Supported Log Formats
 
 | Format Source      | Detection Logic             | Notes                                                    |
 |--------------------|------------------------------|----------------------------------------------------------|
-| QXDM / QCAT        | Contains `[0x19B7]`           | Qualcomm UIM APDU logs — supports filtering and parsing  |
+| QXDM / QCAT        | Contains `[0x19B7]`           | Qualcomm UIM APDU logs — supports filtering and parsing. <br>**Log mask file**: `dmc/QXDM_log_mask_UIM_0x19B7.dmc` (apply in QXDM: `View` → `Configuration` → `Load Config`) |
 | Shannon DM         | Contains `USIM_MAIN`          | Samsung Shannon logs with internal decoding              |
 
 > Only basic structural consistency is required. `[0x19B7]` and `USIM_MAIN` act as format identifiers for filtering and decoding.
@@ -62,102 +57,79 @@ Traditional SIM tracers — _e.g., Minimove by COMPRION_ — rely on physical in
 
 ## 🚀 Quick Start
 
-### 🐳 Docker (Recommended)
+### 1. Install Docker Desktop
 
-The easiest way to run SIM APDU Analyzer is using Docker. No Python installation required!
+Download and install [Docker Desktop](https://www.docker.com/products/docker-desktop/)
 
-#### Prerequisites
-- Docker Desktop installed and running
-  - **Windows**: [Download Docker Desktop for Windows](https://www.docker.com/products/docker-desktop/)
-  - **macOS (Apple Silicon)**: [Download Docker Desktop for Mac (Apple Silicon)](https://www.docker.com/products/docker-desktop/)
-  - **macOS (Intel)**: [Download Docker Desktop for Mac (Intel)](https://www.docker.com/products/docker-desktop/)
-  - **Linux**: [Install Docker Engine](https://docs.docker.com/engine/install/)
+### 2. Run Container
 
-#### Quick Start with Docker
+#### macOS (Intel)
 
 ```bash
-# Pull the pre-built image from GitHub Container Registry
-docker pull ghcr.io/joostone-ahn/sim-apdu-analyzer:latest
-
-# Run the container
 docker run -d \
-  --name sim-apdu-analyzer \
-  -p 5000:5000 \
+  -p 8090:8090 \
   -v $(pwd)/uploads:/app/uploads \
+  --name sim-apdu-analyzer \
   ghcr.io/joostone-ahn/sim-apdu-analyzer:latest
-
-# Access the application
-# Open browser: http://localhost:5000
 ```
 
-#### Platform-Specific Instructions
+#### macOS (Apple Silicon - M1/M2/M3)
 
-**Windows (PowerShell)**
+```bash
+docker run -d \
+  --platform linux/arm64 \
+  -p 8090:8090 \
+  -v $(pwd)/uploads:/app/uploads \
+  --name sim-apdu-analyzer \
+  ghcr.io/joostone-ahn/sim-apdu-analyzer:latest
+```
+
+> **Note**: Use `--platform linux/arm64` for Apple Silicon (Rosetta 2 emulation)
+
+#### Windows (PowerShell)
+
 ```powershell
-docker pull ghcr.io/joostone-ahn/sim-apdu-analyzer:latest
-docker run -d --name sim-apdu-analyzer -p 5000:5000 -v ${PWD}/uploads:/app/uploads ghcr.io/joostone-ahn/sim-apdu-analyzer:latest
+docker run -d -p 8090:8090 -v ${PWD}/uploads:/app/uploads --name sim-apdu-analyzer ghcr.io/joostone-ahn/sim-apdu-analyzer:latest
 ```
 
-**macOS (Apple Silicon - M1/M2/M3)**
-```bash
-docker pull ghcr.io/joostone-ahn/sim-apdu-analyzer:latest
-docker run -d --name sim-apdu-analyzer -p 5000:5000 -v $(pwd)/uploads:/app/uploads ghcr.io/joostone-ahn/sim-apdu-analyzer:latest
-```
+### 3. Access
 
-**macOS (Intel)**
-```bash
-docker pull ghcr.io/joostone-ahn/sim-apdu-analyzer:latest
-docker run -d --name sim-apdu-analyzer -p 5000:5000 -v $(pwd)/uploads:/app/uploads ghcr.io/joostone-ahn/sim-apdu-analyzer:latest
-```
-
-**Linux**
-```bash
-docker pull ghcr.io/joostone-ahn/sim-apdu-analyzer:latest
-docker run -d --name sim-apdu-analyzer -p 5000:5000 -v $(pwd)/uploads:/app/uploads ghcr.io/joostone-ahn/sim-apdu-analyzer:latest
-```
-
-#### Docker Management Commands
-
-```bash
-# Check container status
-docker ps
-
-# View logs
-docker logs sim-apdu-analyzer
-
-# Stop container
-docker stop sim-apdu-analyzer
-
-# Start container
-docker start sim-apdu-analyzer
-
-# Remove container
-docker rm -f sim-apdu-analyzer
-```
-
-#### Access
-Open your browser and navigate to: `http://localhost:5000`
+Open your browser and navigate to: http://localhost:8090
 
 ---
 
-### 📦 Build from Source (Advanced)
+## 🔧 Docker Management
 
-If you want to build the Docker image yourself:
+### Container Control
 
 ```bash
-# Clone the repository
-git clone https://github.com/joostone-ahn/SIM-APDU-Analyzer.git
-cd SIM-APDU-Analyzer
+# Start
+docker start sim-apdu-analyzer
 
-# Build and run with Docker Compose
-docker-compose up -d
+# Stop
+docker stop sim-apdu-analyzer
 
-# Or build manually
-docker build -t sim-apdu-analyzer:latest .
-docker run -d -p 5000:5000 --name sim-apdu-analyzer sim-apdu-analyzer:latest
+# Restart
+docker restart sim-apdu-analyzer
+
+# Remove
+docker rm -f sim-apdu-analyzer
+
+# View logs
+docker logs -f sim-apdu-analyzer
 ```
 
-For more information, see the documentation in the `docs/` directory
+### Update Image
+
+```bash
+# Stop and remove old container
+docker rm -f sim-apdu-analyzer
+
+# Pull latest image
+docker pull ghcr.io/joostone-ahn/sim-apdu-analyzer:latest
+
+# Run new container (use the command for your platform above)
+```
 
 ---
 
@@ -231,13 +203,10 @@ Save the log as a `.txt` file.
 - **jQuery**: AJAX and DOM manipulation
 - **Responsive Design**: Works on desktop and mobile
 
-### Desktop
-- **PyQt5**: Cross-platform GUI framework
-
 ### Deployment
 - **Gunicorn**: WSGI HTTP server
 - **Docker**: Containerization support
-- **Heroku**: Cloud deployment ready
+- **GitHub Container Registry**: Image distribution
 
 ---
 
@@ -281,183 +250,23 @@ Save the log as a `.txt` file.
 
 ---
 
-## 📚 Documentation
-
-- **User Manuals**: See `docs/` directory for detailed guides
-- **Sample Logs**: [Google Drive](https://drive.google.com/drive/folders/1I1Bpgms0mXRy9NLk4kg_3K9BFDVbe9LD)
-
----
-
-## 🐳 Docker Deployment
-
-### Quick Docker Commands
-
-```bash
-# Pull and run pre-built image from GitHub Container Registry
-docker pull ghcr.io/joostone-ahn/sim-apdu-analyzer:latest
-docker run -d -p 5000:5000 --name sim-apdu-analyzer ghcr.io/joostone-ahn/sim-apdu-analyzer:latest
-
-# Or build from source
-docker-compose up -d
-
-# Access application at http://localhost:5000
-```
-
-### Docker Management
-
-```bash
-# Check status
-docker ps
-
-# View logs
-docker logs sim-apdu-analyzer
-
-# Stop container
-docker stop sim-apdu-analyzer
-
-# Start container
-docker start sim-apdu-analyzer
-
-# Remove container
-docker rm -f sim-apdu-analyzer
-```
-
----
-
-## 🔐 Security & Privacy
-
-### Data Handling
-- ✅ **Server-Side Only**: All processing happens on the server
-- ✅ **Session-Based**: Files stored in temporary session storage
-- ✅ **No Persistence**: Data deleted when session expires
-- ✅ **No External Calls**: No data sent to third parties
-
-### Sensitive Information
-Logs may contain:
-- IMSI (International Mobile Subscriber Identity)
-- MSISDN (Phone numbers)
-- ICCID (SIM card serial numbers)
-- Authentication keys (RAND, AUTN, RES)
-
-**⚠️ Recommendation**: Deploy on internal networks or use locally
-
----
-
-## 🧪 Testing
-
-### Run Tests
-```bash
-# Install test dependencies
-pip install pytest pytest-cov
-
-# Run all tests
-pytest tests/
-
-# Run with coverage
-pytest --cov=. tests/
-```
-
-### Test Structure
-```
-tests/
-├── unit/           # Unit tests for individual modules
-├── integration/    # End-to-end pipeline tests
-├── performance/    # Performance benchmarks
-└── fixtures/       # Sample log files
-```
-
----
-
-## 🤝 Contributing
-
-### Development Setup
-```bash
-# Install development dependencies
-pip install -r requirements-local.txt
-
-# Install pre-commit hooks
-pre-commit install
-
-# Run linters
-black .
-flake8 .
-mypy .
-```
-
-### Code Style
-- Follow PEP 8 guidelines
-- Use type hints (Python 3.11+)
-- Write docstrings (Google style)
-- Keep functions under 50 lines
-
----
-
-## 📊 Performance
-
-### Benchmarks
-- **Processing Speed**: 10,000+ messages/second
-- **Memory Usage**: < 500MB for 100MB log files
-- **Response Time**: < 500ms for AJAX requests
-- **Supported Size**: Up to 200MB log files
-
-### Optimization Tips
-- Use SIM port filtering to reduce data
-- Apply time range filters for large logs
-- Export to Excel for offline analysis
-
----
-
-## 🔧 Troubleshooting
-
-### Common Issues
-
-#### "Unknown log format" Error
-- **Cause**: Log file doesn't contain `[0x19B7]` or `USIM_MAIN`
-- **Solution**: Verify log capture settings in QXDM/QCAT/Shannon DM
-
-#### Slow Processing
-- **Cause**: Very large log file (> 100MB)
-- **Solution**: Split log file or use time range filtering
-
-#### Missing File Names
-- **Cause**: Non-standard DF/EF IDs
-- **Solution**: Check `file_system.py` for supported files
-
-#### Excel Export Fails
-- **Cause**: Special characters in file contents
-- **Solution**: Update to latest version (includes character filtering)
-
----
 
 ## 📝 Changelog
 
 ### v3.2 (Current)
-- ✨ Added Excel export functionality
-- ✨ Added README page in web interface
+- ✨ Docker-based deployment
+- ✨ Excel export functionality
 - 🐛 Fixed character encoding issues
-- 📚 Improved documentation
 
 ### v3.1
-- ✨ Added Shannon DM log support
-- ✨ Added OTA update tracking
-- ✨ Added 5G file system support (DF 5GS)
-- 🐛 Fixed logical channel handling
+- ✨ Shannon DM log support
+- ✨ OTA update tracking
+- ✨ 5G file system support (DF 5GS)
 
 ### v3.0
 - ✨ Web version release
 - ✨ Flask-based architecture
 - ✨ Session management
-- 🎨 Modern UI design
-
-### v2.x
-- ✨ PyQt5 desktop version
-- ✨ Clipboard support
-- ✨ Multi-select analysis
-
-### v1.x
-- 🎉 Initial release
-- ✨ QXDM log parsing
-- ✨ Basic APDU analysis
 
 ---
 
@@ -478,17 +287,12 @@ mypy .
 
 ---
 
-## 👥 Team
+## 👤 Author
 
-**Developer**: JUSEOK AHN (안주석)  
+**JUSEOK AHN (안주석)**  
 **Email**: ajs3013@lguplus.co.kr  
 **Organization**: LG U+  
-**Role**: Senior Engineer, SIM/eSIM Platform
-
-### Support
-- 📧 Email: ajs3013@lguplus.co.kr
-- 📁 Sample Logs: [Google Drive](https://drive.google.com/drive/folders/1I1Bpgms0mXRy9NLk4kg_3K9BFDVbe9LD)
-- 📖 Documentation: See `docs/` directory
+**Role**: Technical Specialist, Telecommunications Engineer
 
 ---
 
@@ -505,16 +309,7 @@ This software is proprietary and confidential. Developed for internal analysis, 
 - Network operators validating SIM profiles
 
 ### Patent Information
-Related patent applications are documented in `docs/특허/` directory.
-
----
-
-## 🌟 Acknowledgments
-
-Special thanks to:
-- LG U+ SIM/eSIM Platform Team
-- 3GPP and ETSI for comprehensive standards documentation
-- Open source community for excellent tools and libraries
+This software is protected by patent applications filed with the Korean Intellectual Property Office.
 
 ---
 

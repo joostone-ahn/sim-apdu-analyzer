@@ -17,22 +17,24 @@ RUN pip install --no-cache-dir --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
 # 애플리케이션 파일 복사
-COPY . .
+COPY src/ ./src/
+COPY templates/ ./templates/
 
 # 필요한 디렉토리 생성
 RUN mkdir -p uploads flask_session
 
 # 포트 노출
-EXPOSE 5000
+EXPOSE 8090
 
 # 환경 변수 설정
-ENV FLASK_APP=main_web.py
+ENV FLASK_APP=src/main.py
+ENV PYTHONPATH=/app
 ENV FLASK_ENV=production
 ENV PYTHONUNBUFFERED=1
 
 # 헬스체크 추가
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD python -c "import requests; requests.get('http://localhost:5000/readme')" || exit 1
+    CMD python -c "import requests; requests.get('http://localhost:8090/')" || exit 1
 
 # Gunicorn으로 실행 (프로덕션 환경)
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "2", "--threads", "4", "--timeout", "120", "--access-logfile", "-", "--error-logfile", "-", "main_web:app"]
+CMD ["gunicorn", "--bind", "0.0.0.0:8090", "--workers", "2", "--threads", "4", "--timeout", "120", "--access-logfile", "-", "--error-logfile", "-", "src.main:app"]
