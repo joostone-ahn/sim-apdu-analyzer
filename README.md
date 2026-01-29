@@ -250,26 +250,6 @@ Save the log as a `.txt` file.
 
 ---
 
-
-## 📝 Changelog
-
-### v3.2 (Current)
-- ✨ Docker-based deployment
-- ✨ Excel export functionality
-- 🐛 Fixed character encoding issues
-
-### v3.1
-- ✨ Shannon DM log support
-- ✨ OTA update tracking
-- ✨ 5G file system support (DF 5GS)
-
-### v3.0
-- ✨ Web version release
-- ✨ Flask-based architecture
-- ✨ Session management
-
----
-
 ## 📖 References
 
 ### 3GPP Standards
