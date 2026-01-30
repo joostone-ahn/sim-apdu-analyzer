@@ -114,7 +114,7 @@ class Basic_GUI(QWidget):
         self.Prot_label.setText("Protocol-Level Analysis")
         self.Prot_label.setFont(CourierNewFont)
         self.Prot_list = QTextBrowser()
-        self.Prot_list.setFixedWidth(610)
+        self.Prot_list.setFixedWidth(700)
         self.Prot_list.setFixedHeight(360)
         self.Prot_list.setFont(CourierNewFont)
         self.Prot_list.setStyleSheet(style_sheet)
@@ -128,7 +128,7 @@ class Basic_GUI(QWidget):
         self.App_list = QTextBrowser()
         self.App_list.setFont(CourierNewFont)
         self.App_list.setStyleSheet(style_sheet)
-        self.App_list.setFixedWidth(610)
+        self.App_list.setFixedWidth(700)
         self.App_list.setFixedHeight(360)
         App_vbox = QVBoxLayout()
         App_vbox.addWidget(self.App_label)
@@ -508,9 +508,9 @@ class Basic_GUI(QWidget):
         parsing = self.df['parsing'][num]
 
         if contents:
-            self.Conts_list.setText(contents)
-        if parsing:
-            self.Parsing_list.setText(parsing)
+            self.Conts_list.setText(str(contents))
+        if parsing and not pd.isna(parsing):
+            self.Parsing_list.setText(str(parsing))
 
 class MyQListWidget(QListWidget):
 
@@ -548,9 +548,7 @@ class MyQListWidget(QListWidget):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
-
     app.setStyle("Fusion")
     # app.setFont(QtGui.QFont("Courier New", 12))
-
     ex = Basic_GUI()
     sys.exit(app.exec_())

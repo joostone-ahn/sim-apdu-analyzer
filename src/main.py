@@ -109,7 +109,7 @@ def index():
             msg_type = session['msg_type']
             msg_data = session['msg_data']
         else:
-            return render_template('index_v3.html', result={}, filename='', selected_sim=1)
+            return render_template('index.html', result={}, filename='', selected_sim=1)
 
         session['sim_select'] = sim_select
 
@@ -146,7 +146,7 @@ def index():
         }
 
     return render_template(
-        'index_v3.html',
+        'index.html',
         result=result,
         filename=session.get('filename'),
         selected_sim=session.get('sim_select', 1),
@@ -349,7 +349,7 @@ def download_excel():
     df_full = pd.DataFrame(df_records)
     desired_cols = ['DF', 'File', 'DF_Id', 'File_Id', 'Type', 'SFI', 'REC', 'OFS', 'LEN', 'ref', 'contents', 'parsing']
     df_full = df_full[[col for col in desired_cols if col in df_full.columns]]
-    df_full = df_full.applymap(clean_excel_string)
+    df_full = df_full.map(clean_excel_string)
 
     output = BytesIO()
     df_full.to_excel(output, index=False, engine='openpyxl')
@@ -363,4 +363,4 @@ def download_excel():
     )
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8090, debug=False)
+    app.run(host='0.0.0.0', port=8090, debug=True)

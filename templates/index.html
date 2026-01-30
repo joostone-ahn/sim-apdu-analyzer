@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SIM APDU Analyzer v3</title>
+  <title>SIM APDU Analyzer</title>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <style>
     * {
@@ -599,7 +599,7 @@
     <form method="POST" enctype="multipart/form-data" style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
       <div style="display: flex; align-items: center; gap: 16px;">
         <div class="file-input-wrapper">
-          <label class="file-button" for="logfile">📂 Choose File</label>
+          <label class="file-button" for="logfile">📁 Open Log File</label>
           <input id="logfile" type="file" name="logfile" onchange="updateFileLabel(this)" {% if not filename %}required{% endif %}>
         </div>
         <span id="selected-filename" class="file-name {% if filename %}selected{% endif %}">
