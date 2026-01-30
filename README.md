@@ -262,7 +262,7 @@ Save the log as a `.txt` file.
                │
 ┌──────────────▼──────────────────────────────┐
 │       Core Processing Pipeline              │
-│                                              │
+│                                             │
 │  msg_item    → Log Format Detection         │
 │  port        → SIM Port Filtering           │
 │  msg_prot    → Protocol Analysis            │
