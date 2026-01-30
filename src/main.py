@@ -1,17 +1,41 @@
+debug_mode = 0
+# debug_mode = 1
+
+import sys
+import os
+
+# Add parent directory to path for direct execution
+if __name__ == '__main__':
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    parent_dir = os.path.dirname(current_dir)
+    sys.path.insert(0, parent_dir)
+
 from flask import Flask, render_template, request, jsonify, session
 from flask_session import Session
-from . import msg_item
-from . import port
-from . import msg_sum
-from . import msg_app
-from . import msg_prot
-from . import msg_files
-import os
+from src import msg_item
+from src import port
+from src import msg_sum
+from src import msg_app
+from src import msg_prot
+from src import msg_files
+from src import file_system
 import re
 
-# templates 폴더는 프로젝트 루트에 위치
+# Get all valid file names from file_system
+def get_valid_file_names():
+    """Extract all file names from EF_name dictionary"""
+    file_names = set()
+    for df_files in file_system.EF_name.values():
+        if isinstance(df_files, dict):
+            file_names.update(df_files.values())
+    # Add DF names too
+    file_names.update(file_system.DF_name.values())
+    return list(file_names)
+
+VALID_FILE_NAMES = get_valid_file_names()
+
 app = Flask(__name__, template_folder='../templates')
-app.secret_key = 'apdu-analyzer-secret-key'
+app.secret_key = 'apdu-analyzer-secret-key-v3'
 app.config['SESSION_TYPE'] = 'filesystem'
 Session(app)
 
@@ -40,7 +64,6 @@ def get_line_color_class(line):
 def index():
     result = {}
 
-    # ✅ 접속 초기화 시 기존 세션 전체 삭제
     if request.method == 'GET':
         session.clear()
 
@@ -86,9 +109,8 @@ def index():
             msg_type = session['msg_type']
             msg_data = session['msg_data']
         else:
-            return render_template('index.html', result={}, filename='', selected_sim=1)
+            return render_template('index_v3.html', result={}, filename='', selected_sim=1)
 
-        # ✅ 새로운 SIM 선택값 반영
         session['sim_select'] = sim_select
 
         port_index = [i for i, p in enumerate(msg_port) if p == sim_select]
@@ -124,11 +146,148 @@ def index():
         }
 
     return render_template(
-        'index.html',
+        'index_v3.html',
         result=result,
         filename=session.get('filename'),
-        selected_sim=session.get('sim_select', 1)
+        selected_sim=session.get('sim_select', 1),
+        valid_file_names=VALID_FILE_NAMES
     )
+
+def parse_protocol_messages(prot_result):
+    """Parse protocol result strings into structured data for HTML rendering"""
+    messages = []
+    
+    if debug_mode:
+        print("=== Parsing Protocol Messages ===")
+        print(f"Total lines: {len(prot_result)}")
+    
+    for i, line in enumerate(prot_result):
+        if debug_mode:
+            print(f"Line {i}: repr={repr(line[:100])}")
+        
+        # Skip empty lines
+        if not line.strip():
+            if debug_mode:
+                print("  -> Skipped (empty)")
+            continue
+            
+        # Skip separator lines (lines with only dashes)
+        if line.strip().replace('-', '').replace('=', '') == '':
+            if debug_mode:
+                print("  -> Skipped (separator)")
+            continue
+        
+        # Check if line contains timestamp and [TX] or [RX]
+        # Use re.DOTALL to match across newlines
+        match = re.search(r'(\d{2}:\d{2}:\d{2}\.\d{3})\s+\[(TX|RX)\]\s+(.*)', line, re.DOTALL)
+        if match:
+            timestamp = match.group(1)
+            direction = match.group(2)
+            hex_data_raw = match.group(3)
+            
+            # Remove newlines and extra spaces from hex_data
+            # The hex data may contain \n with indentation for continuation
+            hex_data = re.sub(r'\s+', ' ', hex_data_raw).strip()
+            
+            messages.append({
+                'timestamp': timestamp,
+                'direction': direction,
+                'hex_data': hex_data
+            })
+            if debug_mode:
+                print(f"  -> New message: {timestamp} [{direction}]")
+                print(f"     hex_data length: {len(hex_data)}")
+                print(f"     first 80: {hex_data[:80]}")
+                if len(hex_data) > 80:
+                    print(f"     last 80: {hex_data[-80:]}")
+    
+    if debug_mode:
+        print(f"=== Total messages parsed: {len(messages)} ===")
+        for i, msg in enumerate(messages):
+            print(f"Message {i}: {msg['timestamp']} [{msg['direction']}] hex_data length: {len(msg['hex_data'])}")
+    
+    return messages
+
+def parse_application_data(app_result):
+    """Parse application result strings into structured data for HTML rendering"""
+    if not app_result:
+        return None
+    
+    data = {
+        'header': {},
+        'data': {},
+        'parsing': []
+    }
+    
+    separator_count = 0
+    current_section = 'header'
+    
+    for line in app_result:
+        line_stripped = line.strip()
+        
+        # Skip empty lines
+        if not line_stripped:
+            continue
+        
+        # Separator lines indicate section changes
+        if line_stripped.startswith('-'):
+            separator_count += 1
+            if separator_count == 1:
+                current_section = 'data'
+            elif separator_count == 2:
+                current_section = 'parsing'
+            continue
+        
+        # Parse header section
+        if current_section == 'header':
+            if 'Logical Channel' in line:
+                match = re.search(r'Logical Channel\s*:\s*(.+)', line)
+                if match:
+                    data['header']['logical_channel'] = match.group(1).strip()
+            elif 'Current DF File' in line:
+                match = re.search(r'Current DF File\s*:\s*(.+)', line)
+                if match:
+                    data['header']['df_file'] = match.group(1).strip()
+            elif 'Current EF File' in line:
+                match = re.search(r'Current EF File\s*:\s*(.+)', line)
+                if match:
+                    data['header']['ef_file'] = match.group(1).strip()
+            elif 'Current Command' in line:
+                match = re.search(r'Current Command\s*:\s*(.+)', line)
+                if match:
+                    data['header']['command'] = match.group(1).strip()
+        
+        # Parse data section
+        elif current_section == 'data':
+            if 'Offset' in line or 'Number' in line:
+                match = re.search(r':\s*(.+)', line)
+                if match:
+                    if 'offset' not in data['data']:
+                        data['data']['offset'] = match.group(1).strip()
+            elif 'Length' in line:
+                match = re.search(r':\s*(.+)', line)
+                if match:
+                    data['data']['length'] = match.group(1).strip()
+            elif 'Contents' in line:
+                # Start collecting hex contents
+                match = re.search(r':\s*(.+)', line)
+                if match:
+                    hex_data = match.group(1).strip()
+                    if hex_data:
+                        data['data']['contents'] = hex_data
+                    else:
+                        data['data']['contents'] = ''
+            elif 'contents' in data['data'] and line_stripped:
+                # Continuation of hex contents
+                if re.match(r'^[0-9A-Fa-f\s]+$', line_stripped):
+                    data['data']['contents'] += ' ' + line_stripped
+        
+        # Parse parsing section
+        elif current_section == 'parsing':
+            if line_stripped:
+                data['parsing'].append(line_stripped)
+    
+    return data
 
 @app.route('/analyze_line', methods=['POST'])
 def analyze_line():
@@ -137,9 +296,18 @@ def analyze_line():
     app_result = msg_app.rst(app_rst_input, session['sum_read'], session['sum_error'], index)
     prot_rst_input = session['msg_all'], session['prot_start'], session['prot_type'], session['prot_data']
     prot_result = msg_prot.rst(prot_rst_input, index)
+    
+    # Parse protocol result into structured data
+    protocol_messages = parse_protocol_messages(prot_result)
+    
+    # Parse application result into structured data
+    application_data = parse_application_data(app_result)
+    
     return jsonify({
-        'protocol': prot_result,
-        'application': app_result
+        'protocol': prot_result,  # Keep for backward compatibility
+        'protocol_structured': protocol_messages,
+        'application': app_result,  # Keep for backward compatibility
+        'application_structured': application_data
     })
 
 @app.route('/file_detail', methods=['POST'])
@@ -147,16 +315,24 @@ def file_detail():
     index = int(request.form['index'])
     df = session.get('df', [])
     if df and 0 <= index < len(df):
+        contents = df[index].get('contents', '')
+        parsing = df[index].get('parsing', '')
+        
+        # Handle NaN values - convert to empty string
+        import math
+        if isinstance(contents, float) and math.isnan(contents):
+            contents = ''
+        if isinstance(parsing, float) and math.isnan(parsing):
+            parsing = ''
+            
         return jsonify({
-            'contents': df[index].get('contents', ''),
-            'parsing': df[index].get('parsing', '')
+            'contents': contents,
+            'parsing': parsing
         })
     return jsonify({'contents': '', 'parsing': ''})
 
-# Excel 허용 문자 필터 (openpyxl이 허용하는 범위 외 제거)
 def clean_excel_string(s):
     if isinstance(s, str):
-        # ASCII 제어문자 제거 (0x00~0x1F 제외: Tab(9), LF(10), CR(13)만 허용)
         return re.sub(r"[\x00-\x08\x0B\x0C\x0E-\x1F]", "", s)
     return s
 
@@ -170,10 +346,7 @@ def download_excel():
     if not df_records:
         return "No file system data available", 400
 
-    # 전체 데이터로 DataFrame 구성
     df_full = pd.DataFrame(df_records)
-
-    # 열 순서 지정 및 셀 문자열 정리
     desired_cols = ['DF', 'File', 'DF_Id', 'File_Id', 'Type', 'SFI', 'REC', 'OFS', 'LEN', 'ref', 'contents', 'parsing']
     df_full = df_full[[col for col in desired_cols if col in df_full.columns]]
     df_full = df_full.applymap(clean_excel_string)
@@ -189,10 +362,5 @@ def download_excel():
         mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     )
 
-# if __name__ == '__main__':
-#     app.run(debug=True)
-
 if __name__ == '__main__':
-    # host='0.0.0.0'은 외부 접속을 허용하기 위한 필수 설정입니다.
-    # port는 Dockerfile의 EXPOSE와 맞춥니다.
     app.run(host='0.0.0.0', port=8090, debug=False)

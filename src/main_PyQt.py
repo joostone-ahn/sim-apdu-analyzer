@@ -1,14 +1,22 @@
 import sys
+import os
+
+# Add parent directory to path for direct execution
+if __name__ == '__main__':
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    parent_dir = os.path.dirname(current_dir)
+    sys.path.insert(0, parent_dir)
+
 from PyQt5.QtWidgets import *
 from PyQt5 import QtGui
 from PyQt5.QtCore import pyqtSignal, pyqtSlot, Qt
 from PyQt5.QtGui import QColor
-from . import msg_item
-from . import port
-from . import msg_sum
-from . import msg_app
-from . import msg_prot
-from . import msg_files
+from src import msg_item
+from src import port
+from src import msg_sum
+from src import msg_app
+from src import msg_prot
+from src import msg_files
 import clipboard
 import tabulate
 import pandas as pd

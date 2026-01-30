@@ -98,6 +98,43 @@ Open your browser and navigate to: http://localhost:8090
 
 ---
 
+## 📦 Running from Source (For Developers)
+
+If you have cloned the repository and want to run the application directly from Python source:
+
+### 1. Create Virtual Environment
+
+```bash
+python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+```
+
+### 2. Install Dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### 3. Run Application
+
+You can run the application in two ways:
+
+**Option A: Direct execution (recommended for IDE)**
+```bash
+python src/main_PyQt.py
+```
+
+**Option B: Module execution**
+```bash
+python -m src.main_PyQt
+```
+
+The application window will open automatically.
+
+> **Note**: This method is recommended for developers who want to modify the code or contribute to the project.
+
+---
+
 ## 🔧 Docker Management
 
 ### Container Control

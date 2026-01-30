@@ -5,3 +5,5 @@ tabulate
 openpyxl
 gunicorn
 requests
+PyQt5
+clipboard

@@ -2,311 +2,1384 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>SIM APDU Analyzer</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SIM APDU Analyzer v3</title>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
     body {
-      font-family: monospace;
-      background: #000;
-      color: #fff;
-      padding: 20px;
-      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      height: 100vh;
+      overflow: hidden;
+      padding: 12px;
     }
 
-    form { margin-bottom: 20px; }
-    .tabs { margin-top: 10px; }
-    .tab { display: none; }
-    .tab.active { display: flex; gap: 20px; height: 75vh; }
-    .tab-buttons { margin-bottom: 14px; }
-    .tab-buttons button {
-      margin-right: 10px;
-      padding: 5px 10px;
-      background: #222;
-      color: white;
-      border: 1px solid #444;
-      cursor: pointer;
-    }
-    .tab-buttons button.active {
-      background: #fff;
-      color: #000;
-    }
-
-    .panel-container {
-      width: 50%;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .file-panel, .summary-panel {
-      flex: 1;
-      overflow-y: auto;
-      border: 1px solid #444;
-    }
-
-    .analysis-panel, .file-detail-panel {
-      width: 50%;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .analysis-half, .file-detail-half {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-    }
-
-    textarea {
-      width: 100%;
+    .container {
       height: 100%;
-      background: #111;
-      color: #0f0;
-      font-family: monospace;
-      padding: 10px;
-      white-space: pre;
-      resize: none;
-    }
-
-    table {
-      border-collapse: collapse;
-      border-spacing: 0;
       width: 100%;
-      font-family: monospace;
-      table-layout: auto;
+      display: flex;
+      flex-direction: column;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      overflow: hidden;
     }
 
-    th, td {
-      border: 1px solid #555;
-      padding: 4px 6px;
-      white-space: pre;
-      text-align: left;
-      line-height: 1.3;
-      margin: 0;
+    .header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
     }
 
-    thead th {
-      position: sticky;
-      top: 0;
-      background-color: #fff;
-      color: #000;
-      z-index: 10;
-      border-top: none;
+    .header h1 {
+      font-size: 26px;
+      font-weight: 600;
     }
 
-    tr:hover { background: #222; cursor: pointer; }
-
-    h1 { margin-top: 0; }
-    h2 { margin: 4px 0 8px; }
-
-    .red       { color: red; }
-    .yellow    { color: yellow; }
-    .gray      { color: gray; }
-    .magenta   { color: magenta; }
-    .cyan      { color: cyan; }
-    .lightblue { color: lightblue; }
-    .lightgreen{ color: lightgreen; }
-
-    #logfile { display: none; }
-
-    .file-line {
+    .header-right {
       display: flex;
       align-items: center;
-      gap: 10px;
-      margin-bottom: 6px;
+      gap: 12px;
+    }
+
+    .copyright {
+      font-size: 14px;
+      opacity: 0.9;
+    }
+
+    .github-btn {
+      background: white;
+      color: #667eea;
+      padding: 8px 16px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 15px;
+      transition: transform 0.2s;
+    }
+
+    .github-btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .control-panel {
+      padding: 16px 24px;
+      background: #f8f9fa;
+      border-bottom: 1px solid #e9ecef;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .file-input-wrapper {
+      position: relative;
+    }
+
+    #logfile {
+      display: none;
     }
 
     .file-button {
-      padding: 4px 10px;
-      background: white;
-      color: black;
-      border: 1px solid #888;
+      background: #667eea;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 6px;
       cursor: pointer;
+      font-weight: 600;
+      font-size: 16px;
+      transition: background 0.3s;
+      display: inline-block;
+    }
+
+    .file-button:hover {
+      background: #5568d3;
     }
 
     .file-name {
-      color: lightgreen;
-      max-width: 400px;
+      color: #495057;
+      font-size: 16px;
+      max-width: 300px;
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
 
-    .sim-line { margin-bottom: 10px; }
+    .file-name.selected {
+      color: #28a745;
+      font-weight: 600;
+    }
+
+    select {
+      padding: 10px 14px;
+      border: 2px solid #dee2e6;
+      border-radius: 6px;
+      font-size: 16px;
+      background: white;
+      cursor: pointer;
+      transition: border-color 0.3s;
+    }
+
+    select:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    button[type="submit"] {
+      background: #28a745;
+      color: white;
+      padding: 10px 24px;
+      border: none;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    button[type="submit"]:hover {
+      background: #218838;
+    }
+
+    .tab-buttons {
+      padding: 0 24px;
+      background: #f8f9fa;
+      border-bottom: 2px solid #dee2e6;
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .tab-btn {
+      padding: 12px 24px;
+      background: transparent;
+      border: none;
+      border-bottom: 3px solid transparent;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 16px;
+      color: #6c757d;
+      transition: all 0.3s;
+    }
+
+    .tab-btn:hover {
+      color: #495057;
+    }
+
+    .tab-btn.active {
+      color: #667eea;
+      border-bottom-color: #667eea;
+    }
+
+    .tabs {
+      flex: 1;
+      overflow: hidden;
+      padding: 0;
+    }
+
+    .tab {
+      display: none;
+      height: 100%;
+      width: 100%;
+    }
+
+    .tab.active {
+      display: flex;
+      gap: 0;
+    }
+
+    .resizable-container {
+      display: flex;
+      height: 100%;
+      width: 100%;
+      position: relative;
+      padding: 16px 24px;
+    }
+
+    .left-panel {
+      flex: 0 0 65% !important;
+      display: flex;
+      flex-direction: column;
+      padding-right: 8px;
+      overflow: hidden;
+    }
+
+    .resizer {
+      width: 8px;
+      background: #e9ecef;
+      cursor: col-resize;
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .resizer:hover {
+      background: #667eea;
+    }
+
+    .resizer::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 2px;
+      height: 40px;
+      background: #adb5bd;
+    }
+
+    .right-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding-left: 8px;
+      overflow: hidden;
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+      flex-shrink: 0;
+    }
+
+    h2 {
+      font-size: 20px;
+      color: #212529;
+      font-weight: 600;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 10px 16px;
+      border-radius: 6px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    h2::before {
+      font-size: 22px;
+    }
+
+    h2 .title-text {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .excel-btn {
+      background: white;
+      color: #667eea;
+      padding: 6px 14px;
+      border-radius: 4px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 13px;
+      transition: all 0.3s;
+      border: 2px solid white;
+    }
+
+    .excel-btn:hover {
+      background: rgba(255, 255, 255, 0.9);
+      transform: translateY(-1px);
+    }
+
+    .table-container {
+      flex: 1;
+      overflow: auto;
+      border: 1px solid #dee2e6;
+      border-radius: 8px;
+      background: white;
+    }
+
+    .analysis-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      overflow: hidden;
+    }
+
+    .analysis-section {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      min-height: 100px;
+    }
+
+    .vertical-resizer {
+      height: 8px;
+      background: #e9ecef;
+      cursor: row-resize;
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .vertical-resizer:hover {
+      background: #667eea;
+    }
+
+    .vertical-resizer::after {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      width: 40px;
+      height: 2px;
+      background: #adb5bd;
+    }
+
+    textarea {
+      width: 100%;
+      height: 100%;
+      background: #f8f9fa;
+      color: #212529;
+      font-family: 'Courier New', monospace;
+      padding: 14px;
+      border: 1px solid #dee2e6;
+      border-radius: 8px;
+      resize: none;
+      font-size: 17px;
+      line-height: 1.6;
+    }
+
+    textarea:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .protocol-display {
+      width: 100%;
+      height: 100%;
+      background: white;
+      border: 1px solid #dee2e6;
+      border-radius: 8px;
+      overflow: auto;
+    }
+
+    .protocol-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: 'Courier New', monospace;
+      font-size: 16px;
+    }
+
+    .protocol-table thead th {
+      position: sticky;
+      top: 0;
+      background: #95a5a6;
+      color: white;
+      font-weight: 600;
+      padding: 12px 14px;
+      text-align: left;
+      border-bottom: 2px solid #7f8c8d;
+      z-index: 10;
+      white-space: nowrap;
+    }
+
+    .protocol-table thead th:nth-child(1) {
+      width: 150px;
+    }
+
+    .protocol-table thead th:nth-child(2) {
+      width: 60px;
+      text-align: center;
+    }
+
+    .protocol-table thead th:nth-child(3) {
+      width: auto;
+    }
+
+    .protocol-table tbody td {
+      padding: 10px 14px;
+      border-bottom: 1px solid #dee2e6;
+      vertical-align: middle;
+    }
+
+    .protocol-table tbody tr:hover {
+      background: #f8f9fa;
+    }
+
+    .protocol-time {
+      white-space: nowrap;
+      color: #495057;
+      font-weight: 500;
+      width: 150px;
+    }
+
+    .protocol-dir {
+      white-space: nowrap;
+      font-weight: 700;
+      text-align: center;
+      width: 60px;
+    }
+
+    .protocol-dir.tx {
+      color: #1565c0;
+    }
+
+    .protocol-dir.rx {
+      color: #2e7d32;
+    }
+
+    .protocol-hex {
+      font-family: 'Courier New', monospace;
+      color: #212529;
+      word-break: break-all;
+      line-height: 1.8;
+      letter-spacing: 0.5px;
+      vertical-align: middle;
+    }
+
+    .application-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 16px;
+      margin-bottom: 0;
+    }
+
+    .application-table th {
+      background: #e9ecef;
+      color: #495057;
+      font-weight: 600;
+      padding: 10px 14px;
+      text-align: left;
+      border: 1px solid #dee2e6;
+      width: 200px;
+      white-space: nowrap;
+    }
+
+    .application-table td {
+      padding: 10px 14px;
+      border: 1px solid #dee2e6;
+      vertical-align: middle;
+    }
+
+    .application-table .hex-contents {
+      font-family: 'Courier New', monospace;
+      line-height: 1.8;
+      letter-spacing: 0.5px;
+    }
+
+    .application-table .parsing-contents {
+      font-family: 'Courier New', monospace;
+      color: #495057;
+      font-weight: 500;
+      line-height: 1.8;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 16px;
+      table-layout: fixed;
+    }
+
+    th, td {
+      padding: 12px 14px;
+      text-align: left;
+      border-bottom: 1px solid #dee2e6;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      position: relative;
+    }
+
+    thead th {
+      position: sticky;
+      top: 0;
+      background: #95a5a6;
+      color: white;
+      font-weight: 600;
+      z-index: 10;
+      border-bottom: 2px solid #7f8c8d;
+      user-select: none;
+    }
+
+    thead th .resizer-handle {
+      position: absolute;
+      right: 0;
+      top: 0;
+      height: 100%;
+      width: 5px;
+      cursor: col-resize;
+      user-select: none;
+      z-index: 1;
+    }
+
+    thead th .resizer-handle:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    tbody tr {
+      transition: background 0.2s;
+      cursor: pointer;
+    }
+
+    tbody tr:hover {
+      background: #f8f9fa;
+    }
+
+    tbody tr.selected {
+      background: #e7f3ff;
+    }
+
+    tbody tr:focus {
+      outline: 2px solid #667eea;
+      outline-offset: -2px;
+    }
+
+    .ref-link {
+      color: #667eea;
+      cursor: pointer;
+      text-decoration: underline;
+      font-weight: 600;
+    }
+
+    .ref-link:hover {
+      color: #5568d3;
+      text-decoration: none;
+    }
+
+    /* Color classes */
+    .red { color: #dc3545; font-weight: 600; }
+    .yellow { color: #ffc107; font-weight: 600; }
+    .gray { color: #6c757d; }
+    .magenta { color: #e83e8c; font-weight: 600; }
+    .cyan { color: #17a2b8; font-weight: 600; }
+    .lightblue { color: #007bff; font-weight: 600; }
+    .lightgreen { color: #28a745; font-weight: 600; }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #f1f1f1;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #888;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #555;
+    }
   </style>
 </head>
 <body>
 
-<div style="display: flex; justify-content: space-between; align-items: center;">
-  <h1 style="margin: 0;">SIM APDU Analyzer</h1>
-  <div style="display: flex; align-items: center; gap: 16px;">
-    <span style="font-size: 14px; color: #ccc;">
-      © 2025. JUSEOK AHN &lt;ajs3013@lguplus.co.kr&gt;
-    </span>
-    <a href="https://github.com/joostone-ahn/SIM-APDU-Analyzer" target="_blank" style="
-      font-size: 14px;
-      text-decoration: none;
-      background: #0366d6;
-      color: white;
-      padding: 6px 12px;
-      border-radius: 6px;
-      font-weight: bold;
-    ">📄 GitHub</a>
+<div class="container">
+  <div class="header">
+    <h1>🔍 SIM APDU Analyzer</h1>
+    <div class="header-right">
+      <span class="copyright">© 2025 JUSEOK AHN</span>
+      <a href="https://github.com/joostone-ahn/SIM-APDU-Analyzer" target="_blank" class="github-btn">
+        📄 GitHub
+      </a>
+    </div>
   </div>
+
+  <div class="control-panel">
+    <form method="POST" enctype="multipart/form-data" style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+      <div style="display: flex; align-items: center; gap: 16px;">
+        <div class="file-input-wrapper">
+          <label class="file-button" for="logfile">📂 Choose File</label>
+          <input id="logfile" type="file" name="logfile" onchange="updateFileLabel(this)" {% if not filename %}required{% endif %}>
+        </div>
+        <span id="selected-filename" class="file-name {% if filename %}selected{% endif %}">
+          {% if filename %}
+            ✓ {{ filename }}
+          {% else %}
+            No file selected
+          {% endif %}
+        </span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <select name="sim_select">
+          <option value="1" {% if selected_sim == 1 %}selected{% endif %}>SIM1</option>
+          <option value="2" {% if selected_sim == 2 %}selected{% endif %}>SIM2</option>
+        </select>
+        <button type="submit">🔍 Analyze</button>
+      </div>
+    </form>
+  </div>
+
+  {% if result.summary %}
+  <div class="tab-buttons">
+    <button class="tab-btn active" onclick="showTab('tab-apdu', this)">APDU</button>
+    <button class="tab-btn" onclick="showTab('tab-file', this)">File System</button>
+  </div>
+
+  <div class="tabs">
+    <!-- APDU TAB -->
+    <div id="tab-apdu" class="tab active">
+      <div class="resizable-container">
+        <div class="left-panel">
+          <h2>📋 Summary</h2>
+          <div class="table-container">
+            <table id="summary-table">
+              <thead>
+                <tr>
+                  <th style="width: 90px;">
+                    #
+                    <div class="resizer-handle"></div>
+                  </th>
+                  <th style="width: 150px;">
+                    Time
+                    <div class="resizer-handle"></div>
+                  </th>
+                  <th style="width: 250px;">
+                    Command
+                    <div class="resizer-handle"></div>
+                  </th>
+                  <th style="width: 90px;">
+                    SFI
+                    <div class="resizer-handle"></div>
+                  </th>
+                  <th style="width: 180px;">
+                    File Name
+                    <div class="resizer-handle"></div>
+                  </th>
+                  <th>
+                    Additional Info
+                  </th>
+                </tr>
+              </thead>
+              <tbody tabindex="0">
+                {% for idx, line, color in result.summary %}
+                  {% set parts = line.split(']', 1) %}
+                  {% if parts|length > 1 %}
+                    {% set index_part = parts[0] + ']' %}
+                    {% set rest = parts[1].strip() %}
+                    {% set time_and_rest = rest.split(' ', 1) %}
+                    {% if time_and_rest|length > 1 %}
+                      {% set time_part = time_and_rest[0] %}
+                      {% set command_and_details = time_and_rest[1].split('|', 1) %}
+                      {% set full_command = command_and_details[0].strip() %}
+                      
+                      {# Extract command name and move parentheses to details #}
+                      {% if '(' in full_command %}
+                        {% set cmd_parts = full_command.split('(', 1) %}
+                        {% set command_part = cmd_parts[0].strip() %}
+                        {% set paren_part = '(' + cmd_parts[1] %}
+                      {% else %}
+                        {% set command_part = full_command %}
+                        {% set paren_part = '' %}
+                      {% endif %}
+                      
+                      {# Add icons based on command #}
+                      {% if 'SELECT' in command_part %}
+                        {% set icon = '📁' %}
+                      {% elif 'READ BINARY' in command_part or 'READ RECORD' in command_part %}
+                        {% set icon = '📖' %}
+                      {% elif 'UPDATE BINARY' in command_part or 'UPDATE RECORD' in command_part %}
+                        {% set icon = '✏️' %}
+                      {% elif 'WRITE' in command_part %}
+                        {% set icon = '✍️' %}
+                      {% elif 'STATUS' in command_part %}
+                        {% set icon = 'ℹ️' %}
+                      {% elif 'AUTHENTICATE' in command_part %}
+                        {% set icon = '🔐' %}
+                      {% elif 'VERIFY PIN' in command_part or 'UNBLOCK PIN' in command_part %}
+                        {% set icon = '🔑' %}
+                      {% elif 'CHANGE PIN' in command_part %}
+                        {% set icon = '🔄🔑' %}
+                      {% elif 'DISABLE PIN' in command_part or 'ENABLE PIN' in command_part %}
+                        {% set icon = '🔓' %}
+                      {% elif 'MANAGE CHANNEL' in command_part or 'MANAGE SECURE CHANNEL' in command_part %}
+                        {% set icon = '🔀' %}
+                      {% elif 'RESET' in command_part or 'POWER' in command_part %}
+                        {% set icon = '🔌' %}
+                      {% elif 'ENVELOPE' in command_part %}
+                        {% set icon = '📨' %}
+                      {% elif 'REFRESH' in command_part %}
+                        {% set icon = '🔄' %}
+                      {% elif 'FETCH' in command_part %}
+                        {% set icon = '📥' %}
+                      {% elif 'TERMINAL RESPONSE' in command_part or 'TERMINAL PROFILE' in command_part or 'TERMINAL CAPABILITY' in command_part %}
+                        {% set icon = '💻' %}
+                      {% elif 'GET RESPONSE' in command_part or 'GET DATA' in command_part or 'GET IDENTITY' in command_part or 'GET CHALLENGE' in command_part %}
+                        {% set icon = '📤' %}
+                      {% elif 'RETRIEVE DATA' in command_part %}
+                        {% set icon = '🔍' %}
+                      {% elif 'SET DATA' in command_part or 'PUT KEY' in command_part or 'SET STATUS' in command_part %}
+                        {% set icon = '⚙️' %}
+                      {% elif 'STORE DATA' in command_part %}
+                        {% set icon = '💾' %}
+                      {% elif 'SEARCH RECORD' in command_part %}
+                        {% set icon = '🔎' %}
+                      {% elif 'INCREASE' in command_part %}
+                        {% set icon = '➕' %}
+                      {% elif 'DEACTIVATE FILE' in command_part %}
+                        {% set icon = '🚫' %}
+                      {% elif 'ACTIVATE FILE' in command_part %}
+                        {% set icon = '✅' %}
+                      {% elif 'DELETE' in command_part %}
+                        {% set icon = '🗑️' %}
+                      {% elif 'INSTALL' in command_part %}
+                        {% set icon = '📦' %}
+                      {% elif 'LOAD' in command_part %}
+                        {% set icon = '⬇️' %}
+                      {% elif 'TRANSACT DATA' in command_part %}
+                        {% set icon = '💱' %}
+                      {% elif 'SUSPEND UICC' in command_part %}
+                        {% set icon = '⏸️' %}
+                      {% elif 'ERROR' in command_part %}
+                        {% set icon = '❌' %}
+                      {% elif 'Unknown' in command_part %}
+                        {% set icon = '❓' %}
+                      {% else %}
+                        {% set icon = '📝' %}
+                      {% endif %}
+                      
+                      {# Extract SFI and File name from details #}
+                      {% set sfi_part = '' %}
+                      {% set file_part = '' %}
+                      {% set details_part = '' %}
+                      
+                      {# Parse SFI from command parentheses: (SFI: 0x##) #}
+                      {% if 'SFI: 0x' in paren_part %}
+                        {% set sfi_match = paren_part.split('SFI: 0x', 1) %}
+                        {% if sfi_match|length > 1 %}
+                          {% set sfi_value = sfi_match[1].split(')', 1)[0].split(' ', 1)[0] %}
+                          {% set sfi_part = '0x' + sfi_value %}
+                        {% endif %}
+                      {% endif %}
+                      
+                      {# Parse details after | #}
+                      {% if command_and_details|length > 1 %}
+                        {% set after_pipe = command_and_details[1].strip() %}
+                        {% if after_pipe %}
+                          {# Check if starts with known file names or uppercase word #}
+                          {% set words = after_pipe.split() %}
+                          {% if words %}
+                            {% set first_word = words[0] %}
+                            {# Check if first word is a valid file name from file_system #}
+                            {% if first_word in valid_file_names %}
+                              {% set file_part = first_word %}
+                              {# Rest is info/details #}
+                              {% if words|length > 1 %}
+                                {% set details_part = ' '.join(words[1:]) %}
+                              {% endif %}
+                            {# Check if first two words form a valid file name (e.g., "ADF USIM") #}
+                            {% elif words|length > 1 %}
+                              {% set two_words = first_word + ' ' + words[1] %}
+                              {% if two_words in valid_file_names %}
+                                {% set file_part = two_words %}
+                                {# Rest is info/details #}
+                                {% if words|length > 2 %}
+                                  {% set details_part = ' '.join(words[2:]) %}
+                                {% endif %}
+                              {% else %}
+                                {# Not a valid file name, everything is details #}
+                                {% set details_part = after_pipe %}
+                              {% endif %}
+                            {% else %}
+                              {# Not a valid file name, everything is details #}
+                              {% set details_part = after_pipe %}
+                            {% endif %}
+                          {% endif %}
+                        {% endif %}
+                      {% endif %}
+                      
+                    {% else %}
+                      {% set time_part = '' %}
+                      {% set command_part = rest %}
+                      {% set sfi_part = '' %}
+                      {% set file_part = '' %}
+                      {% set details_part = '' %}
+                      {% set icon = '📝' %}
+                    {% endif %}
+                  {% else %}
+                    {% set index_part = '' %}
+                    {% set time_part = '' %}
+                    {% set command_part = line %}
+                    {% set sfi_part = '' %}
+                    {% set file_part = '' %}
+                    {% set details_part = '' %}
+                    {% set icon = '📝' %}
+                  {% endif %}
+                  <tr data-index="{{ idx }}" class="{{ color }}">
+                    <td>{{ index_part }}</td>
+                    <td>{{ time_part }}</td>
+                    <td>{{ icon }} {{ command_part }}</td>
+                    <td>{{ sfi_part }}</td>
+                    <td>{{ file_part }}</td>
+                    <td>{{ details_part }}</td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        
+        <div class="resizer" id="apdu-resizer"></div>
+        
+        <div class="right-panel">
+          <div class="analysis-container">
+            <div class="analysis-section" id="protocol-section">
+              <h2>📶 Protocol-Level Analysis</h2>
+              <div id="protocol-area" class="protocol-display"></div>
+            </div>
+            
+            <div class="vertical-resizer" id="analysis-vertical-resizer"></div>
+            
+            <div class="analysis-section" id="application-section">
+              <h2>💻 Application-Level Analysis</h2>
+              <div id="application-area" class="protocol-display"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- FILE SYSTEM TAB -->
+    <div id="tab-file" class="tab">
+      <div class="resizable-container">
+        <div class="left-panel">
+          <h2>
+            <span class="title-text">📁 File System</span>
+            <a href="/download_excel" class="excel-btn">💾 Save to Excel</a>
+          </h2>
+          <div class="table-container">
+            <table id="file-table">
+              <thead>
+                <tr>
+                  <th style="width: 120px;">
+                    DF
+                    <div class="resizer-handle"></div>
+                  </th>
+                  <th style="width: 140px;">
+                    File
+                    <div class="resizer-handle"></div>
+                  </th>
+                  <th style="width: 90px;">
+                    DF_Id
+                    <div class="resizer-handle"></div>
+                  </th>
+                  <th style="width: 90px;">
+                    File_Id
+                    <div class="resizer-handle"></div>
+                  </th>
+                  <th style="width: 70px;">
+                    Type
+                    <div class="resizer-handle"></div>
+                  </th>
+                  <th style="width: 70px;">
+                    SFI
+                    <div class="resizer-handle"></div>
+                  </th>
+                  <th style="width: 70px;">
+                    REC#
+                    <div class="resizer-handle"></div>
+                  </th>
+                  <th style="width: 70px;">
+                    OFS
+                    <div class="resizer-handle"></div>
+                  </th>
+                  <th style="width: 70px;">
+                    LEN
+                    <div class="resizer-handle"></div>
+                  </th>
+                  <th style="width: 90px;">
+                    ref
+                  </th>
+                </tr>
+              </thead>
+              <tbody tabindex="0">
+                {% for idx, row in result.df_with_index %}
+                <tr data-index="{{ idx }}">
+                  <td>{{ row.DF }}</td>
+                  <td class="{% if row.OTA_updated and row.File in ['IMSI','MSISDN','OPLMNwAcT','ACC','Routing_Ind','IMPI','IMPU'] %}yellow{% elif row.OTA_updated %}lightgreen{% endif %}">{{ row.File }}</td>
+                  <td>{{ row.DF_Id }}</td>
+                  <td>{{ row.File_Id }}</td>
+                  <td>{{ row.Type }}</td>
+                  <td>{{ row.SFI }}</td>
+                  <td>{{ row.REC }}</td>
+                  <td>{{ row.OFS }}</td>
+                  <td>{{ row.LEN }}</td>
+                  <td>
+                    {% if row.ref %}
+                      <span class="ref-link" data-ref="{{ row.ref }}">{{ row.ref }}</span>
+                    {% endif %}
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="resizer" id="file-resizer"></div>
+
+        <div class="right-panel">
+          <div class="analysis-container">
+            <div class="analysis-section">
+              <h2>
+                <span class="title-text">📄 File Contents</span>
+                <button class="excel-btn" id="copy-contents-btn">📋 Copy</button>
+              </h2>
+              <div id="file-contents" class="protocol-display"></div>
+            </div>
+            <div class="analysis-section">
+              <h2>
+                <span class="title-text">🔍 Parsing Data</span>
+                <button class="excel-btn" id="copy-parsing-btn">📋 Copy</button>
+              </h2>
+              <div id="file-parsing" class="protocol-display"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endif %}
 </div>
-
-<form method="POST" enctype="multipart/form-data">
-  <div class="file-line">
-    <label class="file-button" for="logfile">📂 File</label>
-    <input id="logfile" type="file" name="logfile" onchange="updateFileLabel(this)" {% if not filename %}required{% endif %}>
-    <span id="selected-filename" class="file-name">
-      {% if filename %}
-        📄 {{ filename }}
-      {% else %}
-        선택된 파일 없음
-      {% endif %}
-    </span>
-  </div>
-
-  <div class="sim-line">
-    <select name="sim_select">
-      <option value="1" {% if selected_sim == 1 %}selected{% endif %}>SIM1</option>
-      <option value="2" {% if selected_sim == 2 %}selected{% endif %}>SIM2</option>
-    </select>
-    <button type="submit">Analyze</button>
-  </div>
-</form>
-
-{% if result.summary %}
-<div class="tab-buttons">
-  <button class="tab-btn active" onclick="showTab('tab-apdu', this)">APDU</button>
-  <button class="tab-btn" onclick="showTab('tab-file', this)">File System</button>
-</div>
-
-<div class="tabs">
-  <!-- APDU TAB -->
-  <div id="tab-apdu" class="tab active">
-    <div class="panel-container">
-      <h2>Summary</h2>
-      <div class="summary-panel">
-        <table id="summary-table">
-          <thead>
-            <tr><th>Message</th></tr>
-          </thead>
-          <tbody>
-            {% for idx, line, color in result.summary %}
-              <tr data-index="{{ idx }}">
-                <td class="{{ color }}">{{ line }}</td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    </div>
-    <div class="analysis-panel">
-      <div class="analysis-half">
-        <h2>Protocol-Level Analysis</h2>
-        <textarea id="protocol-area" readonly></textarea>
-      </div>
-      <div class="analysis-half">
-        <h2>Application-Level Analysis</h2>
-        <textarea id="application-area" readonly></textarea>
-      </div>
-    </div>
-  </div>
-
-  <!-- FILE SYSTEM TAB -->
-  <div id="tab-file" class="tab">
-    <div class="panel-container">
-      <div style="display: flex; justify-content: space-between; align-items: center;">
-        <h2 style="margin: 4px 0 8px;">File System</h2>
-        <a href="/download_excel" class="file-button" style="
-          background-color: #2ecc71;
-          color: black;
-          padding: 6px 12px;
-          border-radius: 4px;
-          font-weight: bold;
-          text-decoration: none;
-        ">💾 Save to Excel</a>
-      </div>
-      <div class="file-panel">
-        <table id="file-table">
-          <thead>
-            <tr>
-              <th>DF</th><th>File</th><th>DF_Id</th><th>File_Id</th><th>Type</th>
-              <th>SFI</th><th>REC#</th><th>OFS</th><th>LEN</th><th>ref</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for idx, row in result.df_with_index %}
-            <tr data-index="{{ idx }}">
-              <td>{{ row.DF }}</td>
-              <td class="{% if row.OTA_updated and row.File in ['IMSI','MSISDN','OPLMNwAcT','ACC','Routing_Ind','IMPI','IMPU'] %}yellow{% elif row.OTA_updated %}lightgreen{% endif %}">{{ row.File }}</td>
-              <td>{{ row.DF_Id }}</td>
-              <td>{{ row.File_Id }}</td>
-              <td>{{ row.Type }}</td>
-              <td>{{ row.SFI }}</td>
-              <td>{{ row.REC }}</td>
-              <td>{{ row.OFS }}</td>
-              <td>{{ row.LEN }}</td>
-              <td>{{ row.ref }}</td>
-            </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <div class="file-detail-panel">
-      <div class="file-detail-half">
-        <h2>File Contents</h2>
-        <textarea id="file-contents" readonly></textarea>
-      </div>
-      <div class="file-detail-half">
-        <h2>File Contents Parsing</h2>
-        <textarea id="file-parsing" readonly></textarea>
-      </div>
-    </div>
-  </div>
-</div>
-{% endif %}
 
 <script>
+// Render protocol messages as table
+function renderProtocolTable(messages) {
+  const protocolArea = $('#protocol-area');
+  
+  if (!messages || messages.length === 0) {
+    protocolArea.html('<div style="padding: 20px; text-align: center; color: #6c757d;">No protocol data</div>');
+    return;
+  }
+  
+  let html = '<table class="protocol-table"><thead><tr>';
+  html += '<th>Time</th>';
+  html += '<th>Dir</th>';
+  html += '<th>Hex Data</th>';
+  html += '</tr></thead><tbody>';
+  
+  messages.forEach(msg => {
+    const dirClass = msg.direction.toLowerCase();
+    
+    // Split hex data into chunks of 16 bytes (48 characters including spaces)
+    // Each byte is 2 hex chars + 1 space = 3 chars, so 16 bytes = 48 chars
+    const hexBytes = msg.hex_data.split(' ');
+    let formattedHex = '';
+    
+    for (let i = 0; i < hexBytes.length; i++) {
+      if (i > 0 && i % 16 === 0) {
+        formattedHex += '<br>';
+      }
+      formattedHex += hexBytes[i] + ' ';
+    }
+    
+    html += '<tr>';
+    html += `<td class="protocol-time">${msg.timestamp}</td>`;
+    html += `<td class="protocol-dir ${dirClass}">${msg.direction}</td>`;
+    html += `<td class="protocol-hex">${formattedHex}</td>`;
+    html += '</tr>';
+  });
+  
+  html += '</tbody></table>';
+  protocolArea.html(html);
+}
+
+// Render application data as tables
+function renderApplicationTable(appData) {
+  const applicationArea = $('#application-area');
+  
+  if (!appData || !appData.header) {
+    applicationArea.html('<div style="padding: 20px; text-align: center; color: #6c757d;">No application data</div>');
+    return;
+  }
+  
+  let html = '';
+  
+  // Header table
+  if (Object.keys(appData.header).length > 0) {
+    html += '<table class="application-table"><tbody>';
+    if (appData.header.logical_channel) {
+      html += '<tr><th>Logical Channel</th><td>' + appData.header.logical_channel + '</td></tr>';
+    }
+    if (appData.header.df_file) {
+      html += '<tr><th>Current DF File</th><td>' + appData.header.df_file + '</td></tr>';
+    }
+    if (appData.header.ef_file) {
+      html += '<tr><th>Current EF File</th><td>' + appData.header.ef_file + '</td></tr>';
+    }
+    if (appData.header.command) {
+      html += '<tr><th>Current Command</th><td>' + appData.header.command + '</td></tr>';
+    }
+    html += '</tbody></table>';
+  }
+  
+  // Data table
+  if (Object.keys(appData.data).length > 0) {
+    html += '<div style="height: 12px;"></div>';
+    html += '<table class="application-table"><tbody>';
+    if (appData.data.offset) {
+      html += '<tr><th>Offset / Number</th><td>' + appData.data.offset + '</td></tr>';
+    }
+    if (appData.data.length) {
+      html += '<tr><th>Length</th><td>' + appData.data.length + '</td></tr>';
+    }
+    if (appData.data.contents) {
+      // Format hex contents
+      const hexBytes = appData.data.contents.trim().split(/\s+/);
+      let formattedHex = '';
+      for (let i = 0; i < hexBytes.length; i++) {
+        if (i > 0 && i % 16 === 0) {
+          formattedHex += '<br>';
+        }
+        formattedHex += hexBytes[i] + ' ';
+      }
+      html += '<tr><th>Contents</th><td class="hex-contents">' + formattedHex + '</td></tr>';
+    }
+    
+    // Add parsing row right after contents if parsing data exists
+    if (appData.parsing && appData.parsing.length > 0) {
+      let parsingHtml = '';
+      appData.parsing.forEach((line, index) => {
+        if (index > 0) parsingHtml += '<br>';
+        parsingHtml += line;
+      });
+      html += '<tr><th>Parsing</th><td class="parsing-contents">' + parsingHtml + '</td></tr>';
+    }
+    
+    html += '</tbody></table>';
+  }
+  
+  applicationArea.html(html);
+}
+
+// Render file contents
+let rawFileContents = ''; // Store raw hex data for copying
+let rawParsingData = ''; // Store raw parsing data for copying
+
+function renderFileContents(contents, parsing) {
+  const contentsArea = $('#file-contents');
+  const parsingArea = $('#file-parsing');
+  
+  // Store raw data for copying
+  rawFileContents = contents || '';
+  rawParsingData = parsing || '';
+  
+  // Format contents as hex with 16 bytes per line
+  if (contents) {
+    const hexBytes = contents.match(/.{1,2}/g) || []; // Split into 2-char chunks
+    let formattedHex = '<div style="font-family: \'Courier New\', monospace; padding: 14px; line-height: 1.8; letter-spacing: 0.5px; font-size: 16px;">';
+    for (let i = 0; i < hexBytes.length; i++) {
+      if (i > 0 && i % 16 === 0) {
+        formattedHex += '<br>';
+      }
+      formattedHex += hexBytes[i] + ' ';
+    }
+    formattedHex += '</div>';
+    contentsArea.html(formattedHex);
+  } else {
+    contentsArea.html('<div style="padding: 20px; text-align: center; color: #6c757d;">No contents</div>');
+  }
+  
+  // Format parsing
+  if (parsing) {
+    const parsingHtml = '<div style="font-family: \'Courier New\', monospace; padding: 14px; line-height: 1.8; color: #495057; font-weight: 500; font-size: 16px;">' + 
+                        parsing.replace(/\n/g, '<br>') + '</div>';
+    parsingArea.html(parsingHtml);
+  } else {
+    parsingArea.html('<div style="padding: 20px; text-align: center; color: #6c757d;">No parsing data</div>');
+  }
+}
+
+
+// Resizer functionality
+function makeResizable(resizerId, leftPanelSelector) {
+  const resizer = document.getElementById(resizerId);
+  const leftPanel = resizer.previousElementSibling;
+  const container = resizer.parentElement;
+  
+  let isResizing = false;
+  
+  resizer.addEventListener('mousedown', (e) => {
+    isResizing = true;
+    document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';
+  });
+  
+  document.addEventListener('mousemove', (e) => {
+    if (!isResizing) return;
+    
+    const containerRect = container.getBoundingClientRect();
+    const newWidth = ((e.clientX - containerRect.left) / containerRect.width) * 100;
+    
+    if (newWidth > 20 && newWidth < 80) {
+      leftPanel.style.flex = `0 0 ${newWidth}%`;
+    }
+  });
+  
+  document.addEventListener('mouseup', () => {
+    isResizing = false;
+    document.body.style.cursor = '';
+    document.body.style.userSelect = '';
+  });
+}
+
+// Vertical resizer functionality
+function makeVerticalResizable(resizerId) {
+  const resizer = document.getElementById(resizerId);
+  const topPanel = resizer.previousElementSibling;
+  const container = resizer.parentElement;
+  
+  let isResizing = false;
+  
+  resizer.addEventListener('mousedown', (e) => {
+    isResizing = true;
+    document.body.style.cursor = 'row-resize';
+    document.body.style.userSelect = 'none';
+  });
+  
+  document.addEventListener('mousemove', (e) => {
+    if (!isResizing) return;
+    
+    const containerRect = container.getBoundingClientRect();
+    const newHeight = ((e.clientY - containerRect.top) / containerRect.height) * 100;
+    
+    if (newHeight > 10 && newHeight < 90) {
+      topPanel.style.flex = `0 0 ${newHeight}%`;
+    }
+  });
+  
+  document.addEventListener('mouseup', () => {
+    isResizing = false;
+    document.body.style.cursor = '';
+    document.body.style.userSelect = '';
+  });
+}
+
+// Column resizing functionality
+function makeColumnsResizable(tableId) {
+  const table = document.getElementById(tableId);
+  if (!table) return;
+  
+  const cols = table.querySelectorAll('th');
+  
+  cols.forEach((col, index) => {
+    const resizer = col.querySelector('.resizer-handle');
+    if (!resizer) return;
+    
+    let startX, startWidth;
+    
+    resizer.addEventListener('mousedown', (e) => {
+      e.stopPropagation();
+      startX = e.pageX;
+      startWidth = col.offsetWidth;
+      
+      document.body.style.cursor = 'col-resize';
+      document.body.style.userSelect = 'none';
+      
+      const onMouseMove = (e) => {
+        const diff = e.pageX - startX;
+        const newWidth = startWidth + diff;
+        
+        if (newWidth > 50) {
+          col.style.width = newWidth + 'px';
+        }
+      };
+      
+      const onMouseUp = () => {
+        document.body.style.cursor = '';
+        document.body.style.userSelect = '';
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mouseup', onMouseUp);
+      };
+      
+      document.addEventListener('mousemove', onMouseMove);
+      document.addEventListener('mouseup', onMouseUp);
+    });
+  });
+}
+
+// Initialize resizers
+makeResizable('apdu-resizer');
+makeResizable('file-resizer');
+makeVerticalResizable('analysis-vertical-resizer');
+makeColumnsResizable('summary-table');
+makeColumnsResizable('file-table');
+
+// Tab switching
 function showTab(id, btn) {
   $('.tab').removeClass('active');
   $('#' + id).addClass('active');
-
   $('.tab-buttons button').removeClass('active');
   $(btn).addClass('active');
 }
 
+// File label update
 function updateFileLabel(input) {
   const label = document.getElementById('selected-filename');
   if (input.files.length > 0) {
-    label.textContent = '📄 ' + input.files[0].name;
-    label.style.color = 'lightgreen';
+    label.textContent = '✓ ' + input.files[0].name;
+    label.classList.add('selected');
   } else {
-    label.textContent = '선택된 파일 없음';
-    label.style.color = 'gray';
+    label.textContent = 'No file selected';
+    label.classList.remove('selected');
   }
 }
 
+// Keyboard navigation
+function setupKeyboardNav(tableId, analyzeCallback) {
+  const tbody = $(`#${tableId} tbody`);
+  
+  tbody.on('keydown', function(e) {
+    const selected = tbody.find('tr.selected');
+    let next;
+    
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      next = selected.length ? selected.next('tr') : tbody.find('tr:first');
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      next = selected.length ? selected.prev('tr') : tbody.find('tr:last');
+    }
+    
+    if (next && next.length) {
+      tbody.find('tr').removeClass('selected');
+      next.addClass('selected');
+      next[0].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      analyzeCallback(next.data('index'));
+    }
+  });
+}
+
 $(document).ready(function(){
-  $('#summary-table tr').click(function(){
+  // Summary table click
+  $('#summary-table tbody tr').click(function(){
+    $('#summary-table tbody tr').removeClass('selected');
+    $(this).addClass('selected');
+    
     const index = $(this).data('index');
     if (index !== undefined) {
       $.post("/analyze_line", { index: index }, function(data){
-        $('#protocol-area').val(data.protocol.join('\\n').replace(/\\n/g, '\n'));
-        $('#application-area').val(data.application.join('\\n').replace(/\\n/g, '\n'));
+        // Render protocol as table
+        renderProtocolTable(data.protocol_structured);
+        // Render application as table
+        renderApplicationTable(data.application_structured);
       });
     }
   });
 
-  $('#file-table tr').click(function(){
+  // File table click
+  $('#file-table tbody tr').click(function(){
+    $('#file-table tbody tr').removeClass('selected');
+    $(this).addClass('selected');
+    
     const index = $(this).data('index');
+    console.log('File table clicked, index:', index);
     if (index !== undefined) {
       $.post("/file_detail", { index: index }, function(data){
-        $('#file-contents').val(data.contents);
-        $('#file-parsing').val(data.parsing);
+        console.log('File detail response:', data);
+        renderFileContents(data.contents || '', data.parsing || '');
+      }).fail(function(xhr, status, error) {
+        console.error('File detail request failed:', status, error);
+        renderFileContents('', '');
+      });
+    } else {
+      console.warn('Index is undefined for clicked row');
+    }
+  });
+
+  // Keyboard navigation
+  setupKeyboardNav('summary-table', function(index) {
+    $.post("/analyze_line", { index: index }, function(data){
+      // Render protocol as table
+      renderProtocolTable(data.protocol_structured);
+      // Render application as table
+      renderApplicationTable(data.application_structured);
+    });
+  });
+
+  setupKeyboardNav('file-table', function(index) {
+    $.post("/file_detail", { index: index }, function(data){
+      renderFileContents(data.contents || '', data.parsing || '');
+    }).fail(function() {
+      renderFileContents('', '');
+    });
+  });
+
+  // Focus tbody for keyboard navigation
+  $('#summary-table tbody, #file-table tbody').attr('tabindex', '0');
+  
+  // Ref link click - navigate to APDU tab and select the row
+  $('.ref-link').click(function(e) {
+    e.stopPropagation();
+    
+    const refValue = $(this).text();
+    const match = refValue.match(/\[(\d+)\]/);
+    if (!match) return;
+    
+    const summaryIndex = parseInt(match[1]) - 1; // Convert to 0-based index
+    
+    // Switch to APDU tab
+    showTab('tab-apdu', $('.tab-btn:first')[0]);
+    
+    // Find and select the corresponding row in summary table
+    const targetRow = $(`#summary-table tbody tr[data-index="${summaryIndex}"]`);
+    if (targetRow.length) {
+      // Remove previous selection
+      $('#summary-table tbody tr').removeClass('selected');
+      
+      // Select the target row
+      targetRow.addClass('selected');
+      
+      // Scroll to the row
+      targetRow[0].scrollIntoView({ block: 'center', behavior: 'smooth' });
+      
+      // Load the analysis data
+      $.post("/analyze_line", { index: summaryIndex }, function(data){
+        renderProtocolTable(data.protocol_structured);
+        renderApplicationTable(data.application_structured);
+      });
+    }
+  });
+  
+  // Copy buttons for file contents and parsing
+  $('#copy-contents-btn').click(function() {
+    if (rawFileContents) {
+      navigator.clipboard.writeText(rawFileContents).then(function() {
+        // Visual feedback
+        const btn = $('#copy-contents-btn');
+        const originalText = btn.text();
+        btn.text('✓ Copied!');
+        setTimeout(function() {
+          btn.text(originalText);
+        }, 2000);
+      }).catch(function(err) {
+        alert('Failed to copy: ' + err);
+      });
+    }
+  });
+  
+  $('#copy-parsing-btn').click(function() {
+    if (rawParsingData) {
+      navigator.clipboard.writeText(rawParsingData).then(function() {
+        // Visual feedback
+        const btn = $('#copy-parsing-btn');
+        const originalText = btn.text();
+        btn.text('✓ Copied!');
+        setTimeout(function() {
+          btn.text(originalText);
+        }, 2000);
+      }).catch(function(err) {
+        alert('Failed to copy: ' + err);
       });
     }
   });

@@ -65,3 +65,6 @@ Procfile
 # Sample files (too large for repo)
 samples/old/
 docs/
+
+# Archive (backup files)
+archive/
