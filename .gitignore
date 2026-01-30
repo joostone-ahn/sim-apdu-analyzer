@@ -68,3 +68,6 @@ docs/
 
 # Archive (backup files)
 archive/
+
+# Excel exports
+xlsx/

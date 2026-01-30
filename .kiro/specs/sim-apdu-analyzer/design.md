@@ -80,8 +80,10 @@ SIM APDU Analyzer는 3계층 아키텍처(Protocol, Application, File System)를
 - `index()`: 메인 페이지 렌더링 및 파일 업로드 처리
 - `analyze_line()`: 특정 APDU 메시지의 상세 분석 제공
 - `file_detail()`: 파일 시스템 항목의 상세 정보 제공
-- `download_excel()`: 파일 시스템 데이터를 Excel로 내보내기
+- `download_excel()`: 파일 시스템 데이터를 Excel로 내보내기 (pandas.map() 사용)
 - `get_line_color_class()`: 명령어 타입에 따른 색상 클래스 반환
+- `parse_protocol_messages()`: 프로토콜 메시지를 구조화된 데이터로 파싱
+- `parse_application_data()`: 애플리케이션 데이터를 구조화된 데이터로 파싱
 
 **Interface**:
 ```python
@@ -110,6 +112,44 @@ SIM APDU Analyzer는 3계층 아키텍처(Protocol, Application, File System)를
     'sum_log_ch_id': List[int],     # Logical channel IDs
     'df': List[dict]                # File system DataFrame as dict
 }
+```
+
+### 1.1. PyQt Desktop Application Component (main_PyQt.py)
+
+**Responsibility**: 독립적인 데스크톱 GUI 애플리케이션 제공
+
+**Key Classes**:
+- `Basic_GUI`: 메인 애플리케이션 윈도우 클래스
+- `MyQListWidget`: 다중 선택 지원하는 커스텀 리스트 위젯
+
+**Key Features**:
+- Protocol-Level Analysis와 Application-Level Analysis 패널 너비: 700px
+- Summary 리스트와 동일한 너비로 정렬된 분석 패널
+- NaN 값 처리: `pd.isna()` 함수 사용
+- 저작권 표시: "Copyright 2026. JUSEOK AHN<ajs3013@lguplus.co.kr> all rights reserved."
+- 애플리케이션 제목: "SIM APDU Analyzer v3.2"
+
+**Interface**:
+```python
+class Basic_GUI(QWidget):
+    def __init__(self):
+        # UI 초기화
+        
+    def open_file(self):
+        # 파일 선택 및 로드
+        
+    def load_clipboard(self):
+        # 클립보드에서 로그 데이터 로드
+        
+    def exe_msg(self):
+        # APDU 분석 실행
+        
+    def clicked_rst(self):
+        # Summary 항목 클릭 시 상세 분석 표시
+        
+    def clicked_file(self):
+        # 파일 시스템 항목 클릭 시 내용 표시
+        # NaN 값 처리: pd.isna(parsing) 체크
 ```
 
 

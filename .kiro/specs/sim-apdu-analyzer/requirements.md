@@ -197,6 +197,8 @@ SIM 카드 동작을 상세히 파악할 수 있습니다.
 7. WHEN 메시지에 'RESET' 또는 'POWER'가 포함되면, THE System SHALL 청록색(cyan)으로 표시한다
 8. WHEN 메시지에 'MANAGE CHANNEL'이 포함되면, THE System SHALL 연한 파란색(lightblue)으로 표시한다
 9. WHEN 메시지에 'AUTHENTICATE'가 포함되면, THE System SHALL 연한 초록색(lightgreen)으로 표시한다
+10. THE System SHALL 파일 업로드 버튼에 "📁 Open Log File" 텍스트를 표시한다
+11. THE System SHALL 웹페이지 제목을 "SIM APDU Analyzer"로 표시한다 (버전 번호 제외)
 
 ### 요구사항 14: 웹 UI - 상세 분석 뷰
 
@@ -233,11 +235,12 @@ SIM 카드 동작을 상세히 파악할 수 있습니다.
 
 #### 인수 기준
 
-1. THE System SHALL File System 탭에 "Save to Excel" 버튼을 제공한다
+1. THE System SHALL File System 탭에 "💾 Save to Excel" 버튼을 제공한다
 2. WHEN User가 버튼을 클릭하면, THE System SHALL 파일 시스템 데이터를 Excel 형식(.xlsx)으로 변환한다
 3. THE System SHALL 모든 컬럼(DF, File, DF_Id, File_Id, Type, SFI, REC, OFS, LEN, ref, contents, parsing)을 포함한다
 4. THE System SHALL Excel에서 허용되지 않는 제어 문자를 제거한다
 5. THE System SHALL 파일 이름 "file_system_export.xlsx"로 다운로드를 제공한다
+6. THE System SHALL pandas의 map() 메서드를 사용하여 데이터 변환을 수행한다 (applymap 대신)
 
 ### 요구사항 17: 세션 관리
 
@@ -280,15 +283,30 @@ SIM 카드 동작을 상세히 파악할 수 있습니다.
 4. WHEN 알 수 없는 파일 ID가 발견되면, THE System SHALL "Unknown EF" 또는 "Unknown DF"로 표시하고 계속 진행한다
 5. WHEN Excel 내보내기 중 오류가 발생하면, THE System SHALL 400 오류 코드와 메시지를 반환한다
 
-### 요구사항 20: 성능 및 확장성
+### 요구사항 21: PyQt 데스크톱 애플리케이션
 
-**사용자 스토리:** 엔지니어로서, 대용량 로그 파일(수천 개의 APDU 메시지)도 합리적인 시간 내에 분석할 수 있기를 원합니다.
+**사용자 스토리:** 엔지니어로서, 웹 브라우저 없이도 독립적으로 실행할 수 있는 데스크톱 애플리케이션을 사용할 수 있기를 원합니다.
 
 #### 인수 기준
 
-1. THE System SHALL 10,000개 이상의 APDU 메시지를 포함한 로그 파일을 처리한다
-2. THE System SHALL 분석 결과를 메모리에 효율적으로 저장한다
-3. THE System SHALL 웹 UI에서 대량의 메시지를 스크롤 가능한 테이블로 표시한다
-4. THE System SHALL AJAX를 사용하여 상세 분석을 비동기적으로 로드한다
-5. THE System SHALL 파일 시스템 데이터에서 중복 항목을 제거하여 메모리를 절약한다
+1. THE System SHALL PyQt5 기반의 데스크톱 애플리케이션을 제공한다
+2. THE System SHALL 웹 버전과 동일한 분석 기능을 제공한다 (Summary, Protocol-Level Analysis, Application-Level Analysis, File System)
+3. THE System SHALL Protocol-Level Analysis와 Application-Level Analysis 패널의 너비를 700px로 설정한다
+4. THE System SHALL Summary 리스트와 동일한 너비로 분석 패널들을 정렬한다
+5. THE System SHALL 파일 내용 표시 시 NaN 값을 적절히 처리한다 (pd.isna() 사용)
+6. THE System SHALL 저작권 표시를 "Copyright 2026. JUSEOK AHN<ajs3013@lguplus.co.kr> all rights reserved."로 표시한다
+7. THE System SHALL 애플리케이션 제목을 "SIM APDU Analyzer v3.2"로 표시한다
+
+### 요구사항 22: 코드 품질 및 호환성
+
+**사용자 스토리:** 엔지니어로서, 시스템이 최신 Python 라이브러리와 호환되고 안정적으로 동작할 수 있기를 원합니다.
+
+#### 인수 기준
+
+1. THE System SHALL 변수명에 유니코드 문자를 사용하지 않는다
+2. THE System SHALL debug_mode 변수를 올바른 ASCII 문자로만 정의한다
+3. THE System SHALL pandas 최신 버전과 호환되는 메서드를 사용한다 (map 메서드 사용)
+4. THE System SHALL NaN 값 처리 시 pandas.isna() 함수를 사용한다
+5. THE System SHALL 모든 텍스트 출력에서 적절한 타입 변환을 수행한다 (str() 함수 사용)
+6. THE System SHALL 저작권 연도를 현재 연도(2026)로 유지한다
 
