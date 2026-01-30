@@ -76,6 +76,10 @@ docker run -d \
 #### macOS (Apple Silicon - M1/M2/M3)
 
 ```bash
+# Pull image with platform specification
+docker pull --platform linux/amd64 ghcr.io/joostone-ahn/sim-apdu-analyzer:latest
+
+# Run container
 docker run -d \
   --platform linux/amd64 \
   -p 8090:8090 \
@@ -84,7 +88,7 @@ docker run -d \
   ghcr.io/joostone-ahn/sim-apdu-analyzer:latest
 ```
 
-> **Note**: Apple Silicon Macs require `--platform linux/amd64` flag
+> **Note**: Apple Silicon Macs require `--platform linux/amd64` flag. If you get "no matching manifest" error, use the pull command first.
 
 #### Windows (PowerShell)
 
@@ -166,24 +170,9 @@ The desktop application window will open automatically with the same analysis ca
 
 ---
 
-### Container Control
+## 📖 How to Use
 
-```bash
-# Start
-docker start sim-apdu-analyzer
-
-# Stop
-docker stop sim-apdu-analyzer
-
-# Restart
-docker restart sim-apdu-analyzer
-
-# Remove
-docker rm -f sim-apdu-analyzer
-
-# View logs
-docker logs -f sim-apdu-analyzer
-```
+### Step 1: Capture Logs
 
 - **Qualcomm**: QXDM Professional or QCAT
 - **Samsung**: Shannon DM (Exynos chipsets)
