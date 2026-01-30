@@ -180,25 +180,25 @@ Capture APDU logs using one of the supported tools:
 Save the log as a `.txt` file.
 
 ### Step 2: Upload and Analyze
-1. Click **📂 File** button to upload your log file
+1. Click **� Open Log File** button to upload your log file
 2. Select **SIM1** or **SIM2** from the dropdown
-3. Click **Analyze** button
+3. Click **🔍 Analyze** button
 4. Wait for processing to complete
 
 ### Step 3: Explore Results
 
 #### APDU Tab
-- **Summary Panel**: List of all APDU commands with color coding
+- **📋 Summary**: List of all APDU commands with color coding
   - Click any row to see detailed analysis
-- **Protocol Analysis**: Raw TX/RX data with timestamps
-- **Application Analysis**: Decoded command parameters and file information
+- **📶 Protocol-Level Analysis**: Raw TX/RX data with timestamps
+- **💻 Application-Level Analysis**: Decoded command parameters and file information
 
 #### File System Tab
-- **File List**: All files read during the session
+- **📁 File System**: All files read during the session
   - Yellow highlight: Important OTA-updated files (IMSI, MSISDN, etc.)
   - Green highlight: Other updated files
-- **File Contents**: Raw hexadecimal data
-- **File Parsing**: Interpreted data (phone numbers, PLMN lists, etc.)
+- **📄 File Contents**: Raw hexadecimal data with **📋 Copy** button
+- **🔍 Parsing Data**: Interpreted data (phone numbers, PLMN lists, etc.) with **📋 Copy** button
 - **💾 Save to Excel**: Export complete file system data
 
 ---
