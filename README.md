@@ -76,10 +76,6 @@ docker run -d \
 #### macOS (Apple Silicon - M1/M2/M3)
 
 ```bash
-# Pull image with platform specification
-docker pull --platform linux/amd64 ghcr.io/joostone-ahn/sim-apdu-analyzer:latest
-
-# Run container
 docker run -d \
   --platform linux/amd64 \
   -p 8090:8090 \
@@ -88,7 +84,7 @@ docker run -d \
   ghcr.io/joostone-ahn/sim-apdu-analyzer:latest
 ```
 
-> **Note**: Apple Silicon Macs require `--platform linux/amd64` flag. If you get "no matching manifest" error, use the pull command first.
+> **Note**: For Apple Silicon Macs, add `--platform linux/amd64` to both pull and run commands
 
 #### Windows (PowerShell)
 
