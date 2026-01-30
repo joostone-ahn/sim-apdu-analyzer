@@ -76,6 +76,10 @@ docker run -d \
 #### macOS (Apple Silicon - M1/M2/M3)
 
 ```bash
+# Pull image with platform specification
+docker pull --platform linux/amd64 ghcr.io/joostone-ahn/sim-apdu-analyzer:latest
+
+# Run container
 docker run -d \
   --platform linux/amd64 \
   -p 8090:8090 \
@@ -84,7 +88,7 @@ docker run -d \
   ghcr.io/joostone-ahn/sim-apdu-analyzer:latest
 ```
 
-> **Note**: Use `--platform linux/amd64` for Apple Silicon (runs via Rosetta 2 emulation)
+> **Note**: Apple Silicon Macs require `--platform linux/amd64` flag. If you get "no matching manifest" error, use the pull command first.
 
 #### Windows (PowerShell)
 
@@ -92,50 +96,15 @@ docker run -d \
 docker run -d -p 8090:8090 -v ${PWD}/uploads:/app/uploads --name sim-apdu-analyzer ghcr.io/joostone-ahn/sim-apdu-analyzer:latest
 ```
 
+> **Note**: Docker Desktop for Windows requires WSL 2. Install WSL first if not already installed: `wsl --install`
+
 ### 3. Access
 
 Open your browser and navigate to: http://localhost:8090
 
 ---
 
-## 📦 Running from Source (For Developers)
-
-If you have cloned the repository and want to run the application directly from Python source:
-
-### 1. Create Virtual Environment
-
-```bash
-python3 -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
-
-### 2. Install Dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
-### 3. Run Application
-
-You can run the application in two ways:
-
-**Option A: Direct execution (recommended for IDE)**
-```bash
-python src/main_PyQt.py
-```
-
-**Option B: Module execution**
-```bash
-python -m src.main_PyQt
-```
-
-The application window will open automatically.
-
-> **Note**: This method is recommended for developers who want to modify the code or contribute to the project.
-
----
-
-## 🔧 Docker Management
+## 🐳 Docker Management
 
 ### Container Control
 
@@ -165,15 +134,61 @@ docker rm -f sim-apdu-analyzer
 # Pull latest image
 docker pull ghcr.io/joostone-ahn/sim-apdu-analyzer:latest
 
-# Run new container (use the command for your platform above)
+# Run new container (use the same command from Quick Start above)
 ```
+
+> **Note**: For Apple Silicon Macs, add `--platform linux/amd64` to both pull and run commands
 
 ---
 
-## 📖 How to Use
+## 📦 PyQt Desktop Application
 
-### Step 1: Prepare Your Log File
-Capture APDU logs using one of the supported tools:
+For developers who prefer a desktop application or want to run from source:
+
+### 1. Create Virtual Environment
+
+```bash
+python3 -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+```
+
+### 2. Install Dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+### 3. Run PyQt Application
+
+```bash
+python src/main_PyQt.py
+```
+
+The desktop application window will open automatically with the same analysis capabilities as the web version.
+
+> **Note**: This method is recommended for developers who want to modify the code or contribute to the project.
+
+---
+
+### Container Control
+
+```bash
+# Start
+docker start sim-apdu-analyzer
+
+# Stop
+docker stop sim-apdu-analyzer
+
+# Restart
+docker restart sim-apdu-analyzer
+
+# Remove
+docker rm -f sim-apdu-analyzer
+
+# View logs
+docker logs -f sim-apdu-analyzer
+```
+
 - **Qualcomm**: QXDM Professional or QCAT
 - **Samsung**: Shannon DM (Exynos chipsets)
 
