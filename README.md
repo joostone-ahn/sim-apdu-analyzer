@@ -176,7 +176,7 @@ The desktop application window will open automatically with the same analysis ca
 Save the log as a `.txt` file.
 
 ### Step 2: Upload and Analyze
-1. Click **� Open Log File** button to upload your log file
+1. Click **📁 Open Log File** button to upload your log file
 2. Select **SIM1** or **SIM2** from the dropdown
 3. Click **🔍 Analyze** button
 4. Wait for processing to complete
