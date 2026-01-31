@@ -34,10 +34,10 @@ Traditional SIM tracers — _e.g., Minimove by COMPRION_ — rely on physical in
 - **OTA Tracking**: Highlight files updated via Over-The-Air
 - **Authentication Analysis**: Detailed AKA authentication (RAND/AUTN/RES/AUTS)
 - **Error Detection**: Automatic identification of protocol violations and failures
-- **File Parsing**: Intelligent parsing of IMSI, MSISDN, PLMN lists, service tables, etc.
+- **File Parsing**: Parsing of IMSI, MSISDN, PLMN lists, service tables, etc.
 
 ### 🎨 User Interface
-- **Web-Based**: Modern Flask application with responsive design
+- **Web-Based**: Flask application with responsive design
 - **Color-Coded**: Visual indicators for errors, warnings, and special operations
 - **Interactive**: Click any message for detailed analysis
 - **Export**: Download file system data to Excel
