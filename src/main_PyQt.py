@@ -213,7 +213,7 @@ class Basic_GUI(QWidget):
         main_layout = QVBoxLayout()
         main_layout.addLayout(vbox)
         main_layout.addWidget(QLabel())
-        copyright_label = QLabel("Copyright 2026. JUSEOK AHN<ajs3013@lguplus.co.kr> all rights reserved.")
+        copyright_label = QLabel("© 2026 JUSEOK AHN <ajs3013@lguplus.co.kr> All rights reserved.")
         main_layout.addWidget(copyright_label)
 
         self.setLayout(main_layout)
