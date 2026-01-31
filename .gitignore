@@ -33,8 +33,7 @@ uploads/*
 *.swp
 *.swo
 *~
-.kiro/*
-!.kiro/specs/
+.kiro/
 
 # Node.js (not used)
 node_modules/
