@@ -286,9 +286,9 @@ Save the log as a `.txt` file.
 ## 📖 References
 
 ### 3GPP Standards
-- [TS 31.102](https://www.3gpp.org/DynaReport/31102.htm) - USIM Application
-- [TS 31.103](https://www.3gpp.org/DynaReport/31103.htm) - ISIM Application
-- [TS 31.111](https://www.3gpp.org/DynaReport/31111.htm) - USIM Application Toolkit
+- [TS 31.102](https://www.3gpp.org/ftp/Specs/archive/31_series/31.102/) - USIM Application
+- [TS 31.103](https://www.3gpp.org/ftp/Specs/archive/31_series/31.103/) - ISIM Application
+- [TS 31.111](https://www.3gpp.org/ftp/Specs/archive/31_series/31.111/) - USIM Application Toolkit
 
 ### ETSI Standards
 - [TS 102.221](https://www.etsi.org/deliver/etsi_ts/102200_102299/102221/) - UICC-Terminal Interface
