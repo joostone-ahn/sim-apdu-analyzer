@@ -51,7 +51,7 @@ Traditional SIM tracers — _e.g., Minimove by COMPRION_ — rely on physical in
 | QXDM / QCAT        | Contains `[0x19B7]`           | Qualcomm UIM APDU logs — supports filtering and parsing. <br>**Log mask file**: `dmc/QXDM_log_mask_UIM_0x19B7.dmc` (apply in QXDM: `View` → `Configuration` → `Load Config`) |
 | Shannon DM         | Contains `USIM_MAIN`          | Samsung Shannon logs with internal decoding              |
 
-> Only basic structural consistency is required. `[0x19B7]` and `USIM_MAIN` act as format identifiers for filtering and decoding.
+> `[0x19B7]` and `USIM_MAIN` are used for format detection and parsing.
 
 ---
 
