@@ -644,7 +644,7 @@
                     Time
                     <div class="resizer-handle"></div>
                   </th>
-                  <th style="width: 250px;">
+                  <th style="width: 400px;">
                     Command
                     <div class="resizer-handle"></div>
                   </th>
@@ -673,18 +673,29 @@
                       {% set command_and_details = time_and_rest[1].split('|', 1) %}
                       {% set full_command = command_and_details[0].strip() %}
                       
-                      {# Extract command name and move parentheses to details #}
-                      {% if '(' in full_command %}
+                      {# Extract SFI only from parentheses, keep other parentheses in command #}
+                      {% if 'SFI: 0x' in full_command %}
+                        {# SFI case: separate command and SFI parentheses #}
                         {% set cmd_parts = full_command.split('(', 1) %}
                         {% set command_part = cmd_parts[0].strip() %}
                         {% set paren_part = '(' + cmd_parts[1] %}
                       {% else %}
+                        {# Non-SFI case: keep parentheses in command #}
                         {% set command_part = full_command %}
                         {% set paren_part = '' %}
                       {% endif %}
                       
+                      {# Check for (X) and remove it from command, change icon #}
+                      {% set has_error = False %}
+                      {% if '(X)' in command_part %}
+                        {% set has_error = True %}
+                        {% set command_part = command_part.replace(' (X)', '').replace('(X)', '') %}
+                      {% endif %}
+                      
                       {# Add icons based on command #}
-                      {% if 'SELECT' in command_part %}
+                      {% if has_error %}
+                        {% set icon = '🚫' %}
+                      {% elif 'SELECT' in command_part %}
                         {% set icon = '📁' %}
                       {% elif 'READ BINARY' in command_part or 'READ RECORD' in command_part %}
                         {% set icon = '📖' %}
@@ -818,7 +829,7 @@
                   <tr data-index="{{ idx }}" class="{{ color }}">
                     <td>{{ index_part }}</td>
                     <td>{{ time_part }}</td>
-                    <td>{{ icon }} {{ command_part }}</td>
+                    <td>{{ icon }}&nbsp;&nbsp;{{ command_part }}</td>
                     <td>{{ sfi_part }}</td>
                     <td>{{ file_part }}</td>
                     <td>{{ details_part }}</td>
