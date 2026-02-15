@@ -70,3 +70,7 @@ archive/
 
 # Excel exports
 xlsx/
+
+# PyQt (desktop application - not for deployment)
+src/main_PyQt.py
+src/__init__.py

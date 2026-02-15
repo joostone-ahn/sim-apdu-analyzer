@@ -1,5 +1,5 @@
-from . import file_system
-from . import spec_ref
+import file_system
+import spec_ref
 debug_mode = 0
 
 def rst(input, read, error, item_num):

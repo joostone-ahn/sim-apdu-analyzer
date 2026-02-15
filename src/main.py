@@ -4,21 +4,18 @@ debug_mode = 0
 import sys
 import os
 
-# Add parent directory to path for direct execution
-if __name__ == '__main__':
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    parent_dir = os.path.dirname(current_dir)
-    sys.path.insert(0, parent_dir)
+# Add src directory to path for imports
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from flask import Flask, render_template, request, jsonify, session
 from flask_session import Session
-from src import msg_item
-from src import port
-from src import msg_sum
-from src import msg_app
-from src import msg_prot
-from src import msg_files
-from src import file_system
+import msg_item
+import port
+import msg_sum
+import msg_app
+import msg_prot
+import msg_files
+import file_system
 import re
 
 # Get all valid file names from file_system

@@ -1,9 +1,9 @@
-from . import command
-from . import SELECT
-from . import READ
-from . import spec_ref
-from . import file_system
-from . import short_file_id
+import command
+import SELECT
+import READ
+import spec_ref
+import file_system
+import short_file_id
 import re
 
 debug_mode = 0

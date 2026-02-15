@@ -1,4 +1,4 @@
-from . import file_system
+import file_system
 debug_mode = 0
 
 def process(data, log_ch, log_ch_id):

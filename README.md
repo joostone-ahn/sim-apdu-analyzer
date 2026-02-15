@@ -98,11 +98,7 @@ docker run -d -p 8090:8090 -v ${PWD}/uploads:/app/uploads --name sim-apdu-analyz
 
 Open your browser and navigate to: http://localhost:8090
 
----
-
-## 🐳 Docker Management
-
-### Container Control
+### 4. Container Management
 
 ```bash
 # Start
@@ -121,7 +117,7 @@ docker rm -f sim-apdu-analyzer
 docker logs -f sim-apdu-analyzer
 ```
 
-### Update Image
+### 5. Update Image
 
 ```bash
 # Stop and remove old container
@@ -130,39 +126,10 @@ docker rm -f sim-apdu-analyzer
 # Pull latest image
 docker pull ghcr.io/joostone-ahn/sim-apdu-analyzer:latest
 
-# Run new container (use the same command from Quick Start above)
+# Run new container (use the same command from step 2 above)
 ```
 
 > **Note**: For Apple Silicon Macs, add `--platform linux/amd64` to both pull and run commands
-
----
-
-## 📦 PyQt Desktop Application
-
-For developers who prefer a desktop application or want to run from source:
-
-### 1. Create Virtual Environment
-
-```bash
-python3 -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-```
-
-### 2. Install Dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
-### 3. Run PyQt Application
-
-```bash
-python src/main_PyQt.py
-```
-
-The desktop application window will open automatically with the same analysis capabilities as the web version.
-
-> **Note**: This method is recommended for developers who want to modify the code or contribute to the project.
 
 ---
 

@@ -1,5 +1,5 @@
 cmd_SFI_list = ['B0', 'D6', 'B2', 'DC', 'A2', '32', 'CB', 'DB']  # command using SFI
-from . import file_system
+import file_system
 debug_mode = 0
 
 def category(prot_data):

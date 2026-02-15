@@ -1,5 +1,5 @@
 debug_mode = 0
-from . import spec_ref
+import spec_ref
 
 def process(ins, file_name, data, sum_read):
 
