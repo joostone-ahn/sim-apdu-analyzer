@@ -9,7 +9,7 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from flask import Flask, render_template, request, jsonify, session
 from flask_session import Session
-from cachelib.file import FileSystemCache
+from cachelib import SimpleCache
 import msg_item
 import port
 import msg_sum
@@ -35,15 +35,12 @@ VALID_FILE_NAMES = get_valid_file_names()
 app = Flask(__name__, template_folder='../templates')
 app.secret_key = 'apdu-analyzer-secret-key-v3'
 
-# Use filesystem session with cachelib for better compatibility
+# Use in-memory cache for session storage (works in single-worker setup)
 app.config['SESSION_TYPE'] = 'cachelib'
-app.config['SESSION_CACHELIB'] = FileSystemCache(threshold=500, cache_dir='/tmp/flask_session')
+app.config['SESSION_CACHELIB'] = SimpleCache()
 app.config['SESSION_PERMANENT'] = False
 app.config['SESSION_USE_SIGNER'] = True
 app.config['SESSION_KEY_PREFIX'] = 'apdu_'
-
-# Ensure session directory exists
-os.makedirs('/tmp/flask_session', exist_ok=True)
 
 Session(app)
 
