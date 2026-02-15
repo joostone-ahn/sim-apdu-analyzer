@@ -37,4 +37,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD python -c "import requests; requests.get('http://localhost:8090/')" || exit 1
 
 # Gunicorn으로 실행 (단일 워커로 세션 공유 문제 해결)
-CMD ["gunicorn", "--bind", "0.0.0.0:8090", "--workers", "1", "--threads", "4", "--timeout", "120", "--access-logfile", "-", "--error-logfile", "-", "--chdir", "src", "main:app"]
+CMD ["gunicorn", "--bind", "0.0.0.0:8090", "--workers", "1", "--threads", "8", "--timeout", "120", "--access-logfile", "-", "--error-logfile", "-", "--chdir", "src", "main:app"]
