@@ -18,6 +18,47 @@ import msg_prot
 import msg_files
 import file_system
 import re
+import uuid
+from datetime import datetime, timedelta
+
+# In-memory session storage (not relying on cookies)
+SESSION_STORE = {}
+SESSION_TIMEOUT = 3600  # 1 hour
+
+def create_session_id():
+    """Create a new session ID and initialize storage"""
+    session_id = str(uuid.uuid4())
+    SESSION_STORE[session_id] = {
+        'created_at': datetime.now(),
+        'data': {}
+    }
+    return session_id
+
+def get_session_data(session_id):
+    """Get session data by ID, return None if not found or expired"""
+    if not session_id or session_id not in SESSION_STORE:
+        return None
+    
+    session_info = SESSION_STORE[session_id]
+    # Check if session expired
+    if datetime.now() - session_info['created_at'] > timedelta(seconds=SESSION_TIMEOUT):
+        del SESSION_STORE[session_id]
+        return None
+    
+    return session_info['data']
+
+def save_session_data(session_id, key, value):
+    """Save data to session"""
+    if session_id in SESSION_STORE:
+        SESSION_STORE[session_id]['data'][key] = value
+
+def cleanup_old_sessions():
+    """Remove expired sessions"""
+    now = datetime.now()
+    expired = [sid for sid, info in SESSION_STORE.items() 
+               if now - info['created_at'] > timedelta(seconds=SESSION_TIMEOUT)]
+    for sid in expired:
+        del SESSION_STORE[sid]
 
 # Get all valid file names from file_system
 def get_valid_file_names():
@@ -71,19 +112,24 @@ def get_line_color_class(line):
 @app.route('/', methods=['GET', 'POST'])
 def index():
     result = {}
+    session_id = None
 
     if request.method == 'GET':
-        session.clear()
+        # Cleanup old sessions periodically
+        cleanup_old_sessions()
 
     if request.method == 'POST':
+        # Create new session ID
+        session_id = create_session_id()
+        
         sim_select = int(request.form.get('sim_select', 1))
         file = request.files.get('logfile')
 
         if file and file.filename.endswith('.txt'):
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
             file.save(filepath)
-            session['filepath'] = filepath
-            session['filename'] = file.filename
+            save_session_data(session_id, 'filepath', filepath)
+            save_session_data(session_id, 'filename', file.filename)
 
             with open(filepath, 'r', encoding='utf-8') as f:
                 msg_all = f.read().splitlines()
@@ -97,29 +143,26 @@ def index():
             else:
                 msg_start, msg_end, msg_SN, msg_port, msg_type, msg_data = msg_item.QCAT(msg_all)
 
-            session['msg_all'] = msg_all
-            session['msg_start'] = msg_start
-            session['msg_end'] = msg_end
-            session['msg_SN'] = msg_SN
-            session['msg_port'] = msg_port
-            session['msg_type'] = msg_type
-            session['msg_data'] = msg_data
-
-        elif 'filepath' in session:
-            filepath = session['filepath']
-            with open(filepath, 'r', encoding='utf-8') as f:
-                msg_all = f.read().splitlines()
-
-            msg_start = session['msg_start']
-            msg_end = session['msg_end']
-            msg_SN = session['msg_SN']
-            msg_port = session['msg_port']
-            msg_type = session['msg_type']
-            msg_data = session['msg_data']
+            save_session_data(session_id, 'msg_all', msg_all)
+            save_session_data(session_id, 'msg_start', msg_start)
+            save_session_data(session_id, 'msg_end', msg_end)
+            save_session_data(session_id, 'msg_SN', msg_SN)
+            save_session_data(session_id, 'msg_port', msg_port)
+            save_session_data(session_id, 'msg_type', msg_type)
+            save_session_data(session_id, 'msg_data', msg_data)
         else:
-            return render_template('index.html', result={}, filename='', selected_sim=1)
+            return render_template('index.html', result={}, filename='', selected_sim=1, session_id=None)
 
-        session['sim_select'] = sim_select
+        save_session_data(session_id, 'sim_select', sim_select)
+        
+        sess_data = get_session_data(session_id)
+        msg_all = sess_data['msg_all']
+        msg_start = sess_data['msg_start']
+        msg_end = sess_data['msg_end']
+        msg_SN = sess_data['msg_SN']
+        msg_port = sess_data['msg_port']
+        msg_type = sess_data['msg_type']
+        msg_data = sess_data['msg_data']
 
         port_index = [i for i, p in enumerate(msg_port) if p == sim_select]
         port_input = msg_all, msg_start, msg_end, msg_SN, msg_type, msg_data
@@ -136,29 +179,31 @@ def index():
         except:
             pass
 
-        session['prot_start'] = prot_start
-        session['prot_type'] = prot_type
-        session['prot_data'] = prot_data
-        session['sum_cmd'] = sum_cmd
-        session['sum_read'] = sum_read
-        session['sum_error'] = sum_error
-        session['sum_log_ch'] = sum_log_ch
-        session['sum_log_ch_id'] = sum_log_ch_id
-        session['df'] = df.to_dict(orient='records') if df is not None else None
+        save_session_data(session_id, 'prot_start', prot_start)
+        save_session_data(session_id, 'prot_type', prot_type)
+        save_session_data(session_id, 'prot_data', prot_data)
+        save_session_data(session_id, 'sum_cmd', sum_cmd)
+        save_session_data(session_id, 'sum_read', sum_read)
+        save_session_data(session_id, 'sum_error', sum_error)
+        save_session_data(session_id, 'sum_log_ch', sum_log_ch)
+        save_session_data(session_id, 'sum_log_ch_id', sum_log_ch_id)
+        save_session_data(session_id, 'df', df.to_dict(orient='records') if df is not None else None)
 
         result = {
             'summary': [
                 (idx, line, get_line_color_class(line)) for idx, line in enumerate(sum_rst)
             ],
-            'df_with_index': list(enumerate(df.to_dict(orient='records'))) if df is not None else []
+            'df_with_index': list(enumerate(df.to_dict(orient='records'))) if df is not None else [],
+            'session_id': session_id  # Include session_id in result
         }
 
     return render_template(
         'index.html',
         result=result,
-        filename=session.get('filename'),
-        selected_sim=session.get('sim_select', 1),
-        valid_file_names=VALID_FILE_NAMES
+        filename=sess_data.get('filename') if session_id else '',
+        selected_sim=sess_data.get('sim_select', 1) if session_id else 1,
+        valid_file_names=VALID_FILE_NAMES,
+        session_id=session_id
     )
 
 def parse_protocol_messages(prot_result):
@@ -301,10 +346,26 @@ def parse_application_data(app_result):
 def analyze_line():
     try:
         index = int(request.form['index'])
+        session_id = request.form.get('session_id')
+        
+        if not session_id:
+            return jsonify({
+                'error': 'No session_id provided',
+                'protocol_structured': [],
+                'application_structured': None
+            }), 400
+        
+        sess_data = get_session_data(session_id)
+        if not sess_data:
+            return jsonify({
+                'error': 'Session expired or not found',
+                'protocol_structured': [],
+                'application_structured': None
+            }), 400
         
         # Check if session data exists
         required_keys = ['prot_type', 'sum_cmd', 'sum_log_ch', 'sum_log_ch_id', 'sum_read', 'sum_error', 'msg_all', 'prot_start', 'prot_data']
-        missing_keys = [key for key in required_keys if key not in session]
+        missing_keys = [key for key in required_keys if key not in sess_data]
         
         if missing_keys:
             return jsonify({
@@ -313,9 +374,9 @@ def analyze_line():
                 'application_structured': None
             }), 400
         
-        app_rst_input = session['prot_type'], session['sum_cmd'], session['sum_log_ch'], session['sum_log_ch_id']
-        app_result = msg_app.rst(app_rst_input, session['sum_read'], session['sum_error'], index)
-        prot_rst_input = session['msg_all'], session['prot_start'], session['prot_type'], session['prot_data']
+        app_rst_input = sess_data['prot_type'], sess_data['sum_cmd'], sess_data['sum_log_ch'], sess_data['sum_log_ch_id']
+        app_result = msg_app.rst(app_rst_input, sess_data['sum_read'], sess_data['sum_error'], index)
+        prot_rst_input = sess_data['msg_all'], sess_data['prot_start'], sess_data['prot_type'], sess_data['prot_data']
         prot_result = msg_prot.rst(prot_rst_input, index)
         
         # Parse protocol result into structured data
@@ -343,7 +404,24 @@ def analyze_line():
 def file_detail():
     try:
         index = int(request.form['index'])
-        df = session.get('df', [])
+        session_id = request.form.get('session_id')
+        
+        if not session_id:
+            return jsonify({
+                'error': 'No session_id provided',
+                'contents': '',
+                'parsing': ''
+            }), 400
+        
+        sess_data = get_session_data(session_id)
+        if not sess_data:
+            return jsonify({
+                'error': 'Session expired or not found',
+                'contents': '',
+                'parsing': ''
+            }), 400
+        
+        df = sess_data.get('df', [])
         
         if not df:
             return jsonify({

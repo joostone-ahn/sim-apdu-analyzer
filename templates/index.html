@@ -1275,7 +1275,16 @@ function setupKeyboardNav(tableId, analyzeCallback) {
   });
 }
 
+// Global session ID storage
+let currentSessionId = null;
+
 $(document).ready(function(){
+  // Get session_id from template if available
+  {% if session_id %}
+  currentSessionId = "{{ session_id }}";
+  console.log('[Session] Session ID initialized:', currentSessionId);
+  {% endif %}
+  
   // Summary table click
   $('#summary-table tbody tr').click(function(){
     $('#summary-table tbody tr').removeClass('selected');
@@ -1283,9 +1292,9 @@ $(document).ready(function(){
     
     const index = $(this).data('index');
     console.log('[Summary] Row clicked, index:', index);
-    if (index !== undefined) {
-      console.log('[Summary] Sending POST request to /analyze_line');
-      $.post("/analyze_line", { index: index }, function(data){
+    if (index !== undefined && currentSessionId) {
+      console.log('[Summary] Sending POST request to /analyze_line with session_id:', currentSessionId);
+      $.post("/analyze_line", { index: index, session_id: currentSessionId }, function(data){
         console.log('[Summary] Response received:', data);
         // Render protocol as table
         renderProtocolTable(data.protocol_structured);
@@ -1299,7 +1308,12 @@ $(document).ready(function(){
         console.error('[Summary] Status code:', xhr.status);
       });
     } else {
-      console.warn('[Summary] Index is undefined for clicked row');
+      if (!currentSessionId) {
+        console.warn('[Summary] No session ID available');
+      }
+      if (index === undefined) {
+        console.warn('[Summary] Index is undefined for clicked row');
+      }
     }
   });
 
@@ -1310,9 +1324,9 @@ $(document).ready(function(){
     
     const index = $(this).data('index');
     console.log('[File] Row clicked, index:', index);
-    if (index !== undefined) {
-      console.log('[File] Sending POST request to /file_detail');
-      $.post("/file_detail", { index: index }, function(data){
+    if (index !== undefined && currentSessionId) {
+      console.log('[File] Sending POST request to /file_detail with session_id:', currentSessionId);
+      $.post("/file_detail", { index: index, session_id: currentSessionId }, function(data){
         console.log('[File] Response received:', data);
         renderFileContents(data.contents || '', data.parsing || '');
       }).fail(function(xhr, status, error) {
@@ -1324,14 +1338,23 @@ $(document).ready(function(){
         renderFileContents('', '');
       });
     } else {
-      console.warn('[File] Index is undefined for clicked row');
+      if (!currentSessionId) {
+        console.warn('[File] No session ID available');
+      }
+      if (index === undefined) {
+        console.warn('[File] Index is undefined for clicked row');
+      }
     }
   });
 
   // Keyboard navigation
   setupKeyboardNav('summary-table', function(index) {
+    if (!currentSessionId) {
+      console.warn('[Summary Keyboard] No session ID available');
+      return;
+    }
     console.log('[Summary Keyboard] Sending request for index:', index);
-    $.post("/analyze_line", { index: index }, function(data){
+    $.post("/analyze_line", { index: index, session_id: currentSessionId }, function(data){
       console.log('[Summary Keyboard] Response received');
       // Render protocol as table
       renderProtocolTable(data.protocol_structured);
@@ -1343,8 +1366,12 @@ $(document).ready(function(){
   });
 
   setupKeyboardNav('file-table', function(index) {
+    if (!currentSessionId) {
+      console.warn('[File Keyboard] No session ID available');
+      return;
+    }
     console.log('[File Keyboard] Sending request for index:', index);
-    $.post("/file_detail", { index: index }, function(data){
+    $.post("/file_detail", { index: index, session_id: currentSessionId }, function(data){
       console.log('[File Keyboard] Response received');
       renderFileContents(data.contents || '', data.parsing || '');
     }).fail(function(xhr, status, error) {
@@ -1359,6 +1386,11 @@ $(document).ready(function(){
   // Ref link click - navigate to APDU tab and select the row
   $('.ref-link').click(function(e) {
     e.stopPropagation();
+    
+    if (!currentSessionId) {
+      console.warn('[Ref Link] No session ID available');
+      return;
+    }
     
     const refValue = $(this).text();
     const match = refValue.match(/\[(\d+)\]/);
@@ -1382,7 +1414,7 @@ $(document).ready(function(){
       targetRow[0].scrollIntoView({ block: 'center', behavior: 'smooth' });
       
       // Load the analysis data
-      $.post("/analyze_line", { index: summaryIndex }, function(data){
+      $.post("/analyze_line", { index: summaryIndex, session_id: currentSessionId }, function(data){
         renderProtocolTable(data.protocol_structured);
         renderApplicationTable(data.application_structured);
       });
