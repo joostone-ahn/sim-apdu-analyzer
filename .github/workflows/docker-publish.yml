@@ -56,3 +56,31 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Trigger Hugging Face Rebuild
+        if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/master' || github.ref == 'refs/heads/main')
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          mkdir hf_sync
+          cd hf_sync
+          git init
+          git config user.name "GitHub Action Bot"
+          git config user.email "bot@github.com"
+          git remote add origin https://Joostone:${{ secrets.HF_TOKEN }}@huggingface.co/spaces/Joostone/sim-apdu-analyzer
+          git fetch origin main
+          git checkout origin/main -- Dockerfile || echo "Initial setup"
+          
+          cat <<EOF > Dockerfile
+          FROM ghcr.io/joostone-ahn/sim-apdu-analyzer:latest
+          USER root
+          RUN mkdir -p /app && chmod -R 777 /app
+          EXPOSE 8090
+          USER 1000
+          ENV PYTHONUNBUFFERED=1
+          # Last Image Update: $(TZ="Asia/Seoul" date +"%Y-%m-%d %H:%M:%S KST")
+          EOF
+          
+          git add Dockerfile
+          git commit -m "Deploy: Update image to latest [skip ci]" || echo "No changes to commit"
+          git push origin HEAD:main --force

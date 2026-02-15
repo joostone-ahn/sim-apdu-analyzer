@@ -60,12 +60,14 @@
     .github-btn {
       background: white;
       color: #667eea;
-      padding: 6px 12px;
+      padding: 4px 10px;
       border-radius: 5px;
       text-decoration: none;
       font-weight: 600;
       font-size: 12px;
       transition: transform 0.2s;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
 
     .github-btn:hover {
@@ -586,12 +588,14 @@
 
 <div class="container">
   <div class="header">
-    <h1>🔍 SIM APDU Analyzer</h1>
+    <div style="display: flex; align-items: center; gap: 24px;">
+      <h1>🔍 SIM APDU Analyzer</h1>
+      <a href="https://github.com/joostone-ahn/SIM-APDU-Analyzer" target="_blank" class="github-btn">
+        🔗 GitHub
+      </a>
+    </div>
     <div class="header-right">
       <span class="copyright">© 2026 JUSEOK AHN &lt;ajs3013@lguplus.co.kr&gt; All rights reserved.</span>
-      <a href="https://github.com/joostone-ahn/SIM-APDU-Analyzer" target="_blank" class="github-btn">
-        📄 GitHub
-      </a>
     </div>
   </div>
 
@@ -1278,13 +1282,24 @@ $(document).ready(function(){
     $(this).addClass('selected');
     
     const index = $(this).data('index');
+    console.log('[Summary] Row clicked, index:', index);
     if (index !== undefined) {
+      console.log('[Summary] Sending POST request to /analyze_line');
       $.post("/analyze_line", { index: index }, function(data){
+        console.log('[Summary] Response received:', data);
         // Render protocol as table
         renderProtocolTable(data.protocol_structured);
         // Render application as table
         renderApplicationTable(data.application_structured);
+      }).fail(function(xhr, status, error) {
+        console.error('[Summary] Request failed!');
+        console.error('[Summary] Status:', status);
+        console.error('[Summary] Error:', error);
+        console.error('[Summary] Response:', xhr.responseText);
+        console.error('[Summary] Status code:', xhr.status);
       });
+    } else {
+      console.warn('[Summary] Index is undefined for clicked row');
     }
   });
 
@@ -1294,34 +1309,46 @@ $(document).ready(function(){
     $(this).addClass('selected');
     
     const index = $(this).data('index');
-    console.log('File table clicked, index:', index);
+    console.log('[File] Row clicked, index:', index);
     if (index !== undefined) {
+      console.log('[File] Sending POST request to /file_detail');
       $.post("/file_detail", { index: index }, function(data){
-        console.log('File detail response:', data);
+        console.log('[File] Response received:', data);
         renderFileContents(data.contents || '', data.parsing || '');
       }).fail(function(xhr, status, error) {
-        console.error('File detail request failed:', status, error);
+        console.error('[File] Request failed!');
+        console.error('[File] Status:', status);
+        console.error('[File] Error:', error);
+        console.error('[File] Response:', xhr.responseText);
+        console.error('[File] Status code:', xhr.status);
         renderFileContents('', '');
       });
     } else {
-      console.warn('Index is undefined for clicked row');
+      console.warn('[File] Index is undefined for clicked row');
     }
   });
 
   // Keyboard navigation
   setupKeyboardNav('summary-table', function(index) {
+    console.log('[Summary Keyboard] Sending request for index:', index);
     $.post("/analyze_line", { index: index }, function(data){
+      console.log('[Summary Keyboard] Response received');
       // Render protocol as table
       renderProtocolTable(data.protocol_structured);
       // Render application as table
       renderApplicationTable(data.application_structured);
+    }).fail(function(xhr, status, error) {
+      console.error('[Summary Keyboard] Request failed:', status, error, xhr.responseText);
     });
   });
 
   setupKeyboardNav('file-table', function(index) {
+    console.log('[File Keyboard] Sending request for index:', index);
     $.post("/file_detail", { index: index }, function(data){
+      console.log('[File Keyboard] Response received');
       renderFileContents(data.contents || '', data.parsing || '');
-    }).fail(function() {
+    }).fail(function(xhr, status, error) {
+      console.error('[File Keyboard] Request failed:', status, error, xhr.responseText);
       renderFileContents('', '');
     });
   });
