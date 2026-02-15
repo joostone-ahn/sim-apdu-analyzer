@@ -119,13 +119,32 @@ def index():
         cleanup_old_sessions()
 
     if request.method == 'POST':
-        # Create new session ID
-        session_id = create_session_id()
-        
+        # Check if reusing existing session
+        existing_session_id = request.form.get('session_id')
         sim_select = int(request.form.get('sim_select', 1))
         file = request.files.get('logfile')
 
-        if file and file.filename.endswith('.txt'):
+        # If no new file and existing session, reuse it
+        if not (file and file.filename.endswith('.txt')) and existing_session_id:
+            sess_data = get_session_data(existing_session_id)
+            if sess_data and 'msg_all' in sess_data:
+                # Reuse existing session for SIM change
+                session_id = existing_session_id
+                save_session_data(session_id, 'sim_select', sim_select)
+                
+                msg_all = sess_data['msg_all']
+                msg_start = sess_data['msg_start']
+                msg_end = sess_data['msg_end']
+                msg_SN = sess_data['msg_SN']
+                msg_port = sess_data['msg_port']
+                msg_type = sess_data['msg_type']
+                msg_data = sess_data['msg_data']
+            else:
+                return render_template('index.html', result={}, filename='', selected_sim=1, session_id=None)
+        elif file and file.filename.endswith('.txt'):
+            # Create new session for new file
+            session_id = create_session_id()
+            
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
             file.save(filepath)
             save_session_data(session_id, 'filepath', filepath)
@@ -150,19 +169,9 @@ def index():
             save_session_data(session_id, 'msg_port', msg_port)
             save_session_data(session_id, 'msg_type', msg_type)
             save_session_data(session_id, 'msg_data', msg_data)
+            save_session_data(session_id, 'sim_select', sim_select)
         else:
             return render_template('index.html', result={}, filename='', selected_sim=1, session_id=None)
-
-        save_session_data(session_id, 'sim_select', sim_select)
-        
-        sess_data = get_session_data(session_id)
-        msg_all = sess_data['msg_all']
-        msg_start = sess_data['msg_start']
-        msg_end = sess_data['msg_end']
-        msg_SN = sess_data['msg_SN']
-        msg_port = sess_data['msg_port']
-        msg_type = sess_data['msg_type']
-        msg_data = sess_data['msg_data']
 
         port_index = [i for i, p in enumerate(msg_port) if p == sim_select]
         port_input = msg_all, msg_start, msg_end, msg_SN, msg_type, msg_data
@@ -189,6 +198,7 @@ def index():
         save_session_data(session_id, 'sum_log_ch_id', sum_log_ch_id)
         save_session_data(session_id, 'df', df.to_dict(orient='records') if df is not None else None)
 
+        sess_data = get_session_data(session_id)
         result = {
             'summary': [
                 (idx, line, get_line_color_class(line)) for idx, line in enumerate(sum_rst)
@@ -466,7 +476,17 @@ def download_excel():
     from io import BytesIO
     from flask import send_file
 
-    df_records = session.get('df', [])
+    # Get session_id from query parameter
+    session_id = request.args.get('session_id')
+    
+    if not session_id:
+        return "No session_id provided", 400
+    
+    sess_data = get_session_data(session_id)
+    if not sess_data:
+        return "Session expired or not found", 400
+    
+    df_records = sess_data.get('df', [])
     if not df_records:
         return "No file system data available", 400
 

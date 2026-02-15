@@ -601,10 +601,13 @@
 
   <div class="control-panel">
     <form method="POST" enctype="multipart/form-data" style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+      <!-- Hidden session_id field -->
+      <input type="hidden" name="session_id" id="form-session-id" value="{{ session_id if session_id else '' }}">
+      
       <div style="display: flex; align-items: center; gap: 16px;">
         <div class="file-input-wrapper">
           <label class="file-button" for="logfile">📁 Open Log File</label>
-          <input id="logfile" type="file" name="logfile" onchange="updateFileLabel(this)" {% if not filename %}required{% endif %}>
+          <input id="logfile" type="file" name="logfile" onchange="updateFileLabel(this)">
         </div>
         <span id="selected-filename" class="file-name {% if filename %}selected{% endif %}">
           {% if filename %}
@@ -870,7 +873,7 @@
         <div class="left-panel">
           <h2>
             <span class="title-text">📁 File System</span>
-            <a href="/download_excel" class="excel-btn">💾 Save to Excel</a>
+            <a href="#" id="excel-download-btn" class="excel-btn">💾 Save to Excel</a>
           </h2>
           <div class="table-container">
             <table id="file-table">
@@ -880,39 +883,39 @@
                     DF
                     <div class="resizer-handle"></div>
                   </th>
-                  <th style="width: 140px;">
+                  <th style="width: 120px;">
                     File
                     <div class="resizer-handle"></div>
                   </th>
-                  <th style="width: 90px;">
+                  <th style="width: 100px;">
                     DF_Id
                     <div class="resizer-handle"></div>
                   </th>
-                  <th style="width: 90px;">
+                  <th style="width: 100px;">
                     File_Id
                     <div class="resizer-handle"></div>
                   </th>
-                  <th style="width: 70px;">
+                  <th style="width: 80px;">
                     Type
                     <div class="resizer-handle"></div>
                   </th>
-                  <th style="width: 70px;">
+                  <th style="width: 80px;">
                     SFI
                     <div class="resizer-handle"></div>
                   </th>
-                  <th style="width: 70px;">
+                  <th style="width: 80px;">
                     REC#
                     <div class="resizer-handle"></div>
                   </th>
-                  <th style="width: 70px;">
+                  <th style="width: 80px;">
                     OFS
                     <div class="resizer-handle"></div>
                   </th>
-                  <th style="width: 70px;">
+                  <th style="width: 80px;">
                     LEN
                     <div class="resizer-handle"></div>
                   </th>
-                  <th style="width: 90px;">
+                  <th style="width: 80px;">
                     ref
                   </th>
                 </tr>
@@ -1282,6 +1285,7 @@ $(document).ready(function(){
   // Get session_id from template if available
   {% if session_id %}
   currentSessionId = "{{ session_id }}";
+  $('#form-session-id').val(currentSessionId);
   console.log('[Session] Session ID initialized:', currentSessionId);
   {% endif %}
   
@@ -1419,6 +1423,16 @@ $(document).ready(function(){
         renderApplicationTable(data.application_structured);
       });
     }
+  });
+  
+  // Excel download button
+  $('#excel-download-btn').click(function(e) {
+    e.preventDefault();
+    if (!currentSessionId) {
+      alert('No session available. Please analyze a log file first.');
+      return;
+    }
+    window.location.href = '/download_excel?session_id=' + currentSessionId;
   });
   
   // Copy buttons for file contents and parsing
