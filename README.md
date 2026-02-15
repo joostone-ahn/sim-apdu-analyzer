@@ -57,8 +57,6 @@ Traditional SIM tracers — _e.g., Minimove by COMPRION_ — rely on physical in
 
 ## 🚀 Quick Start
 
-## 🚀 Quick Start
-
 ### 1. 🌐 Try Online (No Installation Required)
 
 **Live Demo**: [https://huggingface.co/spaces/Joostone/sim-apdu-analyzer](https://huggingface.co/spaces/Joostone/sim-apdu-analyzer)
