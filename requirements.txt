@@ -1,9 +1,8 @@
 flask
 flask-session
+cachelib
 pandas
 tabulate
 openpyxl
 gunicorn
 requests
-PyQt5
-clipboard

@@ -8,6 +8,8 @@ import os
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from flask import Flask, render_template, request, jsonify, session
+from flask_session import Session
+from cachelib.file import FileSystemCache
 import msg_item
 import port
 import msg_sum
@@ -32,11 +34,21 @@ VALID_FILE_NAMES = get_valid_file_names()
 
 app = Flask(__name__, template_folder='../templates')
 app.secret_key = 'apdu-analyzer-secret-key-v3'
-# Use Flask's default client-side session (cookie-based)
-# This works better in containerized environments like Hugging Face
-app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
-app.config['SESSION_COOKIE_SECURE'] = False  # Set to True if using HTTPS
-app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50MB max upload
+
+# Use filesystem session with cachelib for better compatibility
+app.config['SESSION_TYPE'] = 'cachelib'
+app.config['SESSION_CACHELIB'] = FileSystemCache(threshold=500, cache_dir='/tmp/flask_session')
+app.config['SESSION_PERMANENT'] = False
+app.config['SESSION_USE_SIGNER'] = True
+app.config['SESSION_KEY_PREFIX'] = 'apdu_'
+
+# Ensure session directory exists
+os.makedirs('/tmp/flask_session', exist_ok=True)
+
+Session(app)
+
+# Increase max content length for large log files
+app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50MB
 
 UPLOAD_FOLDER = 'uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
