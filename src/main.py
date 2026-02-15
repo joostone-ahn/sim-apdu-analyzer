@@ -191,6 +191,7 @@ def index():
         save_session_data(session_id, 'prot_start', prot_start)
         save_session_data(session_id, 'prot_type', prot_type)
         save_session_data(session_id, 'prot_data', prot_data)
+        save_session_data(session_id, 'sum_rst', sum_rst)
         save_session_data(session_id, 'sum_cmd', sum_cmd)
         save_session_data(session_id, 'sum_read', sum_read)
         save_session_data(session_id, 'sum_error', sum_error)
@@ -503,6 +504,127 @@ def download_excel():
         output,
         as_attachment=True,
         download_name="file_system_export.xlsx",
+        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    )
+
+@app.route("/download_summary_excel")
+def download_summary_excel():
+    import pandas as pd
+    from io import BytesIO
+    from flask import send_file
+
+    # Get session_id from query parameter
+    session_id = request.args.get('session_id')
+    
+    if not session_id:
+        return "No session_id provided", 400
+    
+    sess_data = get_session_data(session_id)
+    if not sess_data:
+        return "Session expired or not found", 400
+    
+    # Get the summary result data (already formatted)
+    result = {
+        'summary': [
+            (idx, line, get_line_color_class(line)) 
+            for idx, line in enumerate(sess_data.get('sum_rst', []))
+        ]
+    }
+    
+    if not result['summary']:
+        return "No summary data available", 400
+
+    # Parse summary data from formatted strings
+    summary_data = []
+    for idx, line, color in result['summary']:
+        # Parse the formatted line
+        # Format: [index]  time  command | details
+        parts = line.split(']', 1)
+        if len(parts) > 1:
+            index_part = parts[0] + ']'
+            rest = parts[1].strip()
+            time_and_rest = rest.split(' ', 1)
+            if len(time_and_rest) > 1:
+                time_part = time_and_rest[0]
+                command_and_details = time_and_rest[1].split('|', 1)
+                full_command = command_and_details[0].strip()
+                
+                # Extract SFI from command if present
+                sfi_part = ''
+                command_part = full_command
+                if 'SFI: 0x' in full_command:
+                    sfi_match = full_command.split('SFI: 0x', 1)
+                    if len(sfi_match) > 1:
+                        sfi_value = sfi_match[1].split(')', 1)[0].split(' ', 1)[0]
+                        sfi_part = '0x' + sfi_value
+                        # Remove SFI from command
+                        command_part = full_command.split('(SFI:', 1)[0].strip()
+                
+                # Remove (X) or (*) markers from command
+                command_part = command_part.replace(' (X)', '').replace('(X)', '').replace(' (*)', '').replace('(*)', '')
+                
+                # Extract file name and additional info from details
+                file_part = ''
+                details_part = ''
+                if len(command_and_details) > 1:
+                    after_pipe = command_and_details[1].strip()
+                    if after_pipe:
+                        words = after_pipe.split()
+                        if words:
+                            # Check if first word is a valid file name
+                            if words[0] in VALID_FILE_NAMES:
+                                file_part = words[0]
+                                if len(words) > 1:
+                                    details_part = ' '.join(words[1:])
+                            # Check if first two words form a valid file name (e.g., "ADF USIM")
+                            elif len(words) > 1 and (words[0] + ' ' + words[1]) in VALID_FILE_NAMES:
+                                file_part = words[0] + ' ' + words[1]
+                                if len(words) > 2:
+                                    details_part = ' '.join(words[2:])
+                            else:
+                                # Not a valid file name, everything is details
+                                details_part = after_pipe
+                
+                summary_data.append({
+                    '#': index_part.strip(),
+                    'Time': time_part,
+                    'Command': command_part,
+                    'SFI': sfi_part,
+                    'File Name': file_part,
+                    'Additional Info': details_part
+                })
+            else:
+                # No time found, just command
+                summary_data.append({
+                    '#': index_part.strip(),
+                    'Time': '',
+                    'Command': rest,
+                    'SFI': '',
+                    'File Name': '',
+                    'Additional Info': ''
+                })
+        else:
+            # No index found, treat whole line as command
+            summary_data.append({
+                '#': '',
+                'Time': '',
+                'Command': line.strip(),
+                'SFI': '',
+                'File Name': '',
+                'Additional Info': ''
+            })
+    
+    df_summary = pd.DataFrame(summary_data)
+    df_summary = df_summary.map(clean_excel_string)
+
+    output = BytesIO()
+    df_summary.to_excel(output, index=False, engine='openpyxl')
+    output.seek(0)
+
+    return send_file(
+        output,
+        as_attachment=True,
+        download_name="summary_export.xlsx",
         mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
     )
 

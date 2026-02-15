@@ -209,7 +209,7 @@
     }
 
     .left-panel {
-      flex: 0 0 65%;
+      flex: 0 0 60%;
       display: flex;
       flex-direction: column;
       padding-right: 8px;
@@ -638,7 +638,10 @@
     <div id="tab-apdu" class="tab active">
       <div class="resizable-container">
         <div class="left-panel">
-          <h2>📋 Summary</h2>
+          <h2>
+            <span class="title-text">📋 Summary</span>
+            <a href="#" id="summary-excel-btn" class="excel-btn">💾 Save to Excel</a>
+          </h2>
           <div class="table-container">
             <table id="summary-table">
               <thead>
@@ -852,14 +855,20 @@
         <div class="right-panel">
           <div class="analysis-container">
             <div class="analysis-section" id="protocol-section">
-              <h2>📶 Protocol-Level Analysis</h2>
+              <h2>
+                <span class="title-text">📶 Protocol-Level Analysis</span>
+                <button class="excel-btn" id="copy-protocol-btn">📋 Copy</button>
+              </h2>
               <div id="protocol-area" class="protocol-display"></div>
             </div>
             
             <div class="vertical-resizer" id="analysis-vertical-resizer"></div>
             
             <div class="analysis-section" id="application-section">
-              <h2>💻 Application-Level Analysis</h2>
+              <h2>
+                <span class="title-text">💻 Application-Level Analysis</span>
+                <button class="excel-btn" id="copy-application-btn">📋 Copy</button>
+              </h2>
               <div id="application-area" class="protocol-display"></div>
             </div>
           </div>
@@ -887,11 +896,11 @@
                     File
                     <div class="resizer-handle"></div>
                   </th>
-                  <th style="width: 100px;">
+                  <th style="width: 120px;">
                     DF_Id
                     <div class="resizer-handle"></div>
                   </th>
-                  <th style="width: 100px;">
+                  <th style="width: 120px;">
                     File_Id
                     <div class="resizer-handle"></div>
                   </th>
@@ -948,14 +957,17 @@
 
         <div class="right-panel">
           <div class="analysis-container">
-            <div class="analysis-section">
+            <div class="analysis-section" id="file-contents-section">
               <h2>
                 <span class="title-text">📄 File Contents</span>
                 <button class="excel-btn" id="copy-contents-btn">📋 Copy</button>
               </h2>
               <div id="file-contents" class="protocol-display"></div>
             </div>
-            <div class="analysis-section">
+            
+            <div class="vertical-resizer" id="file-vertical-resizer"></div>
+            
+            <div class="analysis-section" id="file-parsing-section">
               <h2>
                 <span class="title-text">🔍 Parsing Data</span>
                 <button class="excel-btn" id="copy-parsing-btn">📋 Copy</button>
@@ -1230,6 +1242,7 @@ function makeColumnsResizable(tableId) {
 makeResizable('apdu-resizer');
 makeResizable('file-resizer');
 makeVerticalResizable('analysis-vertical-resizer');
+makeVerticalResizable('file-vertical-resizer');
 makeColumnsResizable('summary-table');
 makeColumnsResizable('file-table');
 
@@ -1435,10 +1448,31 @@ $(document).ready(function(){
     window.location.href = '/download_excel?session_id=' + currentSessionId;
   });
   
+  // Summary Excel download button
+  $('#summary-excel-btn').click(function(e) {
+    e.preventDefault();
+    if (!currentSessionId) {
+      alert('No session available. Please analyze a log file first.');
+      return;
+    }
+    window.location.href = '/download_summary_excel?session_id=' + currentSessionId;
+  });
+  
   // Copy buttons for file contents and parsing
   $('#copy-contents-btn').click(function() {
     if (rawFileContents) {
-      navigator.clipboard.writeText(rawFileContents).then(function() {
+      // Format hex contents with 16 bytes per line and space between bytes
+      const hexBytes = rawFileContents.match(/.{1,2}/g) || []; // Split into 2-char chunks
+      let formattedHex = '';
+      
+      for (let i = 0; i < hexBytes.length; i++) {
+        if (i > 0 && i % 16 === 0) {
+          formattedHex += '\n';
+        }
+        formattedHex += hexBytes[i] + ' ';
+      }
+      
+      navigator.clipboard.writeText(formattedHex.trim()).then(function() {
         // Visual feedback
         const btn = $('#copy-contents-btn');
         const originalText = btn.text();
@@ -1466,6 +1500,165 @@ $(document).ready(function(){
         alert('Failed to copy: ' + err);
       });
     }
+  });
+  
+  // Copy Protocol table as tabulate-style text
+  $('#copy-protocol-btn').click(function() {
+    const table = $('#protocol-area table.protocol-table');
+    if (table.length === 0) {
+      alert('No protocol data to copy');
+      return;
+    }
+    
+    // Extract table data
+    const rows = [];
+    
+    table.find('tbody tr').each(function() {
+      const cells = $(this).find('td');
+      const time = cells.eq(0).text().trim();
+      const dir = cells.eq(1).text().trim();
+      const hexRaw = cells.eq(2).html().trim();
+      
+      // Remove <br> tags and get clean hex string
+      const hex = hexRaw.replace(/<br\s*\/?>/gi, ' ').replace(/\s+/g, ' ').trim();
+      
+      rows.push({ time, dir, hex });
+    });
+    
+    if (rows.length === 0) {
+      alert('No protocol data to copy');
+      return;
+    }
+    
+    // Calculate column widths for Time and Dir
+    const timeWidth = Math.max(4, ...rows.map(r => r.time.length)); // min 4 for "Time"
+    const dirWidth = 3; // "Dir" or "TX"/"RX"
+    
+    // Format as tabulate-style text with proper alignment
+    let text = '';
+    
+    // Header
+    text += 'Time'.padEnd(timeWidth) + '  ' + 'Dir'.padEnd(dirWidth) + '  ' + 'Hex Data\n';
+    text += '-'.repeat(timeWidth) + '  ' + '-'.repeat(dirWidth) + '  ' + '-'.repeat(68) + '\n';
+    
+    // Data rows
+    rows.forEach(row => {
+      const hexBytes = row.hex.split(' ').filter(b => b.length > 0);
+      
+      if (hexBytes.length === 0) {
+        text += row.time.padEnd(timeWidth) + '  ' + row.dir.padEnd(dirWidth) + '  \n';
+        return;
+      }
+      
+      // First line with time and dir
+      const firstLineHex = hexBytes.slice(0, 16).join(' ');
+      text += row.time.padEnd(timeWidth) + '  ' + row.dir.padEnd(dirWidth) + '  ' + firstLineHex + '\n';
+      
+      // Continuation lines (16 bytes per line) with indentation
+      for (let i = 16; i < hexBytes.length; i += 16) {
+        const lineHex = hexBytes.slice(i, i + 16).join(' ');
+        const indent = ' '.repeat(timeWidth + 2 + dirWidth + 2); // Match time + dir column widths
+        text += indent + lineHex + '\n';
+      }
+    });
+    
+    navigator.clipboard.writeText(text).then(function() {
+      const btn = $('#copy-protocol-btn');
+      const originalText = btn.text();
+      btn.text('✓ Copied!');
+      setTimeout(function() {
+        btn.text(originalText);
+      }, 2000);
+    }).catch(function(err) {
+      alert('Failed to copy: ' + err);
+    });
+  });
+  
+  // Copy Application table as tabulate-style text
+  $('#copy-application-btn').click(function() {
+    const tables = $('#application-area table.application-table');
+    if (tables.length === 0) {
+      alert('No application data to copy');
+      return;
+    }
+    
+    let text = '';
+    
+    tables.each(function(tableIndex) {
+      if (tableIndex > 0) text += '\n';
+      
+      const rows = [];
+      $(this).find('tbody tr').each(function() {
+        const th = $(this).find('th').text().trim();
+        const tdHtml = $(this).find('td').html();
+        
+        // Remove <br> tags and get clean text
+        const td = tdHtml.replace(/<br\s*\/?>/gi, '\n').replace(/<[^>]*>/g, '').trim();
+        
+        rows.push({ label: th, value: td });
+      });
+      
+      // Calculate max label width
+      const labelWidth = Math.max(...rows.map(r => r.label.length));
+      
+      // Format rows
+      rows.forEach(row => {
+        const label = row.label.padEnd(labelWidth);
+        
+        // Special handling for Contents and Parsing fields
+        if (row.label === 'Contents') {
+          // Format hex contents with 16 bytes per line
+          const hexBytes = row.value.split(/\s+/).filter(b => b.length > 0);
+          
+          if (hexBytes.length === 0) {
+            text += label + '  \n';
+            return;
+          }
+          
+          // First line
+          const firstLineHex = hexBytes.slice(0, 16).join(' ');
+          text += label + '  ' + firstLineHex + '\n';
+          
+          // Continuation lines with indentation
+          for (let i = 16; i < hexBytes.length; i += 16) {
+            const lineHex = hexBytes.slice(i, i + 16).join(' ');
+            const indent = ' '.repeat(labelWidth + 2);
+            text += indent + lineHex + '\n';
+          }
+        } else if (row.label === 'Parsing') {
+          // Format parsing with proper line breaks
+          const lines = row.value.split('\n').filter(l => l.trim().length > 0);
+          
+          if (lines.length === 0) {
+            text += label + '  \n';
+            return;
+          }
+          
+          // First line
+          text += label + '  ' + lines[0] + '\n';
+          
+          // Continuation lines with indentation
+          for (let i = 1; i < lines.length; i++) {
+            const indent = ' '.repeat(labelWidth + 2);
+            text += indent + lines[i] + '\n';
+          }
+        } else {
+          // Regular fields
+          text += label + '  ' + row.value + '\n';
+        }
+      });
+    });
+    
+    navigator.clipboard.writeText(text).then(function() {
+      const btn = $('#copy-application-btn');
+      const originalText = btn.text();
+      btn.text('✓ Copied!');
+      setTimeout(function() {
+        btn.text(originalText);
+      }, 2000);
+    }).catch(function(err) {
+      alert('Failed to copy: ' + err);
+    });
   });
 });
 </script>
