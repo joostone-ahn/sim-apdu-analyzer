@@ -57,79 +57,80 @@ Traditional SIM tracers — _e.g., Minimove by COMPRION_ — rely on physical in
 
 ## 🚀 Quick Start
 
-### 1. Install Docker Desktop
+## 🚀 Quick Start
 
-Download and install [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+### 1. 🌐 Try Online (No Installation Required)
 
-### 2. Run Container
+**Live Demo**: [https://huggingface.co/spaces/Joostone/sim-apdu-analyzer](https://huggingface.co/spaces/Joostone/sim-apdu-analyzer)
 
-#### macOS (Intel)
+Try the tool instantly in your browser without any installation. Perfect for quick testing and evaluation.
+
+> **Note**: The online version runs on Hugging Face Spaces and may have limited resources.
+
+---
+
+### 2. 🐳 Using Docker (Recommended for Local Deployment)
+
+#### Mac (Intel)
 
 ```bash
 docker run -d \
   -p 8090:8090 \
-  -v $(pwd)/uploads:/app/uploads \
   --name sim-apdu-analyzer \
   ghcr.io/joostone-ahn/sim-apdu-analyzer:latest
 ```
 
-#### macOS (Apple Silicon - M1/M2/M3)
+#### Mac (Apple Silicon)
 
 ```bash
 docker run -d \
   --platform linux/amd64 \
   -p 8090:8090 \
-  -v $(pwd)/uploads:/app/uploads \
   --name sim-apdu-analyzer \
   ghcr.io/joostone-ahn/sim-apdu-analyzer:latest
 ```
 
-> **Note**: For Apple Silicon Macs, add `--platform linux/amd64` to both pull and run commands
+> **Note**: Apple Silicon users must use `--platform linux/amd64` as the image is built for AMD64 architecture
 
-#### Windows (PowerShell)
+#### Windows
 
 ```powershell
-docker run -d -p 8090:8090 -v ${PWD}/uploads:/app/uploads --name sim-apdu-analyzer ghcr.io/joostone-ahn/sim-apdu-analyzer:latest
+docker run -d -p 8090:8090 --name sim-apdu-analyzer ghcr.io/joostone-ahn/sim-apdu-analyzer:latest
 ```
 
-> **Note**: Docker Desktop for Windows requires WSL 2. Install WSL first if not already installed: `wsl --install`
+> **Note**: Windows users need WSL2 installed for Docker Desktop
 
-### 3. Access
+#### Access Application
 
 Open your browser and navigate to: http://localhost:8090
 
-### 4. Container Management
+---
+
+### 3. 💻 Running from Source (For Development)
+
+If you want to modify the code or run from source:
+
+#### Setup
 
 ```bash
-# Start
-docker start sim-apdu-analyzer
+# Clone repository
+git clone https://github.com/joostone-ahn/sim-apdu-analyzer.git
+cd sim-apdu-analyzer
 
-# Stop
-docker stop sim-apdu-analyzer
+# Create virtual environment
+python3 -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 
-# Restart
-docker restart sim-apdu-analyzer
+# Install dependencies
+pip install -r requirements.txt
 
-# Remove
-docker rm -f sim-apdu-analyzer
-
-# View logs
-docker logs -f sim-apdu-analyzer
+# Run application
+python src/main.py
 ```
 
-### 5. Update Image
+#### Access Application
 
-```bash
-# Stop and remove old container
-docker rm -f sim-apdu-analyzer
-
-# Pull latest image
-docker pull ghcr.io/joostone-ahn/sim-apdu-analyzer:latest
-
-# Run new container (use the same command from step 2 above)
-```
-
-> **Note**: For Apple Silicon Macs, add `--platform linux/amd64` to both pull and run commands
+Open your browser and navigate to: http://localhost:8090
 
 ---
 
