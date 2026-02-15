@@ -8,7 +8,6 @@ import os
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from flask import Flask, render_template, request, jsonify, session
-from flask_session import Session
 import msg_item
 import port
 import msg_sum
@@ -33,12 +32,11 @@ VALID_FILE_NAMES = get_valid_file_names()
 
 app = Flask(__name__, template_folder='../templates')
 app.secret_key = 'apdu-analyzer-secret-key-v3'
-app.config['SESSION_TYPE'] = 'filesystem'
-app.config['SESSION_FILE_DIR'] = '/tmp/flask_session'
-app.config['SESSION_PERMANENT'] = False
-app.config['SESSION_USE_SIGNER'] = True
-os.makedirs('/tmp/flask_session', exist_ok=True)
-Session(app)
+# Use Flask's default client-side session (cookie-based)
+# This works better in containerized environments like Hugging Face
+app.config['SESSION_COOKIE_SAMESITE'] = 'Lax'
+app.config['SESSION_COOKIE_SECURE'] = False  # Set to True if using HTTPS
+app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024  # 50MB max upload
 
 UPLOAD_FOLDER = 'uploads'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
