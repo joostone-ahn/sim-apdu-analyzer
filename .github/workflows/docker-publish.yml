@@ -69,7 +69,7 @@ jobs:
           git config user.email "bot@github.com"
           git remote add origin https://Joostone:${{ secrets.HF_TOKEN }}@huggingface.co/spaces/Joostone/sim-apdu-analyzer
           git fetch origin main
-          git checkout origin/main -- Dockerfile || echo "Initial setup"
+          git checkout origin/main -- . || echo "Initial setup"
           
           cat <<EOF > Dockerfile
           FROM ghcr.io/joostone-ahn/sim-apdu-analyzer:latest
