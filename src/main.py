@@ -34,6 +34,10 @@ VALID_FILE_NAMES = get_valid_file_names()
 app = Flask(__name__, template_folder='../templates')
 app.secret_key = 'apdu-analyzer-secret-key-v3'
 app.config['SESSION_TYPE'] = 'filesystem'
+app.config['SESSION_FILE_DIR'] = '/tmp/flask_session'
+app.config['SESSION_PERMANENT'] = False
+app.config['SESSION_USE_SIGNER'] = True
+os.makedirs('/tmp/flask_session', exist_ok=True)
 Session(app)
 
 UPLOAD_FOLDER = 'uploads'
@@ -288,45 +292,83 @@ def parse_application_data(app_result):
 
 @app.route('/analyze_line', methods=['POST'])
 def analyze_line():
-    index = int(request.form['index'])
-    app_rst_input = session['prot_type'], session['sum_cmd'], session['sum_log_ch'], session['sum_log_ch_id']
-    app_result = msg_app.rst(app_rst_input, session['sum_read'], session['sum_error'], index)
-    prot_rst_input = session['msg_all'], session['prot_start'], session['prot_type'], session['prot_data']
-    prot_result = msg_prot.rst(prot_rst_input, index)
-    
-    # Parse protocol result into structured data
-    protocol_messages = parse_protocol_messages(prot_result)
-    
-    # Parse application result into structured data
-    application_data = parse_application_data(app_result)
-    
-    return jsonify({
-        'protocol': prot_result,  # Keep for backward compatibility
-        'protocol_structured': protocol_messages,
-        'application': app_result,  # Keep for backward compatibility
-        'application_structured': application_data
-    })
+    try:
+        index = int(request.form['index'])
+        
+        # Check if session data exists
+        required_keys = ['prot_type', 'sum_cmd', 'sum_log_ch', 'sum_log_ch_id', 'sum_read', 'sum_error', 'msg_all', 'prot_start', 'prot_data']
+        missing_keys = [key for key in required_keys if key not in session]
+        
+        if missing_keys:
+            return jsonify({
+                'error': f'Session data missing: {", ".join(missing_keys)}',
+                'protocol_structured': [],
+                'application_structured': None
+            }), 400
+        
+        app_rst_input = session['prot_type'], session['sum_cmd'], session['sum_log_ch'], session['sum_log_ch_id']
+        app_result = msg_app.rst(app_rst_input, session['sum_read'], session['sum_error'], index)
+        prot_rst_input = session['msg_all'], session['prot_start'], session['prot_type'], session['prot_data']
+        prot_result = msg_prot.rst(prot_rst_input, index)
+        
+        # Parse protocol result into structured data
+        protocol_messages = parse_protocol_messages(prot_result)
+        
+        # Parse application result into structured data
+        application_data = parse_application_data(app_result)
+        
+        return jsonify({
+            'protocol': prot_result,  # Keep for backward compatibility
+            'protocol_structured': protocol_messages,
+            'application': app_result,  # Keep for backward compatibility
+            'application_structured': application_data
+        })
+    except Exception as e:
+        import traceback
+        return jsonify({
+            'error': str(e),
+            'traceback': traceback.format_exc(),
+            'protocol_structured': [],
+            'application_structured': None
+        }), 500
 
 @app.route('/file_detail', methods=['POST'])
 def file_detail():
-    index = int(request.form['index'])
-    df = session.get('df', [])
-    if df and 0 <= index < len(df):
-        contents = df[index].get('contents', '')
-        parsing = df[index].get('parsing', '')
+    try:
+        index = int(request.form['index'])
+        df = session.get('df', [])
         
-        # Handle NaN values - convert to empty string
-        import math
-        if isinstance(contents, float) and math.isnan(contents):
-            contents = ''
-        if isinstance(parsing, float) and math.isnan(parsing):
-            parsing = ''
+        if not df:
+            return jsonify({
+                'error': 'No file system data in session',
+                'contents': '',
+                'parsing': ''
+            }), 400
+        
+        if df and 0 <= index < len(df):
+            contents = df[index].get('contents', '')
+            parsing = df[index].get('parsing', '')
             
+            # Handle NaN values - convert to empty string
+            import math
+            if isinstance(contents, float) and math.isnan(contents):
+                contents = ''
+            if isinstance(parsing, float) and math.isnan(parsing):
+                parsing = ''
+                
+            return jsonify({
+                'contents': contents,
+                'parsing': parsing
+            })
+        return jsonify({'contents': '', 'parsing': ''})
+    except Exception as e:
+        import traceback
         return jsonify({
-            'contents': contents,
-            'parsing': parsing
-        })
-    return jsonify({'contents': '', 'parsing': ''})
+            'error': str(e),
+            'traceback': traceback.format_exc(),
+            'contents': '',
+            'parsing': ''
+        }), 500
 
 def clean_excel_string(s):
     if isinstance(s, str):
