@@ -153,17 +153,20 @@ Save the log as a `.txt` file.
 
 #### APDU Tab
 - **📋 Summary**: List of all APDU commands with color coding
-  - Click any row to see detailed analysis
 - **📶 Protocol-Level Analysis**: Raw TX/RX data with timestamps
 - **💻 Application-Level Analysis**: Decoded command parameters and file information
 
 #### File System Tab
 - **📁 File System**: All files read during the session
-  - Yellow highlight: Important OTA-updated files (IMSI, MSISDN, etc.)
-  - Green highlight: Other updated files
-- **📄 File Contents**: Raw hexadecimal data with **📋 Copy** button
-- **🔍 Parsing Data**: Interpreted data (phone numbers, PLMN lists, etc.) with **📋 Copy** button
-- **💾 Save to Excel**: Export complete file system data
+- **📄 File Contents**: Raw hexadecimal data
+- **🔍 Parsing Data**: Interpreted data (phone numbers, PLMN lists, etc.)
+
+> **Note**: Click any row in the Summary or File System table to view detailed analysis in the right-side panels.
+
+### Step 4: Export and Copy Data
+
+- **💾 Save to Excel**: Export Summary or File System data to Excel format
+- **📋 Copy**: Copy Protocol-Level Analysis, Application-Level Analysis, File Contents, or Parsing Data to clipboard
 
 ---
 
@@ -173,20 +176,20 @@ Save the log as a `.txt` file.
 
 | Color | Meaning | Examples |
 |-------|---------|----------|
-| 🔴 **Red** | Errors and failures | `ERROR`, malformed APDU |
-| 💜 **Magenta** | Authentication re-sync | `Re-Sync` (AKA failure) |
-| ⚪ **Gray** | Unknown operations | `SELECT (X)`, `Unknown` |
-| 💛 **Yellow** | Proactive SIM commands | `ENVELOPE`, `REFRESH` |
-| 💙 **Cyan** | Power events | `RESET`, `POWER` |
-| 🔵 **Light Blue** | Channel management | `MANAGE CHANNEL` |
-| 💚 **Light Green** | Authentication | `AUTHENTICATE` |
+| **Red** | Errors and failures | `❌ ERROR` |
+| **Magenta** | Authentication re-sync | `🔐 AUTHENTICATE w/ Re-Sync` |
+| **Gray** | Unknown file or command | `🚫 SELECT`, `❓ UNKNOWN` |
+| **Yellow** | SIM OTA updates | `📨 ENVELOPE`, `🔄 REFRESH` |
+| **Cyan** | Power events | `🔌 RESET`, `🔌 POWER` |
+| **Light Blue** | Channel management | `🔀 MANAGE CHANNEL` |
+| **Light Green** | Authentication | `🔐 AUTHENTICATE` |
 
 ### File System Tab
 
 | Color | Meaning | Files |
 |-------|---------|-------|
-| 💛 **Yellow** | Critical OTA updates | IMSI, MSISDN, OPLMNwAcT, ACC, Routing_Ind, IMPI, IMPU |
-| 💚 **Light Green** | General OTA updates | All other updated files |
+| **Yellow** | Critical OTA updates | IMSI, MSISDN, OPLMNwAcT, ACC, Routing_Ind, IMPI, IMPU |
+| **Light Green** | General OTA updates | All other updated files |
 
 ---
 

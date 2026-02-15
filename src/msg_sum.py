@@ -70,8 +70,8 @@ def rst(input):
 
             # Unknown INS
             if ins not in command.cmd_name:
-                cmd = f"INS: 0x{ins}"
-                info = f"Unknown INS"
+                cmd = f"UNKNOWN (INS: 0x{ins})"
+                info = ""
 
             # Known INS
             else:

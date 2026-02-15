@@ -97,7 +97,7 @@ def get_line_color_class(line):
         return 'red'
     elif 'Re-Sync' in line:
         return 'magenta'
-    elif any(x in line for x in ['(X)', '(*)', 'Unknown']):
+    elif any(x in line for x in ['(X)', '(*)', 'UNKNOWN']):
         return 'gray'
     elif 'ENVELOPE' in line or 'REFRESH' in line:
         return 'yellow'

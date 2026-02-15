@@ -684,15 +684,24 @@
                       {% set full_command = command_and_details[0].strip() %}
                       
                       {# Extract SFI only from parentheses, keep other parentheses in command #}
-                      {% if 'SFI: 0x' in full_command %}
+                      {# Special handling for UNKNOWN (INS: 0x##) #}
+                      {% if 'UNKNOWN (INS: 0x' in full_command %}
+                        {# UNKNOWN case: separate command and INS code #}
+                        {% set cmd_parts = full_command.split('(INS: 0x', 1) %}
+                        {% set command_part = cmd_parts[0].strip() %}
+                        {% set ins_code = 'INS: 0x' + cmd_parts[1].replace(')', '').strip() %}
+                        {% set paren_part = '' %}
+                      {% elif 'SFI: 0x' in full_command %}
                         {# SFI case: separate command and SFI parentheses #}
                         {% set cmd_parts = full_command.split('(', 1) %}
                         {% set command_part = cmd_parts[0].strip() %}
                         {% set paren_part = '(' + cmd_parts[1] %}
+                        {% set ins_code = '' %}
                       {% else %}
                         {# Non-SFI case: keep parentheses in command #}
                         {% set command_part = full_command %}
                         {% set paren_part = '' %}
+                        {% set ins_code = '' %}
                       {% endif %}
                       
                       {# Check for (X) and remove it from command, change icon #}
@@ -763,7 +772,7 @@
                         {% set icon = '⏸️' %}
                       {% elif 'ERROR' in command_part %}
                         {% set icon = '❌' %}
-                      {% elif 'Unknown' in command_part %}
+                      {% elif 'UNKNOWN' in command_part %}
                         {% set icon = '❓' %}
                       {% else %}
                         {% set icon = '📝' %}
@@ -817,6 +826,11 @@
                             {% endif %}
                           {% endif %}
                         {% endif %}
+                      {% endif %}
+                      
+                      {# Add ins_code to details_part for UNKNOWN CMD #}
+                      {% if ins_code %}
+                        {% set details_part = ins_code %}
                       {% endif %}
                       
                     {% else %}
@@ -1534,14 +1548,10 @@ $(document).ready(function(){
     const timeWidth = Math.max(4, ...rows.map(r => r.time.length)); // min 4 for "Time"
     const dirWidth = 3; // "Dir" or "TX"/"RX"
     
-    // Format as tabulate-style text with proper alignment
+    // Format as tabulate-style text with proper alignment (no header)
     let text = '';
     
-    // Header
-    text += 'Time'.padEnd(timeWidth) + '  ' + 'Dir'.padEnd(dirWidth) + '  ' + 'Hex Data\n';
-    text += '-'.repeat(timeWidth) + '  ' + '-'.repeat(dirWidth) + '  ' + '-'.repeat(68) + '\n';
-    
-    // Data rows
+    // Data rows only (no header)
     rows.forEach(row => {
       const hexBytes = row.hex.split(' ').filter(b => b.length > 0);
       
