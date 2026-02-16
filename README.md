@@ -12,11 +12,10 @@ A powerful web-based tool for analyzing SIM/eSIM APDU logs extracted from intern
 Traditional SIM tracers, such as COMPRION MiniMove, rely on physical interfaces and cannot intercept internal communication with eSIMs. This tool overcomes that limitation by parsing raw modem diagnostic logs, providing full visibility into both pSIM and eSIM activity without requiring additional hardware.
 
 ### ✨ Key Features
-- **No Hardware Required**: Directly processes internal modem traces, bypassing physical interface constraints.
-- **eSIM & Dual SIM Support**: Segregates interleaved traffic into distinct logical sessions (SIM1/SIM2) for DSDS devices.
-- **3GPP Compliance**: Parsing of TS 31.102/103 elements (IMSI, MSISDN, PLMN lists, USIM Service Tables).
-- **Multi-Layer Tracking**: Systematic analysis across Protocol (Raw I/O), Application (Commands/Channels), and File System (EF hierarchy) layers.
-
+- **No Hardware Required**: Eliminates the need for physical sniffing tools by directly processing internal modem diagnostic traces.
+- **eSIM & Dual SIM Support**: De-interleaves mixed traffic into independent logical sessions (SIM1/SIM2) for Dual SIM environments.
+- **Multi-Layer Analysis**: Provides systematic visibility across the Protocol (Raw I/O), Application (Command/Logical Channel), and File System (EF Hierarchy) layers.
+- **3GPP Compliance**: : Decoding of TS 31.102/103 Elementary Files (EFs), such as IMSI, MSISDN, PLMNwAcT, and UST.
 ---
 
 ## 🧾 Supported Log Formats
