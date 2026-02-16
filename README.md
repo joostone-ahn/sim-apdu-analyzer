@@ -1,7 +1,6 @@
 # 🔍 SIM-APDU-Analyzer
 
-A powerful web-based tool for analyzing SIM/eSIM APDU logs captured from real devices.  
-Tailored for modern dual SIM (DSDS) architectures, where eSIM and pSIM messages are interleaved in modem traces.
+A powerful web-based tool for analyzing SIM/eSIM APDU logs extracted from internal modem traces. Optimized for Dual SIM (DSDS) architectures, it de-interleaves mixed pSIM and eSIM APDU streams into distinct logical sessions, providing hardware-level probe capabilities (e.g., COMPRION Minimove) using only software-based modem diagnostic logs.
 
 [![Python](https://img.shields.io/badge/Python-3.11-blue.svg)](https://www.python.org/)
 [![Flask](https://img.shields.io/badge/Flask-3.0-green.svg)](https://flask.palletsprojects.com/)
@@ -10,37 +9,13 @@ Tailored for modern dual SIM (DSDS) architectures, where eSIM and pSIM messages 
 ---
 
 ## 💡 Why This Tool?
+Traditional SIM tracers, such as COMPRION MiniMove, rely on physical interfaces and cannot intercept internal communication with eSIMs. This tool overcomes that limitation by parsing raw modem diagnostic logs, providing full visibility into both pSIM and eSIM activity without requiring additional hardware.
 
-Traditional SIM tracers — _e.g., Minimove by COMPRION_ — rely on physical interfaces and can't intercept internal communication with eSIMs. This tool bridges that gap by decoding raw diagnostic logs and enabling accurate analysis of SIM1/SIM2 activity — just like a hardware SIM probe.
-
-### Key Advantages
-- ✅ **No Hardware Required**: Analyze logs from any device with modem diagnostics
-- ✅ **eSIM Support**: Full support for embedded SIM profiles
-- ✅ **Dual SIM**: Separate analysis for SIM1 and SIM2
-- ✅ **3GPP Compliant**: Based on TS 31.102/31.103 standards
-- ✅ **Web-Based**: Access from any browser, no installation needed
-
----
-
-## ✨ Key Features
-
-### 📊 Three-Layer Analysis
-1. **Protocol-Level**: Raw TX/RX APDU sequences with timestamps
-2. **Application-Level**: Decoded commands, logical channels, DF/EF tracking
-3. **File System**: Complete EF hierarchy with parsed content
-
-### 🔍 Advanced Capabilities
-- **Dual SIM Support**: Separate analysis for SIM1/SIM2 in DSDS devices
-- **OTA Tracking**: Highlight files updated via Over-The-Air
-- **Authentication Analysis**: Detailed AKA authentication (RAND/AUTN/RES/AUTS)
-- **Error Detection**: Automatic identification of protocol violations and failures
-- **File Parsing**: Parsing of IMSI, MSISDN, PLMN lists, service tables, etc.
-
-### 🎨 User Interface
-- **Web-Based**: Flask application with responsive design
-- **Color-Coded**: Visual indicators for errors, warnings, and special operations
-- **Interactive**: Click any message for detailed analysis
-- **Export**: Download file system data to Excel
+### ✨ Key Features
+- **No Hardware Required**: Directly processes internal modem traces, bypassing physical interface constraints.
+- **eSIM & Dual SIM Support**: Segregates interleaved traffic into distinct logical sessions (SIM1/SIM2) for DSDS devices.
+- **3GPP Compliance**: Parsing of TS 31.102/103 elements (IMSI, MSISDN, PLMN lists, USIM Service Tables).
+- **Multi-Layer Tracking**: Systematic analysis across Protocol (Raw I/O), Application (Commands/Channels), and File System (EF hierarchy) layers.
 
 ---
 
